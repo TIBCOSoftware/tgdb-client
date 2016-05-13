@@ -1,0 +1,7 @@
+com.tibco.tgdb
+com.tibco.tgdb.connection
+com.tibco.tgdb.exception
+com.tibco.tgdb.log
+com.tibco.tgdb.model
+com.tibco.tgdb.query
+com.tibco.tgdb.utils
