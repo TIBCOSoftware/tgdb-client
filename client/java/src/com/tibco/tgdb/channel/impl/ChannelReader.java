@@ -16,7 +16,7 @@
  * Created on: 1/6/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ChannelReader.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: ChannelReader.java 834 2016-05-15 02:16:24Z vchung $
  */
 
 
@@ -94,10 +94,10 @@ public class ChannelReader implements Runnable {
             }
 
             catch(Exception e) {
-                AbstractChannel.gLogger.logException("Channel reader thread interrupted.  Stopping reader...", e);
+                //AbstractChannel.gLogger.logException("Channel reader thread interrupted.  Stopping reader...", e);
 //                AbstractChannel.gLogger.log(TGLogger.TGLevel.Info, String.format("Thread %s interrupted. Stopping reader", Thread.currentThread().getName()));
                 if ((Thread.currentThread().isInterrupted() || (!isRunning.get()))) {
-                    AbstractChannel.gLogger.log(TGLogger.TGLevel.Info, "Exiting channel reader thread");
+                    AbstractChannel.gLogger.log(TGLogger.TGLevel.Debug, "Exiting channel reader thread");
                     return;
                 }
 

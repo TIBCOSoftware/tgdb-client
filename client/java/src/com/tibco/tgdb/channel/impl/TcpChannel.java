@@ -32,7 +32,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TcpChannel.java 824 2016-05-12 17:31:59Z ssubrama $
+ * SVN Id: $Id: TcpChannel.java 834 2016-05-15 02:16:24Z vchung $
  */
 public class TcpChannel extends AbstractChannel {
 
@@ -183,11 +183,11 @@ public class TcpChannel extends AbstractChannel {
             }
             return msg;
         } catch (TGException  be) {
-            gLogger.logException(String.format("readWireMsg TGException : %s(url=%s)", be.toString(), linkURL.toString()), be);
+            //gLogger.logException(String.format("readWireMsg TGException : %s(url=%s)", be.toString(), linkURL.toString()), be);
             logMessage(buffer);
             throw be;
         } catch (IOException ie) {
-            gLogger.logException(String.format("readWireMsg IOException : %s(url=%s)", ie.toString(), linkURL.toString()), ie);
+            //gLogger.logException(String.format("readWireMsg IOException : %s(url=%s)", ie.toString(), linkURL.toString()), ie);
             logMessage(buffer);
             throw ie;
         }

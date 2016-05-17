@@ -47,6 +47,7 @@ public class ImportData {
     public int nodeFetchCount = -1;
     public int nodeCommitCount = 1000;
     public int edgeCommitCount = 10000;
+    boolean treatDoubleAsString = false;
     
     String getStringValue(Iterator<String> argIter) {
     	while (argIter.hasNext()) {
@@ -105,6 +106,8 @@ public class ImportData {
     			nodeCommitCount = getIntValue(argIter, nodeCommitCount);
     		} else if (s.equalsIgnoreCase("-edgecommitcount") || s.equalsIgnoreCase("-ecc")) {
     			edgeCommitCount = getIntValue(argIter, edgeCommitCount);
+    		} else if (s.equalsIgnoreCase("-treatdoubleasstring") || s.equalsIgnoreCase("-dtos")) {
+    			treatDoubleAsString = true;
     		} else {
     			System.out.printf("Skip argument %s\n", s);
     		}
@@ -191,7 +194,11 @@ public class ImportData {
                 double infscore = Double.valueOf(arr[2]);
                 if (fromNode != null && toNode != null) {
 	                TGEdge edge = gof.createEdge(fromNode, toNode, TGEdge.DirectionType.BiDirectional);
-	                edge.setAttribute("infscore", infscore);
+                    if (treatDoubleAsString == true) {
+	                    edge.setAttribute("infscore", String.valueOf(infscore));
+                    } else {
+	                    edge.setAttribute("infscore", infscore);
+                    }
 	                conn.insertEntity(edge);	
 	                count++;
 	                if (count%edgeCommitCount == 0) {

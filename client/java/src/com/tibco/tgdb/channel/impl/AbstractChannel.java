@@ -18,7 +18,7 @@ package com.tibco.tgdb.channel.impl;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AbstractChannel.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: AbstractChannel.java 834 2016-05-15 02:16:24Z vchung $
  */
 
 import com.tibco.tgdb.TGProtocolVersion;
@@ -232,8 +232,7 @@ public abstract class AbstractChannel implements TGChannel {
 
         sendLock.lock();  //Ensure nobody is sending when we are disconnecting.
         try {
-//            gLogger.log(TGLogger.TGLevel.Debug, "Channel disconnect is called");
-            gLogger.logException("Channel disconnect is called", new Exception());
+            //gLogger.logException("Channel disconnect is called", new Exception());
 
             if (numConnections.get() == 0) {
                 gLogger.log(TGLogger.TGLevel.Error, "Calling disconnect more than the number of connects.");

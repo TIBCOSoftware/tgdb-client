@@ -16,7 +16,7 @@
  * Created on: 1/13/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionTest1.java 823 2016-05-12 12:47:02Z vchung $
+ * SVN Id: $Id: ConnectionTest1.java 839 2016-05-16 02:43:22Z vchung $
  */
 
 
@@ -60,6 +60,8 @@ public class ConnectionTest1 {
     public int printDepth = 5;
     public int resultCount = 100;
     public int edgeLimit = 0;
+    public String typeName = "hESCNodetype";
+    public String keyName = "symbol";
     
     String getStringValue(Iterator<String> argIter) {
     	while (argIter.hasNext()) {
@@ -124,6 +126,10 @@ public class ConnectionTest1 {
     			resultCount = getIntValue(argIter, 1000);
     		} else if (s.equalsIgnoreCase("-getedgelimit") || s.equalsIgnoreCase("-gel")) {
     			edgeLimit = getIntValue(argIter, 50);
+    		} else if (s.equalsIgnoreCase("-gettypename") || s.equalsIgnoreCase("-getn")) {
+    			typeName = getStringValue(argIter, "hESCNodeType");
+    		} else if (s.equalsIgnoreCase("-getkeyname") || s.equalsIgnoreCase("-gek")) {
+    			keyName = getStringValue(argIter, "symbol");
     		} else if (s.equalsIgnoreCase("-printdepth") || s.equalsIgnoreCase("-pd")) {
     			printDepth = getIntValue(argIter, 5);
     		} else {
@@ -175,6 +181,7 @@ public class ConnectionTest1 {
         Map<Integer, TGEntity> traverseMap = new HashMap<Integer, TGEntity>();
         List<TGNode> nodeList = new ArrayList<TGNode>();
         nodeList.add(node);
+        int level = 1;
 
         while (nodeList.size() > 0) {
             int listSize = nodeList.size();
@@ -183,21 +190,22 @@ public class ConnectionTest1 {
                 node = nodeList.get(0);
                 nodeList.remove(0);
                 if (traverseMap.get(node.hashCode()) != null) {
-                    System.out.printf("%sNode(%d) visited\n", indent, node.hashCode());
+                    System.out.printf("%s%d:Node(%d) visited\n", indent, level, node.hashCode());
                     continue;
                 } 
-                System.out.printf("%sNode(%d)\n", indent, node.hashCode());
+                System.out.printf("%s%d:Node(%d)\n", indent, level, node.hashCode());
                 for (TGAttribute attrib : node.getAttributes()) {
-                    System.out.printf("%s Attr : %s\n", indent, attrib.getValue());
+                    System.out.printf("%s %d:Attr : %s\n", indent, level, attrib.getValue());
                 }
                 traverseMap.put(node.hashCode(), node);
-        	    System.out.printf("%s has %d edges\n", indent, node.getEdges().size());
+        	    System.out.printf("%s %d:has %d edges\n", indent, level, node.getEdges().size());
                 for (TGEdge edge : node.getEdges()) {
                     TGNode[] nodes = edge.getVertices();
                     if (nodes.length > 0) {
                         if (nodes[0] == null) {
-                           	System.out.printf("%s   passed last edge\n", indent);
-                            break;
+                           	//System.out.printf("%s   %d:passed last edge\n", indent, level);
+                            //break;
+                        	continue;
                         }
                         for (int j=0; j<nodes.length; j++) {
                             if (nodes[j].hashCode() == node.hashCode()) {
@@ -206,9 +214,9 @@ public class ConnectionTest1 {
                             	Iterator<TGAttribute> itr = edge.getAttributes().iterator();
                             	if (itr.hasNext()) {
                             		TGAttribute attrib = itr.next();
-                            		System.out.printf("%s   edge(%d)(%s) with node(%d)\n", indent, edge.hashCode(), attrib.getValue(), nodes[j].hashCode());
+                            		System.out.printf("%s   %d:edge(%d)(%s) with node(%d)\n", indent, level, edge.hashCode(), attrib.getValue(), nodes[j].hashCode());
                             	} else {
-                            		System.out.printf("%s   edge(%d) with node(%d)\n", indent, edge.hashCode(), nodes[j].hashCode());
+                            		System.out.printf("%s   %d:edge(%d) with node(%d)\n", indent, level, edge.hashCode(), nodes[j].hashCode());
                             	}
                                 nodeList.add(nodes[j]);
                             }
@@ -217,6 +225,7 @@ public class ConnectionTest1 {
                 }
             }
             indent += "    ";
+            level++;
         }
     }
 
@@ -374,6 +383,8 @@ public class ConnectionTest1 {
 
     public void interactiveGet() throws Exception {
     	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
+        System.out.printf("Depth : %d, Fetch : %d, Edge : %d, type : %s, key : %s\n", depth, resultCount, 
+            edgeLimit, typeName, keyName);
     	TGLogger logger = TGLogManager.getInstance().getLogger();
     	logger.setLevel(logLevel);
 
@@ -385,8 +396,7 @@ public class ConnectionTest1 {
       	conn.getGraphMetadata(true);
         
       	System.out.println("Start get console");
-      	TGKey hkey = gof.createCompositeKey("hESCNodetype");
-      	TGKey mkey = gof.createCompositeKey("mESCNodetype");
+      	TGKey hkey = gof.createCompositeKey(typeName);
       	BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String s;
         while ((s = in.readLine()) != null && s.length() != 0) {
@@ -394,7 +404,7 @@ public class ConnectionTest1 {
         	if (s.equalsIgnoreCase("quit")) {
         		break;
         	}
-        	hkey.setAttribute("symbol", s);
+        	hkey.setAttribute(keyName, s);
       	 	TGProperties<String, String> props = new SortedProperties<String, String>();
       	 	props.put("fetchsize", String.valueOf(resultCount));
       	 	props.put("traversaldepth", String.valueOf(depth));
