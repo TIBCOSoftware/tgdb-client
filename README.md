@@ -1,6 +1,6 @@
 # tgdb-client
 Client API for TIBCO(R) Graph Database.
-The clients implemented are in Java and Node.
+The clients implemented are Java Client and the Node Client. 
 
 The java client comes bundled with the Community Edition as client library.
 
