@@ -21,7 +21,7 @@ import java.io.IOException;
  * File name :TGException
  * Created by: suresh
  *
- * SVN Id: $Id: TGException.java 622 2016-03-19 20:51:12Z ssubrama $
+ * SVN Id: $Id: TGException.java 1205 2016-11-09 02:05:16Z ssubrama $
  */
 public class TGException extends Exception {
 
@@ -70,6 +70,9 @@ public class TGException extends Exception {
         this.errorCode = errorCode;
     }
 
+    public TGException(TGException cause) {
+        super(cause);
+    }
     /**
      * @return Returns the error code for the exception
      */
@@ -101,5 +104,11 @@ public class TGException extends Exception {
         BadAuthentication,
         IOException,
         GeneralException
+    }
+
+    @Override
+    public synchronized Throwable getCause() {
+        if (linkedException != null) return linkedException;
+        return super.getCause();
     }
 }

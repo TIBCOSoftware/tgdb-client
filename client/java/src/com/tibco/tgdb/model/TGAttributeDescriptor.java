@@ -18,7 +18,7 @@ package com.tibco.tgdb.model;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGAttributeDescriptor.java 723 2016-04-16 19:21:18Z vchung $
+ *		SVN Id: $Id: TGAttributeDescriptor.java 1110 2016-10-25 00:04:04Z ssubrama $
  *
  */
 
@@ -46,5 +46,17 @@ public interface TGAttributeDescriptor extends TGSystemObject {
      * @return boolean indicating the multiplicativeness of the type
      */
     boolean isArray();
+
+    /**
+     * For a Number type - return the precision. The default Precision is 20
+     * @return
+     */
+    short getPrecision();
+
+    /**
+     * For a Number type - return the scale. The default Scale is 5
+     * @return
+     */
+    short getScale();
 
 }

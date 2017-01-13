@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeDescriptorImpl.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: AttributeDescriptorImpl.java 1110 2016-10-25 00:04:04Z ssubrama $
  */
 
 
@@ -44,6 +44,8 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
 	private TGAttributeType type;
 	private boolean isArray;
 	private int attributeId;
+    private short scale;
+    private short precision;
 
     private AttributeDescriptorImpl() {}
 
@@ -53,6 +55,10 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
         this.isArray = false;
 		//Purposely make it to a negative number
 		this.attributeId = gLocalAttributeId.decrementAndGet();
+        if (type == TGAttributeType.Number) {
+            scale = 5;
+            precision = 20;
+        }
 	}
 
 	public AttributeDescriptorImpl (String name, TGAttributeType type, boolean isArray) {
@@ -61,6 +67,10 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
         this.isArray = isArray;
 		//Purposely make it to a negative number
 		this.attributeId = gLocalAttributeId.decrementAndGet();
+        if (type == TGAttributeType.Number) {
+            scale = 5;
+            precision = 20;
+        }
 	}
 
 	//TODO:  To be used when created from server side data
@@ -96,6 +106,11 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
         return isArray;
     }
 
+    @Override
+    public short getPrecision() { return precision; }
+
+    @Override
+    public short getScale() { return scale; }
 
     @Override
     public void writeExternal(TGOutputStream os) throws TGException, IOException
@@ -106,6 +121,10 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
             os.writeUTF(name);
             os.writeByte(type.typeId());
             os.writeBoolean(isArray);
+            if (type == TGAttributeType.Number) {
+                os.writeShort(precision);
+                os.writeShort(scale);
+            }
         } catch (IOException ioe) {
             gLogger.log(TGLevel.Warning, "Failed to write attribute description for : %s", name);
             throw ioe;
@@ -124,9 +143,27 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
         this.name = is.readUTF();
         this.type = TGAttributeType.fromTypeId(is.readByte());
         this.isArray = is.readBoolean();
+        if (type == TGAttributeType.Number) {
+            precision = is.readShort();
+            scale = is.readShort();
+        }
     }
     
     public void setAttributeId(int id) {
     	this.attributeId = id;
+    }
+
+    public void setPrecision(short precision)
+    {
+        if (type == TGAttributeType.Number) {
+            this.precision = precision;
+        }
+    }
+
+    public void setScale(short scale)
+    {
+        if (type == TGAttributeType.Number) {
+            this.scale = scale;
+        }
     }
 }

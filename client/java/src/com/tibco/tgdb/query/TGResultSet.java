@@ -24,20 +24,20 @@ import java.util.List;
  * Created on: 1/22/15
  * Created by: suresh
 
- * SVN Id: $Id: TGResultSet.java 622 2016-03-19 20:51:12Z ssubrama $
+ * SVN Id: $Id: TGResultSet.java 1262 2016-11-20 13:21:20Z vchung $
  */
 
 public interface TGResultSet extends Iterator<TGEntity>, AutoCloseable {
 
     /**
      * Does the Resultset have any Exceptions
-     * @return
+     * @return true has exceptions and false has no exception
      */
     boolean hasExceptions();
 
     /**
      * Get the Exceptions in the ResultSet
-     * @return
+     * @return list of exceptions
      */
     List<TGException> getExceptions();
 
@@ -45,48 +45,53 @@ public interface TGResultSet extends Iterator<TGEntity>, AutoCloseable {
      * Return nos of entities returned by the query. The result set has a cursor which prefetches "n" rows as
      * per the query constraint. If the nos of entities returned by the query is less than prefetch count, then
      * all are returned.
-     * @return
+     * @return number of entities in the result set
      */
     int count();
 
     /**
      * Return the first entity in the ResultSet
-     * @return
+     * @return first entity in the result set
      */
     TGEntity first();
 
     /**
      * Return the last Entity in the ResultSet
-     * @return
+     * @return last entity in the result set
      */
     TGEntity last();
 
     /**
      * Return the prev entity w.r.t to the current cursor position in the ResultSet
-     * @return
+     * @return previous entity from the current result set position
      */
     TGEntity prev();
 
     /**
      * Return the next entity w.r.t to the current cursor position in the ResultSet
      * Purely from a completeness point.
-     * @return
-     */
+     * @return next entity from the current result set position
     TGEntity next();
+     */
 
     /**
      * Get the Current cursor position. A resultset upon creation is set to the position 0.
-     * @return
+     * @return current result set position
      */
     int getPosition();
 
     /**
      * Get the entity at the position.
-     * @param position
-     * @return
+     * @param position get entity at this position
+     * @return entity at specific position
      */
     TGEntity getAt(int position);
 
+    /**
+     * Skip a number of position
+     * @param position skip the number of position 
+     * 
+     */
     void skip(int position);
 
 

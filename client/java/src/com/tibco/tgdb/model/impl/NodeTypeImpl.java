@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: NodeTypeImpl.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: NodeTypeImpl.java 978 2016-09-18 21:43:27Z vchung $
  */
 
 
@@ -50,6 +50,12 @@ public class NodeTypeImpl extends EntityTypeImpl implements TGNodeType {
     	int attrCount = is.readShort();
     	for (int i=0; i<attrCount; i++) {
     		pKeys.add(is.readUTF());
+    	}
+
+    	int idxCount = is.readShort();
+    	for (int i=0; i<idxCount; i++) {
+            //FIXME: Get meta data needs to return index definitions
+    		is.readInt();
     	}
     }
 }

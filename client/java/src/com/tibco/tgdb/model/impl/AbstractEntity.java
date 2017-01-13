@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AbstractEntity.java 771 2016-05-05 11:40:52Z vchung $
+ * SVN Id: $Id: AbstractEntity.java 1124 2016-10-25 23:32:42Z vchung $
  */
 
 
@@ -92,29 +92,33 @@ public abstract class AbstractEntity implements TGEntity {
 
     @Override
     public void setAttribute(String name, Object value) throws TGException {
-    	//Need to handle null value
+    	if (name == null) {
+    		throw new TGException(String.format("Name of the attribute cannot be null"));
+    	}
         TGAttribute attr = attributes.get(name);
-        //If the attribute has not been set and the value is null
         //Do not do anything. We are not setting anything that
         //we don't know the type
         //FIXME: Need to throw an exception
-        if (attr == null && value == null) {
-            throw new TGException(String.format("Null value specified for an a null attribute"));
-        }
         if (attr == null) {
             TGAttributeDescriptor attrDesc = null;
             attrDesc = graphMetadata.getAttributeDescriptor(name);
             if (attrDesc == null) {
-                attrDesc = ((GraphMetadataImpl)graphMetadata).createAttributeDescriptor(name, value.getClass());
+            	if (value == null) {
+            		//If the attribute has not been set and has no descriptor, it cannot have a null value
+            		//because we cannot figure out the data type
+            		throw new TGException(String.format("Null value specified for an undefined attribuyte"));
+            	} else {
+            		gLogger.log(TGLevel.Debug, "%s is a new attribute type", name);
+                    attrDesc = ((GraphMetadataImpl)graphMetadata).createAttributeDescriptor(name, value.getClass());
+            	}
             }
             attr = new AttributeImpl(this, attrDesc, value);
         }
         //value can be null here
-        //FIXME: Currently setValue does not throw any exception
         if (!attr.isModified()) {
         	modifiedAttributes.add(attr);
         }
-        attr.setValue(value);
+      	attr.setValue(value);
         this.setAttribute(attr);
     }
 
@@ -140,6 +144,10 @@ public abstract class AbstractEntity implements TGEntity {
     @Override
     public int getVersion() {
         return version;
+    }
+
+    public void setVersion(int version) {
+    	this.version = version;
     }
 
     //FIXME:  How should we expose this

@@ -30,7 +30,7 @@ import com.tibco.tgdb.utils.TGProperties;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGConnection.java 771 2016-05-05 11:40:52Z vchung $
+ *		SVN Id: $Id: TGConnection.java 1169 2016-11-03 18:31:31Z ssubrama $
  *
  */
 public interface TGConnection {
@@ -72,11 +72,11 @@ public interface TGConnection {
      * see defining index for a Node, Edge or a Graph
      * This is synchronous non transactional operation. It does not hold any locks.
      * @param tgkey - An instance of a key using @see com.tibco.tgdb.TGGraphObjectFactory.createCompositeKey
-     * @param properties - properties affect the request such as batchsize, fetchsize and traversaldepth
+     * @param option - properties affect the request such as batchsize, fetchsize and traversaldepth
      * @return TGEntity for the key specified
      * @throws com.tibco.tgdb.exception.TGException Throws an exception if there was any error while retrieving the object
      */
-    TGEntity getEntity(TGKey tgkey, TGProperties<String, String> properties) throws TGException;
+    TGEntity getEntity(TGKey tgkey, TGQueryOption option) throws TGException;
 
     /**
      * Get a result set of entities given an non-uniqueKey.
@@ -92,8 +92,8 @@ public interface TGConnection {
 
     /**
      * Insert a new entity constructed using createNode/Edge 
-     * @param entity
-     * @throws TGException
+     * @param entity - a new entity to be inserted into the database
+     * @throws TGException - Throws an exception if insert failed
      */
     void insertEntity(TGEntity entity) throws TGException;
     

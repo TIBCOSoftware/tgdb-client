@@ -18,16 +18,61 @@ package com.tibco.tgdb.query.impl;
  */
 
 import com.tibco.tgdb.query.TGQueryOption;
+import com.tibco.tgdb.utils.SortedProperties;
 
 
+public class QueryOptionImpl extends SortedProperties<String,String> implements TGQueryOption {
 
+    private boolean mutable;
+    private static String QUERY_OPTION_FETCHSIZE = "fetchsize";
+    private static String QUERY_OPTION_TRAVERSALDEPTH = "traversaldepth";
+    private static String QUERY_OPTION_EDGELIMIT = "edgelimit";
 
-
-public class QueryOptionImpl extends TGQueryOption {
-
-    boolean mutable;
 
     public QueryOptionImpl(boolean mutable) {
         this.mutable = mutable;
+        this.put(QUERY_OPTION_FETCHSIZE, "-1");
+        this.put(QUERY_OPTION_TRAVERSALDEPTH, "-1");
+        this.put(QUERY_OPTION_EDGELIMIT, "-1");
+
+    }
+
+    @Override
+    public void setPrefetchSize(int size) {
+        if (!mutable) throw new RuntimeException("Can't modify a immutable Option");
+        if (size == 0) size = -1;
+        this.put(QUERY_OPTION_FETCHSIZE, String.valueOf(size));
+    }
+
+    @Override
+    public int getPrefetchSize() {
+        String s = this.get(QUERY_OPTION_FETCHSIZE);
+        return Integer.valueOf(s);
+    }
+
+    @Override
+    public void setTraversalDepth(int depth) {
+        if (!mutable) throw new RuntimeException("Can't modify a immutable Option");
+        if (depth == 0) depth = -1;
+        this.put(QUERY_OPTION_TRAVERSALDEPTH, String.valueOf(depth));
+    }
+
+    @Override
+    public int getTraversalDepth() {
+        String s = this.get(QUERY_OPTION_TRAVERSALDEPTH);
+        return Integer.valueOf(s);
+    }
+
+    @Override
+    public void setEdgeLimit(int limit) {
+        if (!mutable) throw new RuntimeException("Can't modify a immutable Option");
+        if (limit == 0) limit = -1;
+        this.put(QUERY_OPTION_EDGELIMIT, String.valueOf(limit));
+    }
+
+    @Override
+    public int getEdgeLimit() {
+        String s = this.get(QUERY_OPTION_EDGELIMIT);
+        return Integer.valueOf(s);
     }
 }

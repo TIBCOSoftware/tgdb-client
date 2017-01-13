@@ -16,7 +16,7 @@
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionImpl.java 823 2016-05-12 12:47:02Z vchung $
+ * SVN Id: $Id: ConnectionImpl.java 1238 2016-11-17 21:20:33Z vchung $
  */
 
 
@@ -144,8 +144,38 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         			if (!node.isNew()) {
         				changedList.put(((AbstractEntity) node).getVirtualId(), node);
         	            if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-        				    gLogger.log(TGLogger.TGLevel.Debug, "New edge added to node : %d", ((AbstractEntity) node).getVirtualId());
+        				    gLogger.log(TGLogger.TGLevel.Debug, "Existing node %d added to change list for a new edge", ((AbstractEntity) node).getVirtualId());
                         }
+        			}
+        		}
+        	}
+        }
+        //Need to include existing node to the changed list even for edge update
+        for (TGEntity entity : changedList.values()) {
+        	if (entity.getEntityKind() == TGEntity.TGEntityKind.Edge) {
+        		TGNode[] nodes = ((TGEdge) entity).getVertices();
+        		for (TGNode node : nodes) {
+        			if (!node.isNew()) {
+        				changedList.put(((AbstractEntity) node).getVirtualId(), node);
+        	            if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
+        				    gLogger.log(TGLogger.TGLevel.Debug, "Existing node %d added to change list for an existing edge %d", ((AbstractEntity) node).getVirtualId(), ((AbstractEntity) entity).getVirtualId());
+                        }
+        			}
+        		}
+        	}
+        }
+        //Need to include existing node to the changed list even for edge update
+        for (TGEntity entity : removedList.values()) {
+        	if (entity.getEntityKind() == TGEntity.TGEntityKind.Edge) {
+        		TGNode[] nodes = ((TGEdge) entity).getVertices();
+        		for (TGNode node : nodes) {
+        			if (!node.isNew()) {
+        				if (removedList.get(((AbstractEntity) node).getVirtualId()) == null) {
+        					changedList.put(((AbstractEntity) node).getVirtualId(), node);
+        	            	if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
+        	            		gLogger.log(TGLogger.TGLevel.Debug, "Existing node %d added to change list for an edge %d to be deleted", ((AbstractEntity) node).getVirtualId(), ((AbstractEntity) entity).getVirtualId());
+        	            	}
+        				}
         			}
         		}
         	}
@@ -212,15 +242,11 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
             Set<TGAttributeDescriptor> attrDescSet = ((GraphMetadataImpl)gof.getGraphMetaData()).getNewAttributeDescriptors();
             request.addCommitLists(addedList, changedList, removedList, attrDescSet);
             CommitTransactionResponse response = (CommitTransactionResponse) this.channel.sendRequest(request, channelResponse);
-            fixUpAttrDescIds(response, attrDescSet);
-            fixUpEntityIds(response);
-			/* Used only with debug operation
-            try {
-            	//printEntities(response);
-            } catch (IOException e) {
-            	gLogger.log(TGLogger.TGLevel.Warning, "Failed to print debug entities from commit response");
-            }
-            */
+            if (response.hasException()) throw new TGException(response.getException());
+
+            fixUpAttrDescriptors(response, attrDescSet);
+            fixUpEntities(response);
+
             for (TGEntity entity : removedList.values()) {
             	((AbstractEntity) entity).markDeleted();
             }
@@ -228,24 +254,23 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
                 gLogger.log(TGLogger.TGLevel.Debug, "Send commit request completed");
             }
 
-            //fix up id 
-            //set local object isNew to false 
+            return null;
+        } finally {
+            //fix up id
+            //set local object isNew to false
             //mark attribute modified flag to false
             //addedIdList.forEach(e -> {e.
             for (TGEntity entity : changedList.values()) {
-            	((AbstractEntity) entity).resetModifiedAttributes();
+                ((AbstractEntity) entity).resetModifiedAttributes();
             }
             for (TGEntity entity : addedList.values()) {
-            	((AbstractEntity) entity).resetModifiedAttributes();
+                ((AbstractEntity) entity).resetModifiedAttributes();
             }
+
             changedList.clear();
             addedList.clear();
             removedList.clear();
             attrByTypeList.clear();
-
-            return null;
-        }
-        finally {
             connPool.adminUnlock();
         }
     }
@@ -266,7 +291,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     }
 
     @Override
-    public TGEntity getEntity(TGKey key, TGProperties<String, String> props) throws TGException {
+    public TGEntity getEntity(TGKey key, TGQueryOption props) throws TGException {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
@@ -520,13 +545,78 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
         try {
-            QueryRequest request = (QueryRequest) TGMessageFactory.getInstance().createMessage(VerbId.QueryRequest);
+            QueryRequest request = (QueryRequest) TGMessageFactory.getInstance().createMessage(VerbId.QueryRequest, channel.getAuthToken(), channel.getSessionId());
+        	configureQueryRequest(request, queryOption);
             request.setCommand(command.EXECUTE.getValue());
 //            request.setConnectionId(connId);
             request.setQuery(query);
             QueryResponse response = (QueryResponse) this.channel.sendRequest(request, channelResponse);
             gLogger.log(TGLogger.TGLevel.Debug, "Send execute query completed");
-            return null;
+
+        	//Need to check status
+        	if (!response.hasResult()) {
+        		return null;
+        	}
+            int resultCount = response.getResultCount();
+            int currResultCount = 0;
+    		TGInputStream entityStream = response.getEntityStream();
+    		HashMap<Long, TGEntity> fetchedEntities = null;
+            ResultSetImpl resultSet = null;
+        	if (resultCount > 0) {
+         		fetchedEntities = new HashMap<Long, TGEntity>();
+                entityStream.setReferenceMap(fetchedEntities);
+                resultSet = new ResultSetImpl(this, 0);
+        	}
+            int totalCount = response.getTotalCount();
+        	for (int i=0; i<totalCount; i++) {
+        		TGEntity.TGEntityKind kind = TGEntity.TGEntityKind.fromValue(entityStream.readByte());
+          		if (kind != TGEntity.TGEntityKind.InvalidKind) {
+           			long id = entityStream.readLong();
+           			TGEntity entity = fetchedEntities.get(id);
+           			if (kind == TGEntity.TGEntityKind.Node) {
+           				//Need to put shell object into hashmap to be deserialized later
+           				TGNode  node = (TGNode) entity;
+           				if (node == null) {
+           					node = gof.createNode();
+           					entity = node;
+           					fetchedEntities.put(id, node);
+           					if (currResultCount < resultCount) {
+                                resultSet.addEntityToResultSet(node);
+           					}
+           				}
+           				node.readExternal(entityStream);
+           			} else if (kind == TGEntity.TGEntityKind.Edge) {
+           				TGEdge edge = (TGEdge) entity;
+           				if (edge == null) {
+           					edge = gof.createEdge(null, null, TGEdge.DirectionType.BiDirectional);
+           					entity = edge;
+           					fetchedEntities.put(id, edge);
+           				}
+           				edge.readExternal(entityStream);
+           			}
+        	        if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
+                        gLogger.log(TGLevel.Debug, "Kind : %d, Id : %d, hc : %d", entity.getEntityKind().kind(), ((AbstractEntity) entity).getEntityId(), entity.hashCode());
+                        for (TGAttribute attrib : entity.getAttributes()) {
+                            gLogger.log(TGLevel.Debug, "Attr : %s", attrib.getValue());
+                        }
+                        if (entity.getEntityKind() == TGEntity.TGEntityKind.Node) {
+                            for (TGEdge edge : ((TGNode) entity).getEdges()) {
+                                gLogger.log(TGLevel.Debug, "    Edge : %d, hc : %d", ((AbstractEntity) edge).getEntityId(), edge.hashCode());
+                            }
+                        } if (entity.getEntityKind() == TGEntity.TGEntityKind.Edge) {
+                            TGNode[] nodes = ((TGEdge) entity).getVertices();
+                            for (int j=0; j<nodes.length; j++) {
+                                gLogger.log(TGLevel.Debug, "    Node : %d, hc : %d", ((AbstractEntity) nodes[j]).getEntityId(), nodes[j].hashCode());
+                            }
+                        }
+                    }
+           		} else {
+           			gLogger.log(TGLevel.Warning, "Received invalid entity kind %d", kind);
+           		}
+        	}
+            return resultSet;
+        } catch (IOException ioe) {
+        	throw new TGException(ioe.getMessage());
         }
         finally {
             connPool.adminUnlock();
@@ -667,7 +757,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         removedList.put(((AbstractEntity) entity).getVirtualId(), entity);
 	}
 
-    private void fixUpAttrDescIds(CommitTransactionResponse response, Set<TGAttributeDescriptor> attrDescSet) {
+    private void fixUpAttrDescriptors(CommitTransactionResponse response, Set<TGAttributeDescriptor> attrDescSet) {
         gLogger.log(TGLogger.TGLevel.Debug, "Fixup attribute descriptor ids");
         int attrDescCount = response.getAttrDescCount();
         List<Integer> attrDescIdList = response.getAttrDescIdList();
@@ -689,26 +779,47 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         }
     }
 
-    private void fixUpEntityIds(CommitTransactionResponse response) {
+    private void fixUpEntities(CommitTransactionResponse response) {
         gLogger.log(TGLogger.TGLevel.Debug, "Fixup entity ids");
         int addedIdCount = response.getAddedEntityCount();
         List<Long> addedIdList = response.getAddedIdList();
         for (int i=0; i<addedIdCount; i++) {
-        	long tempId = addedIdList.get(i*2); 
-        	long realId = addedIdList.get((i*2) + 1);
+        	long tempId = addedIdList.get(i*3); 
+        	long realId = addedIdList.get((i*3) + 1);
+        	long version = addedIdList.get((i*3) + 2);
 
         	Iterator<TGEntity> itr = addedList.values().iterator();
         	while(itr.hasNext()) {
         		TGEntity entity = itr.next();
         		if (((AbstractEntity) entity).getVirtualId() == tempId) {
         	        if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-        			    gLogger.log(TGLogger.TGLevel.Debug, "Replace entity id : %08X by %08X", tempId, realId);
+        			    gLogger.log(TGLogger.TGLevel.Debug, "Replace entity id : %016X by %016X", tempId,  realId);
                     }
         			((AbstractEntity) entity).setEntityId(realId);
         			((AbstractEntity) entity).setIsNew(false);
+        			((AbstractEntity) entity).setVersion((int)version);
         			break;
         		}
         	}
+        }
+
+        int updatedIdCount = response.getUpdatedEntityCount();
+        List<Long> updatedIdList = response.getUpdatedIdList();
+        for (int i=0; i<updatedIdCount; i++) {
+        	long id = updatedIdList.get(i*2); 
+        	long version = updatedIdList.get((i*2) + 1);
+
+        	Iterator<TGEntity> itr = changedList.values().iterator();
+       		while(itr.hasNext()) {
+       			TGEntity entity = itr.next();
+       			if (((AbstractEntity) entity).getEntityId() == id) {
+       				if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
+       					gLogger.log(TGLogger.TGLevel.Debug, "Replace update entity %016X to version  : %d", id, version);
+       				}
+       				((AbstractEntity) entity).setVersion((int)version);
+       			    break;
+       			}
+       		}
         }
     }
 
@@ -796,6 +907,36 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     	if (val != null) {
     		short tdepth = Short.parseShort(val);
     		ger.setEdgeFetchSize(tdepth);
+    	}
+    }
+
+    private void configureQueryRequest(QueryRequest qryr, TGProperties<String, String> properties) {
+    	if (qryr == null || properties == null) {
+    		return;
+    	}
+    	
+    	String val = properties.get("fetchsize");
+    	if (val != null) {
+    		int fetchSize = Integer.parseInt(val);
+    		qryr.setFetchSize(fetchSize);
+    	}
+
+    	val = properties.get("batchsize");
+    	if (val != null) {
+    		short batchSize = Short.parseShort(val);
+    		qryr.setBatchSize(batchSize);
+    	}
+
+    	val = properties.get("traversaldepth");
+    	if (val != null) {
+    		short tdepth = Short.parseShort(val);
+    		qryr.setTraversalDepth(tdepth);
+    	}
+
+    	val = properties.get("edgelimit");
+    	if (val != null) {
+    		short tdepth = Short.parseShort(val);
+    		qryr.setEdgeFetchSize(tdepth);
     	}
     }
 }

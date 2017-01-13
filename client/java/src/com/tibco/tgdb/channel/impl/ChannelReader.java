@@ -16,7 +16,7 @@
  * Created on: 1/6/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ChannelReader.java 834 2016-05-15 02:16:24Z vchung $
+ * SVN Id: $Id: ChannelReader.java 955 2016-09-02 16:32:55Z vchung $
  */
 
 
@@ -64,7 +64,7 @@ public class ChannelReader implements Runnable {
 
     @Override
     public void run() {
-        Thread.currentThread().setName(String.format("LinkReader@%s-%d", channel.clientId, readerNum));
+        Thread.currentThread().setName(String.format("TGLinkReader@%s-%d", channel.clientId, readerNum));
 
         while(isRunning.get()) {
             try {

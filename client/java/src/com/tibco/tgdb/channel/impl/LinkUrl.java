@@ -29,7 +29,7 @@ import java.util.*;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: LinkUrl.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: LinkUrl.java 1072 2016-10-20 19:50:54Z ssubrama $
  */
 public class LinkUrl implements TGChannelUrl{
 
@@ -37,14 +37,16 @@ public class LinkUrl implements TGChannelUrl{
 
     //From http://www.networksorcery.com/enp/protocol/ip/ports08000.htm - looks like no well-established software uses this port.
     private final static String gDefaultHost = "localhost";
-    private final static int    gDefaultPort = 8700;
+    private final static int    gDefaultPort = 8222;
     private final static LinkUrl gDefaultUrl = new LinkUrl(Protocol.TCP, gDefaultHost, gDefaultPort);
 
     String user;
     Protocol protocol;
     String              url         = null;
     String              host        = null;
+    String              portStr     = null;
     int                 port        = 0;
+    boolean             isIPv6      = false;
     Map<String,String>  props       = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
     List<TGChannelUrl>  ftUrls      = null;
 
@@ -156,49 +158,65 @@ public class LinkUrl implements TGChannelUrl{
 
     /**
      * Parse the Host and Port and return the remaing token.
-     * @param url
+     * @param hostAndPort
      * @return
      * @throws TGException
      */
-    private String parseHostAndPort(String url) throws TGException {
+    private String parseHostAndPort(String hostAndPort) throws TGException {
 
-        String portStr = null;
-        if (url.length() == 0) {
+
+        if (hostAndPort.length() == 0) {
             this.host = "localhost";
             this.port = 8700;  //default values
             return null;
         }
 
         int offset = 0;
-        int posIPv6 = url.indexOf('[');
+        int posIPv6 = hostAndPort.indexOf('[');
         if (posIPv6 != -1) {
-            int endIPv6 = url.indexOf(']');
+            int endIPv6 = hostAndPort.indexOf(']');
             if (endIPv6 > posIPv6 + 2) {
                 offset = endIPv6 + 1;
+                this.isIPv6 = true;
             }
             else
                 throw new TGException("Invalid or missing host name");
         }
 
-        int pos = url.indexOf(':', offset);
-        int lpos = url.indexOf("/");
+        int pos = 0;
+        if (this.isIPv6) {
+            pos = hostAndPort.lastIndexOf(':');
+        }
+        else {
+            pos = hostAndPort.indexOf(':', offset);
+        }
+        int lpos = hostAndPort.indexOf("/");
+
+
         if (pos < 0) {
             boolean noPort = true;
 
-            if (url.indexOf('.') < 0) {
+            if (hostAndPort.indexOf('.') < 0) {
                 host = gDefaultHost;
-                portStr = url;
+                portStr = hostAndPort;
                 noPort = false;
             }
 
             if (noPort) {
-                host = url;
+                host = hostAndPort;
                 portStr = Integer.toString(gDefaultPort);
             }
         }
         else {
-            host = url.substring(0,pos);
-            portStr = url.substring(pos+1,(lpos != -1 ? lpos : url.length()));
+            int startpos = 0;
+            int endpos = lpos != -1 ? lpos : hostAndPort.length();
+            if (this.isIPv6) {
+                startpos = 1;
+                endpos = offset - 1;
+            }
+
+            host = hostAndPort.substring(startpos,pos);
+            portStr = hostAndPort.substring(pos+1, endpos);
         }
 
         if (host.length() == 0)
@@ -210,7 +228,7 @@ public class LinkUrl implements TGChannelUrl{
 
         this.port = Integer.parseInt(portStr);
 
-        return lpos == -1 ? "" : url.substring(lpos+1);
+        return lpos == -1 ? "" : hostAndPort.substring(lpos+1);
 
     }
 

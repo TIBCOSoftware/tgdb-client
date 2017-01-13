@@ -46,6 +46,7 @@ public class ResultSetImpl implements TGResultSet {
         this.resultId = resultId;
         this.resultList = resultList;
         this.isOpen = true;
+        this.currPos = -1;
     }
 
     public boolean isOpen() {
@@ -65,7 +66,9 @@ public class ResultSetImpl implements TGResultSet {
 		if (isOpen == false) {
 			return false;
 		}
-		if (currPos < (resultList.size() - 1)) {
+		if (resultList.size() == 0) {
+            return false;
+        } else if (currPos < (resultList.size() - 1)) {
 			return true;
 		}
 		return false;
@@ -93,8 +96,7 @@ public class ResultSetImpl implements TGResultSet {
 		if (isOpen == false) {
 			return 0;
 		}
-		resultList.size();
-		return 0;
+		return resultList.size();
 	}
 
 	@Override
@@ -102,11 +104,10 @@ public class ResultSetImpl implements TGResultSet {
 		if (isOpen == false) {
 			return null;
 		}
-		currPos = 0;
 		if (resultList.size() == 0) {
 			return null;
 		}
-		return resultList.get(currPos);
+		return resultList.get(0);
 	}
 
 	@Override
@@ -114,12 +115,10 @@ public class ResultSetImpl implements TGResultSet {
 		if (isOpen == false) {
 			return null;
 		}
-		currPos = resultList.size() - 1;
 		if (resultList.size() == 0) {
-			currPos = 0;
 			return null;
 		}
-		return resultList.get(currPos);
+		return resultList.get(resultList.size() - 1);
 	}
 
 	@Override
@@ -139,9 +138,11 @@ public class ResultSetImpl implements TGResultSet {
 		if (isOpen == false) {
 			return null;
 		}
-		if (currPos < (resultList.size() - 1)) {
+        if (resultList.size() == 0) {
+            return null;
+        } else if (currPos < (resultList.size() - 1)) {
 			currPos++;
-			return resultList.get(currPos);
+            return resultList.get(currPos);
 		}
 		return null;
 	}

@@ -16,13 +16,16 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: QueryResponse.java 687 2016-04-08 01:02:44Z cltran $
+ * SVN Id: $Id: QueryResponse.java 1238 2016-11-17 21:20:33Z vchung $
  */
 
 
 package com.tibco.tgdb.pdu.impl;
 
 import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.log.TGLogManager;
+import com.tibco.tgdb.log.TGLogger;
+import com.tibco.tgdb.log.TGLogger.TGLevel;
 import com.tibco.tgdb.pdu.TGInputStream;
 import com.tibco.tgdb.pdu.TGOutputStream;
 import com.tibco.tgdb.pdu.VerbId;
@@ -30,7 +33,12 @@ import com.tibco.tgdb.pdu.VerbId;
 import java.io.IOException;
 
 public class QueryResponse extends AbstractProtocolMessage {
+    static TGLogger gLogger        = TGLogManager.getInstance().getLogger();
 
+    private TGInputStream entityStream;
+    private boolean hasResult = false;
+    private int totalCount = 0;
+    private int resultCount = 0;
 	public int result;
 	public long queryHashId;
     @Override
@@ -40,10 +48,23 @@ public class QueryResponse extends AbstractProtocolMessage {
 
     @Override
     protected void readPayload(TGInputStream is) throws TGException, IOException {
+    	gLogger.log(TGLevel.Debug, "Entering query response readPayload");
+    	if (is.available() == 0) {
+    		gLogger.log(TGLevel.Debug, "Query response has no data");
+    		return;
+    	}
+    	entityStream = is;
         is.readInt(); // buf length
         is.readInt(); // checksum
         this.result = is.readInt(); // query result
         this.queryHashId = is.readLong();  // query hash Id
+
+    	resultCount = is.readInt();
+    	totalCount = is.readInt();
+    	if (resultCount > 0) {
+    		hasResult = true;
+    	}
+    	gLogger.log(TGLevel.Debug, "Query has %d result entities and %d total entities", resultCount, totalCount);
     }
 
     @Override
@@ -62,5 +83,21 @@ public class QueryResponse extends AbstractProtocolMessage {
     
     public long getQueryHashId() {
         return this.queryHashId;
+    }
+
+    public TGInputStream getEntityStream() {
+    	return entityStream;
+    }
+
+    public boolean hasResult() {
+    	return hasResult;
+    }
+
+    public int getTotalCount() {
+        return totalCount;
+    }
+
+    public int getResultCount() {
+        return resultCount;
     }
 }

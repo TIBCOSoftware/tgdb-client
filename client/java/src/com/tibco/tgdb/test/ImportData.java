@@ -150,7 +150,9 @@ public class ImportData {
             while ((line = br.readLine()) != null) {
                 // process the line.
                 String[] arr = line.split(";");
-                
+            	if (!arr[0].matches("^\\d+$")) {
+            		continue;
+            	}
                 TGNode hESCNode = gof.createNode(hESCNodetype);
                 hESCNode.setAttribute("symbol", arr[1]);
                 hESCNode.setAttribute("name", arr[4]);
@@ -224,8 +226,14 @@ public class ImportData {
                 String[] arr = line.split("\t");
                 fromNode = mESCmap.get(arr[0]);
                 toNode = mESCmap.get(arr[1]);
+                double infscore = Double.valueOf(arr[2]);
                 if (fromNode != null && toNode != null) {
                 	TGEdge edge = gof.createEdge(fromNode, toNode, TGEdge.DirectionType.BiDirectional);
+                    if (treatDoubleAsString == true) {
+	                    edge.setAttribute("infscore", String.valueOf(infscore));
+                    } else {
+	                    edge.setAttribute("infscore", infscore);
+                    }
                 	conn.insertEntity(edge);
                 	count++;
                 	if (count%edgeCommitCount == 0) {

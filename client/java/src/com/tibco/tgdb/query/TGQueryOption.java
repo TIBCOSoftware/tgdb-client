@@ -20,11 +20,12 @@
 package com.tibco.tgdb.query;
 
 import com.tibco.tgdb.query.impl.QueryOptionImpl;
+import com.tibco.tgdb.utils.TGProperties;
 
 /**
  * A Set of QueryOption that allows the user manipulate the results of the query.
  */
-public abstract class TGQueryOption {
+public interface TGQueryOption extends TGProperties<String,String> {
 
     public static TGQueryOption DEFAULT_QUERY_OPTION = new QueryOptionImpl(false);
 
@@ -35,6 +36,15 @@ public abstract class TGQueryOption {
     public static TGQueryOption createQueryOption() {
         return new QueryOptionImpl(true);
     }
+
+    public abstract void setPrefetchSize(int size);
+    public abstract int getPrefetchSize();
+
+    public abstract void setTraversalDepth(int depth);
+    public abstract int getTraversalDepth();
+
+    public abstract void setEdgeLimit(int depth);
+    public abstract int getEdgeLimit();
 
 
 

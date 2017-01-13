@@ -16,7 +16,7 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: QueryRequest.java 687 2016-04-08 01:02:44Z cltran $
+ * SVN Id: $Id: QueryRequest.java 1238 2016-11-17 21:20:33Z vchung $
  */
 
 
@@ -39,6 +39,10 @@ public class QueryRequest extends AbstractProtocolMessage {
     private long queryHashId;
     private int command;
     private TGQuery queryObject;
+	private int fetchSize = 1000;
+	private short batchSize = 50;
+	private short traversalDepth = 3;
+	private short edgeFetchSize = 0; // zero means no limitation
     
     static TGLogger gLogger = TGLogManager.getInstance().getLogger();
 
@@ -50,13 +54,65 @@ public class QueryRequest extends AbstractProtocolMessage {
     	super(authToken, sessionId);
     }
 
+    public void setBatchSize(short size) {
+    	if (size < 10 || size > 32767) {
+    		batchSize = 50;
+    	} else {
+    		batchSize = size;
+    	}
+    }
+    
+    public short getBatchSize() {
+    	return batchSize;
+    }
+    
+    public void setFetchSize(int size) {
+    	if (size < 0) {
+    		fetchSize = 1000;
+    	} else {
+    		fetchSize = size;
+    	}
+    }
+    
+    public int getFetchSize() {
+    	return fetchSize;
+    }
+    
+    public void setEdgeFetchSize(short size) {
+    	if (size < 0 || size > 32767) {
+    		edgeFetchSize = 1000;
+    	} else {
+    		edgeFetchSize = size;
+    	}
+    }
+    
+    public int getEdgeFetchSize() {
+    	return edgeFetchSize;
+    }
+    
+    public void setTraversalDepth(short depth) {
+    	if (depth < 1 || depth > 1000) {
+    		this.traversalDepth = 3;
+    	} else {
+    		this.traversalDepth = depth;
+    	}
+    }
+    
+    public short getTraversalDepth() {
+    	return traversalDepth;
+    }
+
     @Override
     protected void writePayload(TGOutputStream os) throws TGException, IOException {
         int startPos = os.getPosition();
-        os.writeInt(1);
-        os.writeInt(1);
+        os.writeInt(1); // datalength
+        os.writeInt(1); //checksum
         gLogger.log(TGLevel.Debug, "Entering query request writePayload at output buffer position at : %d", startPos);
         os.writeInt(command);
+        os.writeInt(fetchSize);
+        os.writeShort(batchSize);
+        os.writeShort(traversalDepth);
+        os.writeShort(edgeFetchSize);
         // CREATE, EXECUTE.
         if (command == 1 || command == 2) {
             os.writeUTF(this.queryExpr);

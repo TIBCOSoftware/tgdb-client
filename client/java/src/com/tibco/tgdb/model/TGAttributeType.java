@@ -19,7 +19,7 @@ import java.math.BigDecimal;
  * File name :TGAttributeType
  * Created by: suresh
 
- * SVN Id: $Id: TGAttributeType.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: TGAttributeType.java 1102 2016-10-24 04:36:08Z ssubrama $
  */
 
 /**
@@ -33,15 +33,15 @@ public enum TGAttributeType {
     Byte(2, "Byte", java.lang.Byte.class),     //8bit octet
     Char(3, "Char", java.lang.Character.class),    //Fixed 8-Bit octet of N length
     Short(4, "Short", java.lang.Short.class),    //16bit
-    Int(5, "Integer", java.lang.Integer.class),      //32bit
+    Int(5, "Integer", java.lang.Integer.class),      //32bit signed integer
     Long(6,"Long", java.lang.Long.class),     //64bit
     Float(7, "Float", java.lang.Float.class),    //32bit float
     Double(8, "Double", java.lang.Double.class),   //64bit float
     Number(9, "Number", BigDecimal.class),   //Number with precision
     String(10, "String", java.lang.String.class),   //Varying length String < 64K
-    Date(11, "Date", java.util.Date.class),     //Only the Date part of the DateTime
-    DateTime(12, "DateTime", java.util.Date.class), //Datetime
-    TimeStamp(13, "Timestamp", long.class), //64bit Timestamp - engine time - upto nanosecond precision, if the OS provides //SS:TODO
+    Date(11, "Date", java.util.Calendar.class),     //Only the Date part from the Calendar class is considered
+    Time(12, "Time", java.util.Calendar.class), //Time hh:mm:ss.nnn with TIMEZONE
+    TimeStamp(13, "Timestamp", java.util.Calendar.class), //Compatible with the SQL Timestamp field.
     Clob(14, "Clob", char[].class),     //Character -UTF-8 encoded string or large length > 64K
     Blob(15, "Blob", byte[].class)     //Binary object - a stream of octets (unsigned 8bit char) with length. A variation of such Blobs could
     ;
@@ -69,7 +69,8 @@ public enum TGAttributeType {
     }
 
     public static TGAttributeType fromClass(Class klazz) {
-    	// The null check is used to skip the first 'invalid' type 
+    	// The null check is used to skip the first 'invalid' type
+        if (klazz.equals(java.util.Calendar.class)) return TimeStamp;  //We return the bigger container field.
         for (TGAttributeType attrType : TGAttributeType.values()) {
             if (attrType.klazz != null && attrType.klazz.equals(klazz)) return attrType;
         }

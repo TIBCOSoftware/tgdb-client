@@ -16,7 +16,7 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: CommitTransactionRequest.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: CommitTransactionRequest.java 955 2016-09-02 16:32:55Z vchung $
  */
 
 
@@ -99,7 +99,8 @@ public class CommitTransactionRequest extends AbstractProtocolMessage {
     	if (!removedList.isEmpty()) {
     		os.writeShort(0x1013); // for deleted entities
     		os.writeInt(removedList.size());
-            removedList.entrySet().stream().forEach(e -> {try{os.writeLong(e.getKey());} catch(IOException iex){}});
+//            removedList.entrySet().stream().forEach(e -> {try{os.writeLong(e.getKey());} catch(IOException iex){}});
+            removedList.entrySet().stream().forEach(e -> {try{e.getValue().writeExternal(os);} catch(TGException ex) {} catch(IOException iex){}});
     	}
     	int currPos = os.getPosition();
     	int length = currPos - startPos;

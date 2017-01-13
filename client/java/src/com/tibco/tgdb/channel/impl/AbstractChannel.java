@@ -18,7 +18,7 @@ package com.tibco.tgdb.channel.impl;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AbstractChannel.java 834 2016-05-15 02:16:24Z vchung $
+ * SVN Id: $Id: AbstractChannel.java 859 2016-06-14 00:53:54Z cltran $
  */
 
 import com.tibco.tgdb.TGProtocolVersion;
@@ -29,6 +29,9 @@ import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.pdu.TGMessage;
+import com.tibco.tgdb.pdu.TGMessageFactory;
+import com.tibco.tgdb.pdu.VerbId;
+import com.tibco.tgdb.pdu.impl.DisconnectChannelRequest;
 import com.tibco.tgdb.utils.ConfigName;
 import com.tibco.tgdb.utils.TGConstants;
 import com.tibco.tgdb.utils.TGProperties;
@@ -192,6 +195,12 @@ public abstract class AbstractChannel implements TGChannel {
             if ((bForcefully) || (numConnections.get() == 0))
             {
                 gLogger.log(TGLogger.TGLevel.Debug, "Stopping channel");
+                
+                // Send the disconnect request.
+                DisconnectChannelRequest request = (DisconnectChannelRequest) TGMessageFactory.getInstance().createMessage(VerbId.DisconnectChannelRequest);
+                // sendRequest will not receive a channel response since the channel will be disconnected.
+                this.send(request);
+
                 state = LinkState.Closing;
                 disablePing();
                 reader.stop();
@@ -200,6 +209,9 @@ public abstract class AbstractChannel implements TGChannel {
                 MultiChannelPinger.getInstance().removeChannel(this);
                 MultiChannelPinger.getInstance().stop();
             }
+        } catch (Exception ioe) {
+            gLogger.logException("DisconnectChannelRequest send failed", ioe);
+            closeSocket();
         }
 
         finally {
