@@ -13,11 +13,15 @@
  * limitations under the License.
  */
 
-var util                    = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId                  = require('./VerbId').VerbId;
+var util         = require('util'),
+    VerbId       = require('./VerbId').VerbId,
+    Request      = require('./Request').Request,
+    TGException  = require('../../exception/TGException').TGException,
+    TGLogManager = require('../../log/TGLogManager'),
+    TGLogLevel   = require('../../log/TGLogger').TGLogLevel;
 
-//Class Definition
+var logger = TGLogManager.getLogger();
+
 function AuthenticateRequest() {
 	AuthenticateRequest.super_.call(this);
     this._clientId  = null;
@@ -26,7 +30,7 @@ function AuthenticateRequest() {
     this._password  = null;
 }
 
-util.inherits(AuthenticateRequest, AbstractProtocolMessage);
+util.inherits(AuthenticateRequest, Request);
 
 AuthenticateRequest.prototype.getVerbId = function() {
     return VerbId.AUTHENTICATE_REQUEST;
@@ -40,21 +44,22 @@ AuthenticateRequest.prototype.isUpdateable = function() {
 };
 
 AuthenticateRequest.prototype.writePayload = function(outputStream) {
-	console.log('AuthenticateRequest.prototype.writePayload  in');
-    if (this._clientId == null || this._clientId.length == 0) {
+	logger.logDebugWire(
+			'AuthenticateRequest.prototype.writePayload  in');
+    if (this._clientId === null || this._clientId.length === 0) {
         outputStream.writeBoolean(true);
     } else {
         outputStream.writeBoolean(false);
         outputStream.writeUTF(this._clientId);
     }
-    if (this._inboxAddr == null || this._inboxAddr.length == 0) {
+    if (this._inboxAddr === null || this._inboxAddr.length === 0) {
         outputStream.writeBoolean(true);
     }
     else {
         outputStream.writeBoolean(false);
         outputStream.writeUTF(this._inboxAddr);
     }
-    if (this._username == null || this._username.length == 0) {
+    if (this._username === null || this._username.length === 0) {
         outputStream.writeBoolean(true);
     }
     else {
@@ -62,7 +67,8 @@ AuthenticateRequest.prototype.writePayload = function(outputStream) {
         outputStream.writeUTF(this._username);
     }
     outputStream.writeBytes(this._password);
-	console.log('AuthenticateRequest.prototype.writePayload  out');
+    logger.logDebugWire(
+    		'AuthenticateRequest.prototype.writePayload  out');
 };
 
 AuthenticateRequest.prototype.readPayload = function(inputstream) {

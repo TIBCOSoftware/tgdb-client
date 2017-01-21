@@ -13,123 +13,208 @@
  * limitations under the License.
  */
 
-var HexUtils                  = require('../../utils/HexUtils').HexUtils,
-    net                       = require('net'),
+var net                       = require('net'),
     http                      = require('http'),
-    VerbId                    = require('../../pdu/impl/VerbId').VerbId,
-    StringUtils               = require('../../utils/StringUtils').StringUtils,
     inherits                  = require('util').inherits,
-    AbstractChannel           = require('../AbstractChannel').AbstractChannel,
+    TCPChannelURL             = require('./TCPChannelURL').TCPChannelURL,
     TCPConnectionEventEmitter = require('./TCPConnectionEventEmitter').TCPConnectionEventEmitter,
+    TGChannel                 = require('../TGChannel').TGChannel,
+    LINK_STATE                = require('../LinkState').LINK_STATE,
+    VerbId                    = require('../../pdu/impl/VerbId').VerbId,
     HandshakeRequest          = require('../../pdu/impl/HandshakeRequest').HandshakeRequest,
     HandshakeResponse         = require('../../pdu/impl/HandshakeResponse').HandshakeResponse,
     AuthenticateResponse      = require('../../pdu/impl/AuthenticateResponse').AuthenticateResponse,
-    CommitTransactionResponse = require('../../pdu/impl/CommitTransactionResponse').CommitTransactionResponse,
-    QueryResponse             = require('../../pdu/impl/QueryResponse').QueryResponse,
     RequestType               = require('../../pdu/impl/RequestType').RequestType,
     ProtocolMessageFactory    = require('../../pdu/impl/ProtocolMessageFactory').ProtocolMessageFactory,
-    CONFIG_NAMES              = require('../../utils/ConfigName').CONFIG_NAMES,
-    LINK_STATE                = require('../LinkState').LINK_STATE,
     ACCEPT_CHALLENGE          = require('../../pdu/impl/HandshakeResponse').ACCEPT_CHALLENGE,
-    PROCEED_WITH_AUTH         = require('../../pdu/impl/HandshakeResponse').PROCEED_WITH_AUTH;
+    PROCEED_WITH_AUTH         = require('../../pdu/impl/HandshakeResponse').PROCEED_WITH_AUTH,
+    TGException               = require('../../exception/TGException').TGException,
+    CONFIG_NAMES              = require('../../utils/ConfigName').CONFIG_NAMES,
+    HexUtils                  = require('../../utils/HexUtils').HexUtils,
+    StringUtils               = require('../../utils/StringUtils').StringUtils,
+    TGLogManager              = require('../../log/TGLogManager'),
+    TGLogLevel                = require('../../log/TGLogger').TGLogLevel;
 
+var logger = TGLogManager.getLogger();
 
-
-//Class definition
 /**
  *
- * @param serverURL - #TGChannelURL
+ * @param tgChannelURL - #TGChannelURL
  * @param properties - Dictionary for configuration
  * @constructor
  */
-function TCPChannel(serverURL, properties) {
-	TCPChannel.super_.call(this, serverURL, properties);
+function TCPChannel(tgChannelURL, properties) {
+	TCPChannel.super_.call(this, tgChannelURL, properties);
+	
+	this._channelURL     = new TCPChannelURL(tgChannelURL);
 	this._clientSocket   = null;
 	this._inboxAddr      = null;
-	this._caller         = null;
 	this._isConnected    = false;
 	this._currentRequest = null;
+	this._buffer         = null;
+	this._contentLength  = 0;
+	this._currentPosition = 0;
+	
+    this.getHost = function() {
+    	return this._channelURL.getHost();
+    };
+
+    this.getPort = function() {
+    	return this._channelURL.getPort();
+    };
 }
 
-inherits(TCPChannel, AbstractChannel);
+inherits(TCPChannel, TGChannel);
 
 /**
  * Connect using TCP.
  * This operation is asynchronous, upon completion
  * will invoke the callback specified in the function.
  */
-TCPChannel.prototype.makeConnection = function(callback) {
+TCPChannel.prototype.makeConnection = function() {
 	
-	console.log("[TCPChannel::makeConnection] connect to ..... " + this.getHost() + ":" + this.getPort());
+	logger.logDebug( 
+		'[TCPChannel.prototype.makeConnection] connect to ..... %s:%d',
+		this.getHost(), this.getPort());
+	this._accumulatedLength = 0;
 	
     var options = {
         host: this.getHost(),
         port: this.getPort()
     };
-    var eventEmitter = new TCPConnectionEventEmitter(this);
-    var channel = this;
     
+    var eventEmitter = new TCPConnectionEventEmitter(this);
+    eventEmitter.on('connected', initiateHandshake);
+    var channel = this;
+
     this._clientSocket = net.connect(options, function() {
+    	channel.updateLinkState(LINK_STATE.CONNECTED);
+    	channel.incrementNumConnectionAndGet();
+    	logger.logDebug( 
+    		'[TCPChannel.prototype.makeConnection] number of connections : %d', 
+    		channel.numConnections());
         eventEmitter.emit('connected');
     });
 
-    eventEmitter.on('connected', initiateHandshake);
-
     this._inboxAddr = this._clientSocket.localAddress;
     if(!this._inboxAddr) {
-    	this._inboxAddr = '/192.168.1.18';
+    	this._inboxAddr = ''; // read from environment file?
     }
-
+   
     this._clientSocket.on('data', function(data) {
-        //Pass socket reference
-        onData(channel, data, callback);
+    	try {
+        	if(!channel._buffer) {
+        		channel._contentLength = data.readInt32BE();
+        		channel._buffer = new Buffer(channel._contentLength);
+        	}
+        	
+        	data.copy(channel._buffer, channel._currentPosition, 0, data.length);
+        	channel._currentPosition += data.length;
+    		
+        	if(channel._currentPosition<channel._contentLength) {
+        		// keep accumulate data
+        		return;
+        	}
+        	
+            //Pass socket reference
+            onData(channel, channel._buffer);
+            
+            channel._buffer = null;
+            channel._contentLength = 0;
+            channel._currentPosition = 0;
+    	} catch (exception) {
+    		channel.deliverException(exception);
+    	}
     });
-};
-
-/**
- * Forcefully reconnect to FT urls.
- */
-TCPChannel.prototype.reconnect = function() {
-};
-
-/**
- * Disconnect from the graph DB TCP server.
- */
-TCPChannel.prototype.disconnect = function() {
-    this._clientSocket.end();
+   
+    this._clientSocket.on('end', function(data) {
+    	logger.logDebug( 
+    		'[TCPChannel.prototype.makeConnection] Socket end called, will close shortly.');
+    });
+    
+    this._clientSocket.on('close', function(data) {
+        channel.updateLinkState(LINK_STATE.CLOSED);
+    	logger.logDebug( '[TCPChannel.prototype.makeConnection] Socket closed.');
+    });
+    
+    this._clientSocket.on('error', function(error) {
+    	if(!(!channel._clientSocket)) {
+            channel.updateLinkState(LINK_STATE.CLOSED);
+            channel._clientSocket.end();
+    	}
+        channel.deliverException(new TGException(error.name + ' : ' + error.message));        	
+    });
 };
 
 /**
  * Start channel for send and receive messages.
  */
 TCPChannel.prototype.start = function() {
+    if (!this.isConnected) {
+        throw new TGException("Channel not connected");
+    }
 };
 
 /**
  * Stop TCP channel.
  */
 TCPChannel.prototype.stop = function() {
+	this.stop(false);
+};
+
+TCPChannel.prototype.stop = function(bForcefully) {
+	logger.logDebug( 
+		'[TCPChannel.prototype.stop] number of connections : %s', this.numConnections());
+
+    try {
+        if (this.isClosed() || this.isClosing()) {
+        	logger.logDebug( 
+        			'[TCPChannel.prototype.stop] Stop a channel while it\'s closing or closed.');
+            return;
+        } else if (!this.isConnected()) {
+        	logger.logDebug( 
+			'[TCPChannel.prototype.stop] Stop a channel while it\'s not connected.');
+            return;
+        }
+
+        if ((bForcefully) || (this.numConnections() === 0))
+        {
+            // Send the disconnect request.
+            var request = ProtocolMessageFactory.createMessageFromVerbId(VerbId.DISCONNECT_CHANNEL_REQUEST);
+            // sendRequest will not receive a channel response since the channel will be disconnected.
+            this.send(request);
+
+            this.updateLinkState(LINK_STATE.CLOSING);
+            this._clientSocket.end();
+        }
+    } catch (error) {
+    	logger.logInfo( 
+    		'[TCPChannel.prototype.stop] Error when stop channel, message : %s',
+    		error.message);
+    	this._clientSocket.destroy();
+    } finally {
+        this._clientSocket = null;
+        this.updateLinkState(LINK_STATE.CLOSED);
+    }
 };
 
 /**
 * Send message to Graph DB server.
 */
-TCPChannel.prototype.send = function(request, caller) {
-	if(null!==this._caller) {
-		throw new Error('[TCPChannel.send] Channel is busy for previous request!');
-	}
-	this._caller = caller;
-	this._request = request;
-	
+TCPChannel.prototype.send = function(request) {
+	this.putRequest(request.getRequestId().getHexString(), request);
 	send (this._clientSocket, request);
 };
 
+/**
+ *  Private methods
+ */
+
 function send (socket, request) {
 	var buffer = request.toBytes();
-	console.log("----------------- outgoing message --------------------");
-	console.log("name : " + request.getVerbId().name);
-	console.log("Send buf : Formatted Byte Array:");
-	console.log(HexUtils.formatHex(buffer));
+	logger.logDebugWire( "----------------- outgoing message --------------------");
+	logger.logDebugWire( "name : %s", request.getVerbId().name);
+	logger.logDebugWire( HexUtils.formatHex(buffer));
 	socket.write(buffer);
 }
 	
@@ -148,12 +233,12 @@ function initiateHandshake() {
  * @param data
  * @param callback - Mandatory function
  */
-function onData(channel, data, callback) {
+function onData(channel, data) {
     //Read wire message, all about responses from server
     var response = readWireMsg(data);
-
+    logger.logDebugWire( '[TCPChannel::onData] %s', response.getVerbId().name);
     // for further request
-    channel.setRequestId(response.getRequestId()); 
+    //channel.setRequestId(response.getRequestId()); 
 
     if (response instanceof AuthenticateResponse) {
         var responseStatus = response.getResponseStatus();
@@ -164,34 +249,20 @@ function onData(channel, data, callback) {
         //Set state appropriately
         channel._linkState = LINK_STATE.CONNECTED;
         //Call back the function
-        callback(responseStatus);
+        channel.deliverConnectionEvent(responseStatus);
     } else if (response instanceof HandshakeResponse) {
-        if (response.getResponseStatus() == ACCEPT_CHALLENGE) {
+        if (response.getResponseStatus() === ACCEPT_CHALLENGE) {
             //Perform handshake part 2.
             completeHandshake(channel, response);
-        } else if (response.getResponseStatus() == PROCEED_WITH_AUTH) {
+        } else if (response.getResponseStatus() === PROCEED_WITH_AUTH) {
             //Perform authentication
             performAuthentication(channel);
         } else {
-            throw new Error('Handshake failed with DB Server');
-        }
-    } else if (response instanceof CommitTransactionResponse) {
-        console.log('onData for CommitTransactionResponse ......... set response : ' + response.getRequestId() + ', ' + response);
-        if(null!==this._caller) {
-        	var caller = channel._caller;
-        	channel._caller = null;
-        	caller.handleCommitResponse(response);
-        }
-    } else if (response instanceof QueryResponse) {
-        console.log('onData for QueryResponse ......... set response : ' + response.getRequestId() + ', ' + response);
-        if(null!==this._caller) {
-        	var caller = channel._caller;
-        	channel._caller = null;
-        	var request = channel._request;
-        	caller.handleQueryResponse(request, response);
+            throw new TGException('Handshake failed with DB Server');
         }
     } else {
-    	throw new Error('Unknow response from server');
+    	response.setRequest(channel.removeRequest(response.getRequestId().getHexString()));
+    	channel.deliverResponse(response);
     }
 }
 
@@ -202,7 +273,7 @@ function onData(channel, data, callback) {
 function completeHandshake(channel, response) {
     var challenge = response.getChallenge();
     var handshakeRequest = ProtocolMessageFactory.createMessageFromVerbId(VerbId.HANDSHAKE_REQUEST);
-    handshakeRequest.updateSequenceAndTimestamp(-1);
+    handshakeRequest.updateSequenceAndTimestamp(new Date());
     handshakeRequest.setRequestType(RequestType.Type.CHALLENGE_ACCEPTED);
     //TODO Handle SSL later
     handshakeRequest.setSSLMode(false);
@@ -225,16 +296,13 @@ function performAuthentication(channel) {
 
 function readWireMsg(inputData) {
     var message = ProtocolMessageFactory.createMessage(inputData, 0, inputData.length);
-//  console.log("----------------- incoming message --------------------");
-    console.log("name : " + message.getVerbId().name);
-    console.log("ReadMsg : Formatted Byte Array:");
-    console.log(HexUtils.formatHex(inputData));
-    if (message.getVerbId().value == VerbId.EXCEPTION_MESSAGE.value) {
-        throw new Error('Exception during handshake');
+    logger.logDebugWire("----------------- incoming message --------------------");
+    logger.logDebugWire("name : " + message.getVerbId().name);
+    logger.logDebugWire(HexUtils.formatHex(inputData));
+    if (message.getVerbId().value === VerbId.EXCEPTION_MESSAGE.value) {
+        throw new TGException('Exception during handshake');
     }
     return message;
 }
 
 exports.TCPChannel = TCPChannel;
-
-

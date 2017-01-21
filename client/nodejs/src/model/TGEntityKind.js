@@ -13,31 +13,27 @@
  * limitations under the License.
  */
 
-var util                    = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId                  = require('./VerbId').VerbId;
-
-//Class Definition
-function PingMessage() {
-    AbstractProtocolMessage.call();
-}
-
-util.inherits(PingMessage, AbstractProtocolMessage);
-
-PingMessage.prototype.getVerbId = function() {
-    return VerbId.PING_MESSAGE;
+exports.TGEntityKind = {
+	INVALIDKIND : {value : 0, name : 'Invalid'},
+	ENTITY      : {value : 1, name : 'Entity'},
+	NODE        : {value : 2, name : 'Node'},
+	EDGE        : {value : 3, name : 'Edge'},
+	GRAPH       : {value : 4, name : 'Graph'},
+	HYPEREDGE   : {value : 5, name : 'HyperEdge'},
+	isNode      : function (kind) {
+		return kind.value === 2;
+	}, 
+	isEdge      : function (kind) {
+		return kind.value === 3;
+	},
+	fromValue   : function (kindValue) {
+		switch(kindValue) {
+			case 0 : return this.INVALIDKIND;
+			case 1 : return this.ENTITY;
+			case 2 : return this.NODE;
+			case 3 : return this.EDGE;
+			case 4 : return this.GRAPH;
+			case 5 : return this.HYPEREDGE;
+		}
+	}
 };
-
-PingMessage.prototype.writePayload = function(dynamicBuffer) {
-
-};
-
-PingMessage.prototype.readPayload = function() {
-
-};
-
-PingMessage.prototype.isUpdateable = function() {
-    return false;
-};
-
-exports.PingMessage = PingMessage;

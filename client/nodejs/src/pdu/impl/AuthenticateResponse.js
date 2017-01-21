@@ -13,19 +13,21 @@
  * limitations under the License.
  */
 
-var util                    = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId                  = require('./VerbId').VerbId;
+var util         = require('util'),
+    VerbId       = require('./VerbId').VerbId,
+    Response     = require('./Response').Response,
+    TGException  = require('../../exception/TGException').TGException,
+    TGLogManager = require('../../log/TGLogManager'),
+    TGLogLevel   = require('../../log/TGLogger').TGLogLevel;
 
-//Class Definition
+var logger = TGLogManager.getLogger();
+
 function AuthenticateResponse() {
 	AuthenticateResponse.super_.call(this);
     this._responseStatus   = false;
-    this._authToken        = -1;
-    this._sessionId        = -1;
 }
 
-util.inherits(AuthenticateResponse, AbstractProtocolMessage);
+util.inherits(AuthenticateResponse, Response);
 
 AuthenticateResponse.prototype.getVerbId = function() {
     return VerbId.AUTHENTICATE_RESPONSE;
@@ -39,17 +41,23 @@ AuthenticateResponse.prototype.isUpdateable = function() {
 };
 
 AuthenticateResponse.prototype.readPayload = function(inputStream) {
+	logger.logDebugWire(
+			'AuthenticateResponse.prototype.readPayload ... in');
     this._responseStatus   = inputStream.readBoolean();
-    this._authToken        = inputStream.readLong();
-    this._sessionId        = inputStream.readLong();
+    this.setAuthToken(inputStream.readTGLong());
+    this.setSessionId(inputStream.readTGLong());
+    logger.logDebugWire(
+    		'AuthenticateResponse.prototype.readPayload ... out');
 };
 
 AuthenticateResponse.prototype.writePayload = function(outputStream) {
-//	console.log('AuthenticateResponse.prototype.writePayload ... in');
+	logger.logDebugWire(
+			'AuthenticateResponse.prototype.writePayload ... in');
     outputStream.writeBoolean(this._responseStatus);
-    outputStream.writeLong(this._authToken);
-    outputStream.writeLong(this._sessionId);
-//	console.log('AuthenticateResponse.prototype.writePayload ... out');
+    outputStream.writeTGLong(this._authToken);
+    outputStream.writeTGLong(this._sessionId);
+    logger.logDebugWire(
+    		'AuthenticateResponse.prototype.writePayload ... out');
 };
 
 AuthenticateResponse.prototype.getResponseStatus = function() {
@@ -60,23 +68,4 @@ AuthenticateResponse.prototype.setResponseStatus = function(responseStatus) {
     this._responseStatus = responseStatus;
 };
 
-AuthenticateResponse.prototype.getAuthToken = function() {
-    return this._authToken;
-};
-
-AuthenticateResponse.prototype.setAuthToken = function(authToken) {
-    this._authToken = authToken;
-};
-
-AuthenticateResponse.prototype.getSessionId = function() {
-    return this._sessionId;
-};
-
-AuthenticateResponse.prototype.setSessionId = function(sessionId) {
-    this._sessionId = sessionId;
-};
-
 exports.AuthenticateResponse = AuthenticateResponse;
-
-
-

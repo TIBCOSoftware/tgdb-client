@@ -14,7 +14,6 @@
  */
 
 var AbstractProtocolMessage   = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    PingMessage               = require('./PingMessage').PingMessage,
     HandshakeRequest          = require('./HandshakeRequest').HandshakeRequest,
     HandshakeResponse         = require('./HandshakeResponse').HandshakeResponse,
     AuthenticateRequest       = require('./AuthenticateRequest').AuthenticateRequest,
@@ -22,20 +21,29 @@ var AbstractProtocolMessage   = require('../AbstractProtocolMessage').AbstractPr
     CommitTransactionResponse = require('./CommitTransactionResponse').CommitTransactionResponse,
     QueryRequest              = require('./QueryRequest').QueryRequest,
     QueryResponse             = require('./QueryResponse').QueryResponse,
+    MetadataRequest           = require('./MetadataRequest').MetadataRequest,
+    MetadataResponse          = require('./MetadataResponse').MetadataResponse,
+    GetEntityRequest          = require('./GetEntityRequest').GetEntityRequest,
+    GetEntityResponse         = require('./GetEntityResponse').GetEntityResponse,
+    DisconnectChannelRequest  = require('./DisconnectChannelRequest').DisconnectChannelRequest,
     ProtocolDataInputStream   = require('./ProtocolDataInputStream').ProtocolDataInputStream,
-    VerbId                    = require('./VerbId').VerbId;
+    VerbId                    = require('./VerbId').VerbId,
+    TGException               = require('../../exception/TGException').TGException,
+    TGLogManager              = require('../../log/TGLogManager'),
+    TGLogLevel                = require('../../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
   
 function ProtocolMessageFactory() {
 
 }
 
-ProtocolMessageFactory.createMessageFromVerbIdValue = function(verbIdValue) {
-	console.log('ProtocolMessageFactory.createMessageFromVerbIdValue : verbIdValue = ' + verbIdValue);
+ProtocolMessageFactory.createMessageFromVerbIdValue = function(verbIdValue, callback) {
+	logger.logDebugWire( 
+			'ProtocolMessageFactory.createMessageFromVerbIdValue : verbIdValue = %s',
+			verbIdValue);
     var message;
     switch (verbIdValue) {
-        case VerbId.PING_MESSAGE.value :
-            message = new PingMessage();
-            break;
         case VerbId.HANDSHAKE_REQUEST.value :
             message = new HandshakeRequest();
             break;
@@ -55,44 +63,54 @@ ProtocolMessageFactory.createMessageFromVerbIdValue = function(verbIdValue) {
             message = new CommitTransactionResponse();
             break;
         case VerbId.QUERY_REQUEST.value :
-            message = new QueryRequest();
+            message = new QueryRequest(callback);
             break;
         case VerbId.QUERY_RESPONSE.value :
             message = new QueryResponse();
             break;
+        case VerbId.METADATA_REQUEST.value :
+            message = new MetadataRequest(callback);
+            break;
+        case VerbId.METADATA_RESPONSE.value :
+            message = new MetadataResponse();
+            break;
+        case VerbId.GET_ENTITY_REQUEST.value :
+            message = new GetEntityRequest(callback);
+            break;
+        case VerbId.GET_ENTITY_RESPONSE.value :
+            message = new GetEntityResponse();
+            break;
+        case VerbId.DISCONNECT_CHANNEL_REQUEST.value :
+            message = new DisconnectChannelRequest();
+            break;
         default:
-        	throw new Error('Unknown message verbid : ' + verbIdValue);
+        	throw new TGException('Unknown message verbid : ' + verbIdValue);
     }
     return message;
 };
 
-ProtocolMessageFactory.createMessageFromVerbId = function(verbId) {
-	return this.createMessageFromVerbIdValue(verbId.value);
+ProtocolMessageFactory.createMessageFromVerbId = function(verbId, authToken, sessionId, callback) {
+	var protocolMsg = this.createMessageFromVerbIdValue(verbId.value, callback);
+	if(authToken) {
+		protocolMsg.setAuthToken(authToken);
+	}
+	if(sessionId) {
+		protocolMsg.setSessionId(sessionId);
+	}
+	return protocolMsg;
 };
 
 ProtocolMessageFactory.createMessage = function(buffer, offset, length) {
     var modifiedBuffer;
-    if (buffer.length == length) {
+    if (buffer.length === length) {
         modifiedBuffer = buffer;
     } else {
         buffer.copy(modifiedBuffer, 0, offset, offset + length);
     }
     var verbIdValue = VerbId.verbIdFromBytes(buffer);
     var message = ProtocolMessageFactory.createMessageFromVerbIdValue(verbIdValue);
-    messageFromBytes(message, modifiedBuffer);
+    message.fromBytes(modifiedBuffer);
     return message;
 };
-
-function messageFromBytes(message, byteBuffer) {
-    var protocolInputStream = new ProtocolDataInputStream(byteBuffer);
-    var length = protocolInputStream.readInt();
-    if (length != byteBuffer.length) {
-        throw new Error('Buffer length mismatch');
-    }
-    //Read header
-    message.readHeader(protocolInputStream);
-    //Read payload
-    message.readPayload(protocolInputStream);
-}
 
 exports.ProtocolMessageFactory = ProtocolMessageFactory;

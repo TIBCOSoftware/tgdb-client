@@ -13,9 +13,14 @@
  * limitations under the License.
  */
 
-var util                    = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId                  = require('./VerbId').VerbId;
+var util            = require('util'),
+    VerbId          = require('./VerbId').VerbId,
+    CallableRequest = require('./CallableRequest').CallableRequest,
+    TGException     = require('../../exception/TGException').TGException,
+    TGLogManager    = require('../../log/TGLogManager'),
+    TGLogLevel      = require('../../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
 
 //Class Definition
 /**
@@ -25,8 +30,8 @@ var util                    = require('util'),
  * @param removedEntities
  * @constructor
  */
-function CommitTransactionRequest(addedEntities, updatedEntities, removedEntities, attrDescSet) {
-	CommitTransactionRequest.super_.call(this);
+function CommitTransactionRequest(addedEntities, updatedEntities, removedEntities, attrDescSet, callback) {
+	CommitTransactionRequest.super_.call(this, callback);
     this._addedEntities     = addedEntities;
     this._updatedEntities   = updatedEntities;
     this._removedEntities   = removedEntities;
@@ -34,7 +39,7 @@ function CommitTransactionRequest(addedEntities, updatedEntities, removedEntitie
 
 }
 
-util.inherits(CommitTransactionRequest, AbstractProtocolMessage);
+util.inherits(CommitTransactionRequest, CallableRequest);
 
 CommitTransactionRequest.prototype.getVerbId = function() {
     return VerbId.COMMIT_TRANS_REQUEST;
@@ -48,57 +53,72 @@ CommitTransactionRequest.prototype.isUpdateable = function() {
 };
 
 CommitTransactionRequest.prototype.writePayload = function(outputStream) {
-	console.log("**** Entering commit transaction request writePayload at output buffer position at : %d", startPos);
 	var startPos = outputStream.getPosition();
+	logger.logDebugWire(
+			"**** Entering commit transaction request writePayload at output buffer position at : %d", 
+			startPos);
     outputStream.writeInt(0);
     outputStream.writeInt(0);
 
 	if (this._attrDescSet.length>0) {
 		outputStream.writeShort(0x1010); // for attribute descriptor
 		outputStream.writeInt(this._attrDescSet.length);
-		for(var index in this._attrDescSet) {
+        this._attrDescSet.forEach(function(attrDesc){
 			try {
-				this._attrDescSet[index].writeExternal(outputStream);
-			} catch (err) {
-				console.log("Error writing attribute description ! " + err.message);
+				attrDesc.writeExternal(outputStream);
+			} catch (exception) {
+				throw exception;
 			}
-		}
+        });
 	}
-	console.log("**** after attrDescSet at output buffer position at : %d", outputStream.getPosition());
+	logger.logDebugWire(
+			"**** after attrDescSet at output buffer position at : %d", 
+			outputStream.getPosition());
   
 	var mapLenth = Object.keys(this._addedEntities).length;
     if (mapLenth > 0) {
         outputStream.writeShort(0x1011);
         outputStream.writeInt(mapLenth);
-        for(var key in this._addedEntities) {
-        	this._addedEntities[key].writeExternal(outputStream);
-        };
+        var addedEntities = this._addedEntities;
+        Object.keys(addedEntities).forEach(function(key){
+        	addedEntities[key].writeExternal(outputStream);
+        });
     }
-	console.log("**** after addedList at output buffer position at : %d", outputStream.getPosition());
+    logger.logDebugWire(
+    		"**** after addedList at output buffer position at : %d", 
+    		outputStream.getPosition());
     
 	mapLenth = Object.keys(this._updatedEntities).length;
     if (mapLenth > 0) {
         outputStream.writeShort(0x1012);
         outputStream.writeInt(mapLenth);
-        for(var key in this._updatedEntities) {
-        	this._updatedEntities[key].writeExternal(outputStream);
-        };
+        var updatedEntities = this._updatedEntities;
+        Object.keys(updatedEntities).forEach(function(key){
+        	updatedEntities[key].writeExternal(outputStream);
+        });
     }
-	console.log("**** after updatedList at output buffer position at : %d", outputStream.getPosition());
+    logger.logDebugWire(
+    		"**** after updatedList at output buffer position at : %d", 
+    		outputStream.getPosition());
     
 	mapLenth = Object.keys(this._removedEntities).length;
     if (mapLenth > 0) {
         outputStream.writeShort(0x1013);
         outputStream.writeInt(mapLenth);
-        for(var key in this._removedEntities) {
-        	outputStream.writeLong(key);
-        };
+        var removedEntities = this._removedEntities;
+        Object.keys(removedEntities).forEach(function(key){
+        	removedEntities[key].writeExternal(outputStream);
+        });
     }
-	console.log("**** after RemovedList at output buffer position at : %d", outputStream.getPosition());
+    logger.logDebugWire(
+    		"**** after RemovedList at output buffer position at : %d", 
+    		outputStream.getPosition());
 	var currPos = outputStream.getPosition();
 	var length = currPos - startPos;
 	outputStream.writeIntAt(startPos, length);
-	console.log("**** Leaving commit transaction request writePayload at output buffer position at : %d", currPos);
+	logger.logDebugWire(
+			"**** Leaving commit transaction request writePayload at output buffer position at : %d", 
+			currPos);
 };
 
 CommitTransactionRequest.prototype.readPayload = function() {

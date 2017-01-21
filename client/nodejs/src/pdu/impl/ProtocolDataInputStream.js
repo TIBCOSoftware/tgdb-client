@@ -13,10 +13,17 @@
  * limitations under the License.
  */
 
+var TGNumber     = require('../../datatype/TGNumber');
+var TGLogManager = require('../../log/TGLogManager');
+var TGLogLevel   = require('../../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
+
 function ProtocolDataInputStream(buffer) {
     this._buffer = buffer;
     //Current position in the internal buffer
     this._currentPos = 0;
+    var referenceMap = null;
 }
 
 /**
@@ -28,15 +35,15 @@ ProtocolDataInputStream.prototype.readBoolean = function () {
     var currentPos = this._currentPos;
     var bool = buffer[currentPos++];
     this._currentPos = currentPos;
-    var value = bool != 0;
-	console.log("after readBoolean buffer (%s) position at : %d", value, this._currentPos);
+    var value = bool !== 0;
+    logger.logDebugWire("after readBoolean buffer (%s) position at : %d", value, this._currentPos);
 
-    return value
+    return value;
 };
 
 /**
  *
- * @returns {*}
+ * @returns {byte}
  */
 ProtocolDataInputStream.prototype.readByte = function () {
     var buffer = this._buffer;
@@ -47,13 +54,13 @@ ProtocolDataInputStream.prototype.readByte = function () {
     //Take 2s complement = 1s complement + add 1
     //This translates to subtracting from 256 & multiple by -1
     var value = !(byte & 0x80) ? byte : (0xff - byte + 1) * -1;
-	console.log("after readByte buffer (%s) position at : %d", value, this._currentPos);
+	logger.logDebugWire("after readByte buffer (%s) position at : %d", value, this._currentPos);
     return value;
 };
 
 /**
  *
- * @returns {*}
+ * @returns {short}
  */
 ProtocolDataInputStream.prototype.readShort = function () {
     var buffer = this._buffer;
@@ -62,9 +69,15 @@ ProtocolDataInputStream.prototype.readShort = function () {
     this._currentPos = currentPos;
     //Converting unsigned to signed
     //Take 2s complement = 1s complement + add 1
-    return (short & 0x8000) ? short | 0xFFFF0000 : short;
+    var value =  (short & 0x8000) ? short | 0xFFFF0000 : short;
+	logger.logDebugWire("after readByte buffer (%s) position at : %d", value, this._currentPos);
+    return value;
 };
 
+/**
+*
+* @returns {unsigned short}
+*/
 ProtocolDataInputStream.prototype.readUnsignedShort = function () {
     var ushort = (((this._buffer[this._currentPos++] << 8)) + 
     		       (this._buffer[this._currentPos++] & 0x00FF));
@@ -72,8 +85,19 @@ ProtocolDataInputStream.prototype.readUnsignedShort = function () {
 };
 
 /**
+*
+* @returns {char as a 16 bits number}
+*/
+ProtocolDataInputStream.prototype.readChar = function() {
+    var buffer = this._buffer;
+    var char = (((buffer[this._currentPos++] << 8)) |
+    		    (buffer[this._currentPos++]));
+	logger.logDebugWire("after readChar buffer (%d) position at : %d", char, this._currentPos);
+};
+
+/**
  *
- * @returns {*}
+ * @returns {int}
  */
 ProtocolDataInputStream.prototype.readInt = function () {
     var buffer = this._buffer;
@@ -83,21 +107,51 @@ ProtocolDataInputStream.prototype.readInt = function () {
                ((buffer[currentPos++] << 8)) |
                ((buffer[currentPos++])));
     this._currentPos = currentPos;
-	console.log("after readInt buffer (%s) position at : %d", int, this._currentPos);
+	logger.logDebugWire("after readInt buffer (%s) position at : %d", int, this._currentPos);
     return int;
 };
 
 /**
  *
- * @returns {*}
+ * @returns {long}
  */
 ProtocolDataInputStream.prototype.readLong = function () {
 	/* Should use bitwise 'or' to construct multibyte number */
     var value = (this.readInt() << 32)&0xFFFF0000 | (this.readInt());
-	console.log("after readLong buffer (%s) position at : %d", value, this._currentPos);
+	logger.logDebugWire("after readLong buffer (%s) position at : %d", value, this._currentPos);
 	return value;
 };
 
+ProtocolDataInputStream.prototype.readDate = function () {
+    var date = new Date(this.readInt() << 32)&0xFFFF0000 | (this.readInt());
+	logger.logDebugWire("after readDate buffer (%s) position at : %d", date, this._currentPos);
+	return date;
+};
+
+ProtocolDataInputStream.prototype.readTGLong = function () {
+    var bytes = [];
+    for(var i=0; i<8; i++) {
+    	bytes.push(this._buffer[this._currentPos++]);	   
+    }
+    var value = TGNumber.getLongFromBytes(bytes);
+	logger.logDebugWire("after readLongBytes buffer (%s) position at : %d", value.getHexString(), this._currentPos);
+	return value;
+};
+
+ProtocolDataInputStream.prototype.readLongAsBytes = function () {
+	/* Should use bitwise 'or' to construct multibyte number */
+    var value = [];
+    for(var i=0; i<8; i++) {
+        value.push(this._buffer[this._currentPos++]);	   
+    }
+	logger.logDebugWire("after readBytes buffer (%s) position at : %d", value, this._currentPos);
+	return value;
+};
+
+/**
+*
+* @returns {utf}
+*/
 ProtocolDataInputStream.prototype.readUTF = function () {
 	var length = this.readUnsignedShort();
 	var bytes = [];
@@ -106,12 +160,103 @@ ProtocolDataInputStream.prototype.readUTF = function () {
 	}
         
 	var utf = (new Buffer(bytes)).toString('utf8');
+	logger.logDebugWire("after readUTF buffer (%s) position at : %d, length : %d", utf, this._currentPos, length);
         
 	return utf;
 };
 
+/**
+*
+* @returns {
+* 	IEEE754 float
+* 	bits 0  ~ 22 fraction
+* 	bits 23 ~ 30 exponent
+* 	bits 32      sign
+* }
+*/
+ProtocolDataInputStream.prototype.readFloat = function () {
+	
+	var bytes = (this._buffer[this._currentPos++]*Math.pow(2,24)) + 
+	            (this._buffer[this._currentPos++]*Math.pow(2,16)) +
+	            (this._buffer[this._currentPos++]*Math.pow(2,8)) +
+	             this._buffer[this._currentPos++] ;
+	
+    var sign = (bytes & 0x80000000) ? -1 : 1;    
+    var exponent = ((bytes & 0x7f800000) >> 23) - 0x7f;
+    var fraction = (bytes & 0x007fffff)
+
+    if (exponent == 128) {
+        return sign * ((fraction) ? Number.NaN : Number.POSITIVE_INFINITY);
+    }
+    
+    if (exponent == -127) {
+        if (fraction == 0) return sign * 0.0;
+        exponent = -126;
+        fraction = fraction/0x400000;
+    } else {
+    	fraction = (fraction + 0x800000)/0x800000;
+    }
+
+	var float = sign * fraction * Math.pow(2, exponent);
+	
+	logger.logDebugWire("after readFloat buffer (%f) position at : %d", float, this._currentPos);
+    return float;
+};
+
+/**
+*
+* @returns {
+* 	IEEE754 double
+* 	bits 0  ~ 51 fraction
+* 	bits 52 ~ 62 exponent
+* 	bits 63      sign
+* }
+*/
+ProtocolDataInputStream.prototype.readDouble = function () {
+	
+	var high32 = (this._buffer[this._currentPos++]*Math.pow(2,24)) +
+	             (this._buffer[this._currentPos++]*Math.pow(2,16)) +
+	             (this._buffer[this._currentPos++]*Math.pow(2,8)) +
+	              this._buffer[this._currentPos++] ;
+	
+	var low32 = (this._buffer[this._currentPos++]*Math.pow(2,24)) +
+	            (this._buffer[this._currentPos++]*Math.pow(2,16)) +
+	            (this._buffer[this._currentPos++]*Math.pow(2,8)) +
+	             this._buffer[this._currentPos++] ;
+
+	var sign = ( high32 & 0x80000000 ) ? -1 : 1;
+	var exponent = ((high32 & 0x7ff00000) >> 20) - 1023;
+	var fractionLong = (high32&0x000fffff) * Math.pow(2, 32) + low32;
+	var fraction = 
+		(exponent == 0) ? (fractionLong << 1) : fractionLong + 0x10000000000000;
+	
+	var double = sign * fraction * Math.pow(2, exponent-52);
+	
+	logger.logDebugWire("after readDouble buffer (%d) position at : %d", double, this._currentPos);
+	return double;
+};
+
 ProtocolDataInputStream.prototype.available = function () {
     return this._buffer.length - this._currentPos;
+};
+
+ProtocolDataInputStream.prototype.getPosition = function () {
+    return this._currentPos;
+};
+
+ProtocolDataInputStream.prototype.setPosition = function (pos) {
+    var oldPos = this._currentPos;
+    this._currentPos = pos;
+
+    return oldPos;
+};
+
+ProtocolDataInputStream.prototype.setReferenceMap = function (map) {
+	this._referenceMap = map;
+};
+
+ProtocolDataInputStream.prototype.getReferenceMap = function () {
+	return this._referenceMap;
 };
 
 exports.ProtocolDataInputStream = ProtocolDataInputStream;

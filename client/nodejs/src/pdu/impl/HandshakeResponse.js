@@ -13,18 +13,16 @@
  * limitations under the License.
  */
 
-var util = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId                  = require('./VerbId').VerbId;
+var util     = require('util'),
+    VerbId   = require('./VerbId').VerbId,
+    Response = require('./Response').Response;
 
-
-//Class Definition
 function HandshakeResponse() {
 	HandshakeResponse.super_.call(this);
     this._challenge = 0;
 }
 
-util.inherits(HandshakeResponse, AbstractProtocolMessage);
+util.inherits(HandshakeResponse, Response);
 
 HandshakeResponse.prototype.getVerbId = function() {
     return VerbId.HANDSHAKE_RESPONSE;

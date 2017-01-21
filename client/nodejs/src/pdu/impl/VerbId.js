@@ -14,7 +14,8 @@
  */
 
 var ProtocolDataInputStream = require('../../pdu/impl/ProtocolDataInputStream').ProtocolDataInputStream,
-    TGProtocolVersion       = require('../../TGProtocolVersion').TGProtocolVersion;
+    TGProtocolVersion       = require('../../TGProtocolVersion').TGProtocolVersion,
+    TGException             = require('../../exception/TGException').TGException;
  
 exports.VerbId = {
 	
@@ -33,24 +34,30 @@ exports.VerbId = {
 	QUERY_RESPONSE : { value : 12, name: 'QUERY_RESPONSE'},
 	TRAVERSE_REQUEST : { value : 13, name: 'TRAVERSE_REQUEST'},
 	TRAVERSE_RESPONSE : { value : 14, name: 'TRAVERSE_RESPONSE'},
-	EXCEPTION_MESSAGE : { value : 15, name: 'EXCEPTION_MESSAGE'},
-	INVALID_MESSAGE : { value : 16, name: 'INVALID_MESSAGE'},
+	METADATA_REQUEST : { value : 19, name: 'METADATA_REQUEST'},
+	METADATA_RESPONSE : { value : 20, name: 'METADATA_RESPONSE'},
+	GET_ENTITY_REQUEST : { value : 21, name: 'GET_ENTITY_REQUEST'},
+	GET_ENTITY_RESPONSE : { value : 22, name: 'GET_ENTITY_RESPONSE'},
+	DISCONNECT_CHANNEL_REQUEST : { value : 23, name: 'DISCONNECT_CHANNEL_REQUEST'},
+    
+	EXCEPTION_MESSAGE : { value : 100, name: 'EXCEPTION_MESSAGE'},
+	INVALID_MESSAGE : { value : -1, name: 'INVALID_MESSAGE'},
 	verbIdFromBytes : function(buffer) {
 		var inputStream = new ProtocolDataInputStream(buffer);
 		var length = inputStream.readInt();
 
-		if (length != buffer.length) {
-			throw new Error('Buffer length mismatch.');
+		if (length !== buffer.length) {
+			throw new TGException('Buffer length mismatch.');
 		}
 
 		var magic = inputStream.readInt();
-		if (magic != TGProtocolVersion.getMagic()) {
-			throw new Error('Bad Message Magic');
+		if (magic !== TGProtocolVersion.getMagic()) {
+			throw new TGException('Bad Message Magic');
 		}
 
 		var protocolVersion = inputStream.readShort();
 		if (!TGProtocolVersion.isCompatible(protocolVersion)) {
-			throw new Error('Unsupported Protocol version');
+			throw new TGException('Unsupported Protocol version');
 		}
 
 		return inputStream.readShort();

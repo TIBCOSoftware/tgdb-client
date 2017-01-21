@@ -13,8 +13,17 @@
  * limitations under the License.
  */
 
-var TGAbstractEntity = require('./TGAbstractEntity').TGAbstractEntity,
-    util             = require('util');
+var util                = require('util'),
+    TGAbstractEntity    = require('./TGAbstractEntity').TGAbstractEntity,
+	TGEntityKind        = require('./TGEntityKind').TGEntityKind,
+	TGEdgeDirectionType = require('./TGEdgeDirectionType').TGEdgeDirectionType,
+    TGEntityId          = require('./TGEntityId'),
+	TGNode              = require('./TGNode').TGNode,
+    TGException         = require('../exception/TGException').TGException,
+    TGLogManager        = require('../log/TGLogManager'),
+    TGLogLevel          = require('../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
 
 /**
  *
@@ -26,24 +35,17 @@ var TGAbstractEntity = require('./TGAbstractEntity').TGAbstractEntity,
  * @constructor
  */
 //Class definition
-function TGEdge(graphMetadata, fromNode, toNode, edgeType, directionType) {
-	TGEdge.super_.call(this, graphMetadata);
+function TGEdge(graphMetadata, fromNode, toNode, directionType, edgeType) {
+	TGEdge.super_.call(this, graphMetadata, edgeType);
     this._fromNode      = fromNode;
     this._toNode        = toNode;
-    this._edgeType      = edgeType;
-    this._directionType = directionType;
+    this._directionType = edgeType?edgeType.getDirectionType():directionType;
 }
-
-TGEdge.DirectionType = {
-    UNDIRECTED : 0,
-    DIRECTED : 1,
-    BIDIRECTIONAL : 2
-};
 
 util.inherits(TGEdge, TGAbstractEntity);
 
 TGEdge.prototype.getEntityKind = function() {
-    return TGAbstractEntity.EntityKind.EDGE;
+    return TGEntityKind.EDGE;
 };
 
 /**
@@ -52,34 +54,94 @@ TGEdge.prototype.getEntityKind = function() {
 TGEdge.prototype.getVertices = function() {
     var nodes = [];
     nodes.push(this._fromNode, this._toNode);
+    
+    return nodes;
 };
 
 /**
  * Get direction for this edge
  */
 TGEdge.prototype.getDirection = function() {
-    return (this._edgeType != null) ? this._edgeType.getDirectionType() : this._directionType;
+	var edgeType = this.getEntityType();
+    return (edgeType !== null) ? edgeType.getDirectionType() : this._directionType;
 };
 
 TGEdge.prototype.writeExternal = function (outputStream) {
-	console.log("**** Enering TGEdge.writeExternal at output buffer position at : %d", outputStream.getPosition());
+	logger.logDebugWire(
+			"**** Enering TGEdge.writeExternal at output buffer position at : %d", 
+			outputStream.getPosition());
 	var startPos = outputStream.getPosition();
 	outputStream.writeInt(0);
 	//write attributes from the based class
     this.writeAttributes(outputStream);
     //write the edges ids
     if (this.isNew()) {
-    	outputStream.writeLong(this._fromNode.getVirtualId());
-    	outputStream.writeLong(this._toNode.getVirtualId());
+    	outputStream.writeByte(this._directionType.ordinal);
+    	outputStream.writeLongAsBytes(this._fromNode.getId().getBytes());
+    	outputStream.writeLongAsBytes(this._toNode.getId().getBytes());
+    } else {
+    	//FIXME:  Not sending the direction, is it ok?
+    	outputStream.writeLongAsBytes(this._fromNode.getId().getBytes());
+    	outputStream.writeLongAsBytes(this._toNode.getId().getBytes());
     }
     var currPos = outputStream.getPosition();
     var length = currPos - startPos;
     outputStream.writeIntAt(startPos, length);
-	console.log("**** Leaving TGEdge.writeExternal at output buffer position at : %d", outputStream.getPosition());
-}
+    logger.logDebugWire(
+    		"**** Leaving TGEdge.writeExternal at output buffer position at : %d", 
+    		outputStream.getPosition());
+};
 
-//TGEdge.prototype.readExternal = function (inputStream) { 
-//};
+TGEdge.prototype.readExternal = function (inputStream, gof) { 
+	//FIXME: Need to validate length
+	var buflen = inputStream.readInt();
+    this.readAttributes(inputStream);
+    var dir = inputStream.readByte();
+    switch (dir) {
+    	case TGEdgeDirectionType.UNDIRECTED.ordinal :
+    		this._directionType = TGEdgeDirectionType.UNDIRECTED;
+    		break;
+    	case TGEdgeDirectionType.DIRECTED.ordinal :
+    		this._directionType = TGEdgeDirectionType.DIRECTED;
+    		break;
+    	case TGEdgeDirectionType.BIDIRECTIONAL.ordinal :
+    		this._directionType = TGEdgeDirectionType.BIDIRECTIONAL;
+    		break;
+    }
+    var fromNode = null;
+    var toNode = null;
+    var idBytes = inputStream.readLongAsBytes();
+    var id = TGEntityId.bytesToString(idBytes);
+    
+    var refMap = inputStream.getReferenceMap();
+    if (refMap) {
+    	fromNode = refMap[id];
+    }
 
-module.exports = TGEdge;
+    if (!fromNode) {
+    	fromNode = gof.createNode();//new TGNode(this._graphMetadata);
+    	fromNode.getId().setBytes(idBytes);
+    	fromNode.setInitialized(false);
+    	refMap[id] = fromNode;
+    }
+    this._fromNode = fromNode;
+
+    idBytes = inputStream.readLongAsBytes();
+    id = TGEntityId.bytesToString(idBytes);
+    
+    if (refMap) {
+    	toNode = refMap[id];
+    }
+    
+    if (!toNode) {
+    	toNode = gof.createNode();//new TGNode(this._graphMetadata);
+    	toNode.getId().setBytes(idBytes);
+    	toNode.setInitialized(false);
+    	refMap[id] = toNode;
+    }
+    this._toNode = toNode;
+	this._isInitialized = true;
+};
+
+exports.TGEdge = TGEdge;
 

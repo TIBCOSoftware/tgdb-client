@@ -20,9 +20,9 @@ function TGProperties(wrappedProperties) {
 TGProperties.prototype.getProperty = function(configName, defaultValue) {
 	var propertyName = configName.name;
 	var propertyValue = this._wrappedProperties[propertyName];
-	propertyValue = (propertyValue == null) ? this._wrappedProperties[configName.alias]
+	propertyValue = (propertyValue === null) ? this._wrappedProperties[configName.alias]
 			: propertyValue;
-	if (propertyValue == null) {
+	if (propertyValue === null) {
 		propertyValue = configName.defaultValue;
 	}
 	return propertyValue;

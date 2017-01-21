@@ -53,3 +53,5 @@ TGGraph.prototype.addNode = function(node) {
 TGGraph.prototype.removeNode = function(node) {
     //TODO remove node from graph
 };
+
+module.exports = TGGraph;

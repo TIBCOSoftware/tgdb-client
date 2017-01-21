@@ -19,50 +19,38 @@ exports.TGAttributeType = {
 	    BYTE        : {value : 2, type  : 'Byte'},     //8bit octet
 	    CHAR        : {value : 3, type  : 'Char'},     //Fixed 8-Bit octet of N length
 	    SHORT       : {value : 4, type  : 'Short'},    //16bit
-	    INT         : {value : 5, type  : 'Integer'},  //32bit
+	    INT         : {value : 5, type  : 'Integer'},  //32bit signed integer
 	    LONG        : {value : 6, type  : 'Long'},     //64bit
 	    FLOAT       : {value : 7, type  : 'Float'},    //32bit float
 	    DOUBLE      : {value : 8, type  : 'Double'},   //64bit float
 	    NUMBER      : {value : 9, type  : 'Number'},   //Number with precision
 	    STRING      : {value : 10, type : 'String'},   //Varying length String < 64K
 	    DATE        : {value : 11, type : 'Date'},     //Only the Date part of the DateTime
-	    DATETIME    : {value : 12, type : 'DateTime'}, //Datetime
+	    TIME        : {value : 12, type : 'Time'},     //Time
 	    TIMESTAMP   : {value : 13, type : 'Timestamp'},//64bit Timestamp - engine time - upto nanosecond precision, if the OS provides //SS:TODO
 	    CLOB        : {value : 14, type : 'Clob'},     //Character -UTF-8 encoded string or large length > 64K
 	    BLOB        : {value : 15, type : 'Blob'},  //Binary object - a stream of octets (unsigned 8bit char) with length. A variation of such Blobs could
 	    fromTypeId : function(typeid) {
 	    	switch(typeid) {
-	    		case BOOLEAN.value:
-	    			return BOOLEAN;
-	    		case BYTE.value:
-	    			return BYTE;
-	    		case CHAR.value:
-	    			return CHAR;
-	    		case SHORT.value:
-	    			return SHORT;
-	    		case INT.value:
-	    			return INT;
-	    		case LONG.value:
-	    			return LONG;
-	    		case FLOAT.value:
-	    			return FLOAT;
-	    		case DOUBLE.value:
-	    			return DOUBLE;
-	    		case NUMBER.value:
-	    			return NUMBER;
-	    		case STRING.value:
-	    			return STRING;
-	    		case DATE.value:
-	    			return DATE;
-	    		case DATETIME.value:
-	    			return DATETIME;
-	    		case TIMESTAMP.value:
-	    			return TIMESTAMP;
-	    		case CLOB.value:
-	    			return CLOB;
-	    		case BLOB.value:
-	    			return BLOB;
+	    		case this.BOOLEAN.value:   return this.BOOLEAN;
+	    		case this.BYTE.value:      return this.BYTE;
+	    		case this.CHAR.value:      return this.CHAR;
+	    		case this.SHORT.value:     return this.SHORT;
+	    		case this.INT.value:       return this.INT;
+	    		case this.LONG.value:      return this.LONG;
+	    		case this.FLOAT.value:     return this.FLOAT;
+	    		case this.DOUBLE.value:    return this.DOUBLE;
+	    		case this.NUMBER.value:    return this.NUMBER;
+	    		case this.STRING.value:    return this.STRING;
+	    		case this.DATE.value:      return this.DATE;
+	    		case this.TIME.value:      return this.TIME;
+	    		case this.TIMESTAMP.value: return this.TIMESTAMP;
+	    		case this.CLOB.value:      return this.CLOB;
+	    		case this.BLOB.value:      return this.BLOB;
 	    	}
-	        return TGAttributeType.INVALID;
-	     }
+	        return this.INVALID;
+	     },
+		 fromTypeName : function(typename) {
+			 //console.log('TGAttributeType::fromTypeName Not implemented yet!');
+		 }
 	};

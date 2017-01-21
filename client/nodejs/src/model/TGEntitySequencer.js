@@ -48,4 +48,4 @@ function TGEntitySequencer () {
 
 
 
-exports.TGEntitySequencer = TGEntitySequencer();
+exports.TGEntitySequencer = TGEntitySequencer;

@@ -13,9 +13,16 @@
  * limitations under the License.
  */
 
-var util                    = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId                  = require('./VerbId').VerbId;
+var util                          = require('util'),
+    VerbId                        = require('./VerbId').VerbId,
+    TransactionStatus             = require('./TransactionStatus').TransactionStatus,
+    Response                      = require('./Response').Response,
+    TGTransactionExceptionBuilder = require('../../exception/TGTransactionExceptionBuilder'),
+    TGException                   = require('../../exception/TGException').TGException,
+    TGLogManager                  = require('../../log/TGLogManager'),
+    TGLogLevel                    = require('../../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
 
 function CommitTransactionResponse () {
 	CommitTransactionResponse.super_.call(this);
@@ -24,18 +31,28 @@ function CommitTransactionResponse () {
     this._removedIdList = []; 
     this._attrDescIdList = []; 
     this._attrDescCount = 0;
-    this._entityCount = 0;
+    this._addedCount = 0;
+    this._updatedCount = 0;
+    this._removedCount = 0;
+    
+    this._entityStream = null;
 }
-    
-util.inherits(CommitTransactionResponse, AbstractProtocolMessage);
-    
+
+util.inherits(CommitTransactionResponse, Response);
+
 CommitTransactionResponse.prototype.writePayload = function (outputStream) {
 };
 
 CommitTransactionResponse.prototype.readPayload = function (inputStream) {
 	inputStream.readInt(); // buf length
 	inputStream.readInt(); // checksum
-    inputStream.readInt();// status code - currently zero
+	var status = inputStream.readInt();// status code - currently zero
+    var exception = this.processTransactionStatus(inputStream, status);
+    if (exception !== null) {
+    	this.setException(exception);
+    	return;
+    }
+	
     while (inputStream.available() > 0) {
     	var opCode = inputStream.readShort();
     	switch (opCode) {
@@ -45,30 +62,80 @@ CommitTransactionResponse.prototype.readPayload = function (inputStream) {
                     this._attrDescIdList.push(inputStream.readInt());  // temp id ?
                     this._attrDescIdList.push(inputStream.readInt());  // real id ?
                 }
-                console.log("Received %d attr desc", this._attrDescCount);
+                logger.logDebugWire( 
+                		"[CommitTransactionResponse.prototype.readPayload] Received %d attr desc", 
+                		this._attrDescCount);
     			break;
     		case 0x1011:
-                this._entityCount = inputStream.readInt();
-                for (i = 0; i < this._entityCount; i++) {
-                    this._addedIdList.push(inputStream.readLong());  // temp id
-                    this._addedIdList.push(inputStream.readLong());  // real id
+                this._addedCount = inputStream.readInt();
+                for (i = 0; i < this._addedCount; i++) {
+                    this._addedIdList.push(inputStream.readLongAsBytes());  // temp id
+                    this._addedIdList.push(inputStream.readLongAsBytes());  // real id
+                    this._addedIdList.push(inputStream.readLong());  // version
                 }
-                console.log("Received %d entity", this._entityCount);
+                logger.logDebugWire( 
+                		"[CommitTransactionResponse.prototype.readPayload] Received %d added entities", 
+                		this._addedCount);
     			break;
             case 0x1012:
-                console.log("Received update results");
+                this._updatedCount = inputStream.readInt();
+                for (i = 0; i < this._updatedCount; i++) {
+                    this._updatedIdList.push(inputStream.readLongAsBytes());  //id
+                    this._updatedIdList.push(inputStream.readLong());  //version
+                }
+                logger.logDebugWire(
+                		"[CommitTransactionResponse.prototype.readPayload] Received %d updated entities", 
+                		this._updatedCount);
                 break;
             case 0x1013:
-                this._entityCount = inputStream.readInt();
-                for (i = 0; i < this._entityCount; i++) {
-                    this._removedIdList.push(inputStream.readLong());  //id
+                this._removedCount = inputStream.readInt();
+                for (i = 0; i < this._removedCount; i++) {
+                    this._removedIdList.push(inputStream.readLongAsBytes());  //id
                 }
-                console.log("Received %d delete results", this._entityCount);
+                logger.logDebugWire(
+                		"[CommitTransactionResponse.prototype.readPayload] Received %d delete results", 
+                		this._removedCount);
                 break;
+            case 0x6789:
+            	this._entityStream = inputStream;
+            	var pos = inputStream.getPosition();
+            	this._entityCount = inputStream.readInt();
+            	inputStream.setPosition(pos);
+            	logger.logDebugWire(
+            			"[CommitTransactionResponse.prototype.readPayload] Received %d debug entities", 
+            			this._entityCount);
+                return;
             default:
                 break;
     		}
         }
+};
+
+CommitTransactionResponse.prototype.processTransactionStatus = function (inputStream, status) {
+    var ts = TransactionStatus.fromStatus(status);
+    var msg;
+    switch (ts) {
+        case TransactionStatus.TGTransactionSuccess:
+            return null;
+
+        case TransactionStatus.TGTransactionAlreadyInProgress:
+        case TransactionStatus.TGTransactionClientDisconnected:
+        case TransactionStatus.TGTransactionMalFormed:
+        case TransactionStatus.TGTransactionGeneralError:
+        case TransactionStatus.TGTransactionInBadState:
+        case TransactionStatus.TGTransactionUniqueConstraintViolation:
+        case TransactionStatus.TGTransactionOptimisticLockFailed:
+        case TransactionStatus.TGTransactionResourceExceeded:
+        default:
+            try {
+                msg = inputStream.readUTF();
+            }
+            catch (Error) {
+                msg = "Error not available";
+            }
+            return TGTransactionExceptionBuilder.build(msg, ts);
+    }
+
 };
 
 CommitTransactionResponse.prototype.isUpdateable = function () {
@@ -84,8 +151,12 @@ CommitTransactionResponse.prototype.getAttrDescCount = function () {
 };
 
 CommitTransactionResponse.prototype.getAddedEntityCount = function () {
-    return this._entityCount;
+    return this._addedCount;
 }; 
+
+CommitTransactionResponse.prototype.getUpdatedEntityCount = function () {
+    return this._updatedCount;
+};
 
 CommitTransactionResponse.prototype.getAttrDescIdList = function () {
     return this._attrDescIdList;
@@ -93,6 +164,22 @@ CommitTransactionResponse.prototype.getAttrDescIdList = function () {
 
 CommitTransactionResponse.prototype.getAddedIdList = function () {
     return this._addedIdList;
+};
+
+CommitTransactionResponse.prototype.getUpdatedIdList = function () {
+    return this._updatedIdList;
+};
+
+CommitTransactionResponse.prototype.getEntityStream = function () {
+	return this._entityStream;
+};
+
+CommitTransactionResponse.prototype.hasException = function () { 
+	//return exception !== null;
+};
+
+CommitTransactionResponse.prototype.getException = function () {
+	//return exception;
 };
 
 exports.CommitTransactionResponse = CommitTransactionResponse;

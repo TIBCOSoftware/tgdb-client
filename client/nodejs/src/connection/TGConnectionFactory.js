@@ -16,10 +16,20 @@
 var  CONFIG_NAMES      = require('../utils/ConfigName').CONFIG_NAMES,
     TGChannelURL       = require('../channel/TGChannelURL').TGChannelURL,
     TGChannelFactory  = require('../channel/TGChannelFactory').TGChannelFactory,
-    TGConnectionPool  = require('./TGConnectionPool').TGConnectionPool;
+    TGConnectionPool  = require('./TGConnectionPool').TGConnectionPool,
+    TGLogManager  = require('../log/TGLogManager'),
+    TGLogLevel    = require('../log/TGLogger').TGLogLevel;
 
+var logger = TGLogManager.getLogger();
+var globleCounter = 0;
 //Class definition.Factory class
-function DefaultConnectionFactory() {}
+function DefaultConnectionFactory() {
+	var _id = globleCounter++;
+	
+	this.getId = function() {
+		return _id;
+	};
+}
 
 /**
  * Get a free connection.
@@ -29,12 +39,19 @@ function DefaultConnectionFactory() {}
  * @param properties
  */
 DefaultConnectionFactory.prototype.createConnection = function(serverURL, username, password, properties) {
-    if (properties == undefined) {
+	logger.logDebug("[DefaultConnectionFactory.prototype.createConnection] url = %s, username = %s, hasPassword = %s", 
+			serverURL, username, !(!password));
+    if (!properties) {
         properties = {};
     }
+
     properties[CONFIG_NAMES.USE_DEDICATED_CHN_PER_CONN.name] = 'true';
-    var connectionPool = this.createConnectionPool(serverURL, username, password, 1, properties);
-    return connectionPool.get();
+    
+    var connectionPool = this.createConnectionPool(serverURL, username, password, properties.ConnectionPoolSize, properties);
+    var conn = connectionPool.get();
+    logger.logDebug('[DefaultConnectionFactory.prototype.createConnection] Connection id = %s', conn.getId());
+    
+    return conn;
 };
 
 /**
@@ -46,20 +63,32 @@ DefaultConnectionFactory.prototype.createConnection = function(serverURL, userna
  * @param properties
  */
 DefaultConnectionFactory.prototype.createConnectionPool = function(serverURL, username, password, poolSize, properties) {
-    if (properties == null) {
-        properties = {};
-    }
-    if (poolSize <= 0 ) {
-        poolSize = parseInt(CONFIG_NAMES.CONN_POOL_DEFAULT_SIZE.defaultValue);
-    }
-    //Convert to proper url format
-    var channelURL = new TGChannelURL(serverURL);
-    var channels = [];
-    for (var loop = 0; loop < poolSize; loop++) {
-        var channel = TGChannelFactory.createChannel(channelURL, username, password, properties);
-        channels.push(channel);
-    }
-    return new TGConnectionPool(channels, poolSize, properties);
+	if (properties === null) {
+	    properties = {};
+	}
+	if (!poolSize || poolSize <= 0 ) {
+	    poolSize = parseInt(CONFIG_NAMES.CONN_POOL_DEFAULT_SIZE.defaultValue);
+	}
+	//Convert to proper url format
+	var channelURL = new TGChannelURL(serverURL);
+	var channels = [];
+	for (var loop = 0; loop < poolSize; loop++) {
+	    var channel = TGChannelFactory.createChannel(channelURL, username, password, properties);
+	    channels.push(channel);
+	}
+	this._pool =  new TGConnectionPool(channels, poolSize, properties);
+	
+	return this._pool;
 };
 
-exports.DefaultConnectionFactory = DefaultConnectionFactory;
+var defaultFactory = null;
+var TGConnectionFactory = {
+	    getFactory : function() {
+		if(!defaultFactory) {
+			defaultFactory = new DefaultConnectionFactory();
+		}
+		return defaultFactory;
+	}
+};
+
+module.exports = TGConnectionFactory;

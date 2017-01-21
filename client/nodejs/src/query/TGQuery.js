@@ -12,51 +12,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var TGQueryOption = require('./TGQueryOption');
 
-function TGQuery(connection, queryExpr) {
+function TGQuery(connection, queryHashId) {
 	this._connection = connection;
-	this._queryExpr = queryExpr;
-};
+    this._queryHashId = queryHashId;
+    this._option = TGQueryOption.DEFAULT_QUERY_OPTION;
+    this._parameters = {};
+
+    this.NULLPARAMETER = null;
+}
     
-TGQuery.prototype.setBoolean = function (name, value) {        
+TGQuery.prototype.setBoolean = function (name, value) {
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setChar = function (name, value) {    
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setShort = function (name, value) {
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setInt = function (name, value) {
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setLong = function (name, value) {
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setFloat = function (name, value) {
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setDouble = function (name, value) {
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setString = function (name,  value) {
+	this._parameters[name] = value;
 };
     
 TGQuery.prototype.setDate = function (name, value) {
+	this._parameters[name] = value;
 };
     
-TGQuery.prototype.setBytes = function (name, bos) {
+TGQuery.prototype.setBytes = function (name, value) {
+	this._parameters[name] = value;
 };
 
 TGQuery.prototype.setNull = function (name) {
+	this._parameters[name] = this.NULLPARAMETER;
+};
+
+TGQuery.prototype.setOption = function(option) {
+    this._option = option;
 };
 
 TGQuery.prototype.execute = function (callback) {
-	this._connection.executeQuery(this._queryExpr, callback);
+	this._connection.executeQueryWithId(this._queryHashId, callback);
 };
 
 TGQuery.prototype.close = function (callback) {
-	this._connection.closeQuery(this._queryExpr, callback);
+	this._connection.closeQuery(this._queryHashId, callback);
 };
 
 exports.TGQuery = TGQuery;

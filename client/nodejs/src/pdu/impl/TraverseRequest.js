@@ -14,9 +14,9 @@
  */
 
 var util                       = require('util'),
+    VerbId                     = require('./VerbId').VerbId,
     AuthenticatedMessage       = require('./AuthenticatedMessage').AuthenticatedMessage,
-    AbstractProtocolMessage    = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId                     = require('./VerbId').VerbId;
+    AbstractProtocolMessage    = require('../AbstractProtocolMessage').AbstractProtocolMessage;
 
 function TraverseRequest() {
     AuthenticatedMessage.call();

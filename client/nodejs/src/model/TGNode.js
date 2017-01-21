@@ -13,20 +13,31 @@
  * limitations under the License.
  */
 
-var TGAbstractEntity = require('./TGAbstractEntity').TGAbstractEntity,
-    TGEdge           = require('./TGEdge'),
-    util             = require('util');
+var util             = require('util'),
+    TGAbstractEntity = require('./TGAbstractEntity').TGAbstractEntity,
+	TGEntityKind     = require('./TGEntityKind').TGEntityKind,
+    TGNodeType       = require('./TGNodeType'),
+    TGEntityId       = require('./TGEntityId'),
+    TGEdge           = require('./TGEdge').TGEdge,
+    TGException      = require('../exception/TGException').TGException,
+    TGLogManager     = require('../log/TGLogManager'),
+    TGLogLevel       = require('../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
 
 //Class definition
-function TGNode(graphMetadata) {
-	TGNode.super_.call(this, graphMetadata);
+function TGNode(graphMetadata, nodeType) {
+	TGNode.super_.call(this, graphMetadata, nodeType);
     this._edges         = [];
+    //if(nodeType) {
+    //	this.setEntityType(nodeType);
+    //}
 }
 
 util.inherits(TGNode, TGAbstractEntity);
 
 TGNode.prototype.getEntityKind = function() {
-    return TGAbstractEntity.EntityKind.NODE;
+    return TGEntityKind.NODE;
 };
 
 /**
@@ -53,7 +64,7 @@ TGNode.prototype.getEdges = function(edgeDirection) {
 
     for (var loop = 0; loop < allEdges.length; loop++) {
         var edge = allEdges[loop];
-        if (edge.getDirection() == edgeDirection) {
+        if (!edgeDirection || (edge.getDirection() === edgeDirection)) {
             edges.push(edge);
         }
     }
@@ -67,21 +78,22 @@ TGNode.prototype.getEdges = function(edgeDirection) {
  * @param direction
  */
 TGNode.prototype.addEdge = function(edge) {
+	//console.log('Add edge : ' + edge);
     this._edges.push(edge);
     return edge;
 };
 
 
 TGNode.prototype.writeExternal = function (outputStream) {
-	console.log("****Entering NodeImpl.writeExternal at output buffer position at : %d", outputStream.getPosition());
+	logger.logDebugWire(
+			"****Entering NodeImpl.writeExternal at output buffer position at : %d", 
+			outputStream.getPosition());
 	var startPos = outputStream.getPosition();
 	outputStream.writeInt(0);
 	//write attributes from the based class
     this.writeAttributes(outputStream);
     //write the edges ids
     var newCount = 0;
-    
-    console.log('?????????????????????' + this._edges.length);
     
     for(var i = 0; i < this._edges.length; i++) {
     	if(this._edges[i].isNew()) {
@@ -92,13 +104,50 @@ TGNode.prototype.writeExternal = function (outputStream) {
     
     for(i = 0; i < this._edges.length; i++) {
     	if(this._edges[i].isNew()) {
-    		outputStream.writeLong(this._edges[i].getVirtualId());
+    		outputStream.writeLongAsBytes(this._edges[i].getId().getBytes());
     	}
     }
     var currPos = outputStream.getPosition();
     var length = currPos - startPos;
     outputStream.writeIntAt(startPos, length);
-	console.log("****Leaving NodeImpl.writeExternal at output buffer position at : %d", outputStream.getPosition());
+    logger.logDebugWire(
+    		"****Leaving NodeImpl.writeExternal at output buffer position at : %d", 
+    		outputStream.getPosition());
+};
+
+TGNode.prototype.readExternal = function (inputStream, gof) {
+	logger.logDebugWire(
+			"****Entering NodeImpl.readExternal at output buffer position at : %d", 
+			inputStream.getPosition());
+	//FIXME: Need to validate length
+	var buflen = inputStream.readInt();
+	this.readAttributes(inputStream);
+
+    var edgeCount = inputStream.readInt();
+    for (var i=0; i<edgeCount; i++){
+    	var edge = null;
+        var idBytes = inputStream.readLongAsBytes();
+        var id = TGEntityId.bytesToString(idBytes);
+    	var refMap = inputStream.getReferenceMap();
+    	if (refMap) {
+    		edge = refMap[id];
+    	}
+    	
+    	if (!edge) {
+    		edge = gof.createEdge();//new TGEdge(this._graphMetadata);
+    		edge.setInitialized(false);
+    		edge.getId().setBytes(idBytes);
+    		if(refMap) {
+       			refMap[id] = edge;   			
+    		}
+     	}
+    	// Add this edge to my collection
+    	this._edges.push(edge);
+    }
+	this._isInitialized = true;
+	logger.logDebugWire(
+			"****Leaving NodeImpl.readExternal at output buffer position at : %d", 
+			inputStream.getPosition());
 };
 
 exports.TGNode = TGNode;

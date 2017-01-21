@@ -13,30 +13,36 @@
  * limitations under the License.
  */
 
-/**
- *
- * @param graphMetadata - #TGGraphMetadata
- * @param name
- * @param parentNodeType - #TGNodeType
- * @constructor
- */
-//Class definition
+var TGEntityType     = require('./TGEntityType'),
+    TGSystemObject = require('./TGSystemObject').TGSystemObject,
+    util             = require('util');
+
 function TGNodeType(graphMetadata, name, parentNodeType) {
-    this._graphMetadata  = graphMetadata;
-    this._name           = name;
-    this._parentNodeType = parentNodeType;
+	TGNodeType.super_.call(this);
+	this._pKeys = [];
 }
 
-TGNodeType.prototype.getTypeName = function() {
-    return this._name;
+util.inherits(TGNodeType, TGEntityType);
+
+TGNodeType.prototype.getSystemType = function() {
+    return TGSystemObject.TGSystemType.NodeType;
 };
 
 
-TGNodeType.prototype.getDerivedFrom = function() {
-    return this._parentNodeType;
+TGNodeType.prototype.readExternal = function(inputStream) {
+	this.readAttributeDescriptors(inputStream);
+	
+	var attrCount = inputStream.readShort();
+	for(var i=0; i<attrCount; i++) {
+		this._pKeys.push(inputStream.readUTF());
+	}
+	
+
+	var idxCount = inputStream.readShort();
+	for (var i=0; i<idxCount; i++) {
+        //FIXME: Get meta data needs to return index definitions
+		inputStream.readInt();
+	}
 };
 
-
-TGNodeType.prototype.getEntityKind = function() {
-    return TGAbstractEntity.EntityKind.NODETYPE;
-};
+module.exports = TGNodeType;

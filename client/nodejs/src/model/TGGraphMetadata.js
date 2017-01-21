@@ -15,6 +15,7 @@
 
 var TGNodeType = require('./TGNodeType'),
     TGEdgeType = require('./TGEdgeType'),
+    TGCompositeKey = require('./TGCompositeKey'),
 	TGAttributeDescriptor = require('./TGAttributeDescriptor').TGAttributeDescriptor;
 
 //Class definition
@@ -22,6 +23,9 @@ function TGGraphMetadata() {
     this._attrDescriptorMap = {};
     this._nodeTypeMap       = {};
     this._edgeTypeMap       = {};
+	this._descriptorMapById = {};
+	this._nodeTypeMapById   = {};
+	this._edgeTypeMapById   = {};
 }
 
 /**
@@ -66,31 +70,36 @@ TGGraphMetadata.prototype.getEdgeType = function(typeName) {
  * Return a set of known attribute descriptors.
  */
 TGGraphMetadata.prototype.getAttributeDescriptors = function() {
-    return Object.keys(this._attrDescriptorMap).map(function(key){
-        return attrDescriptorMap[key];
-    });
+	var attrDescriptorMap = this._attrDescriptorMap;
+	return Object.keys(attrDescriptorMap).filter(function(key) {
+	    return true;
+	}).map(function(key) {
+	    return attrDescriptorMap[key];
+	});
 };
 
 TGGraphMetadata.prototype.getNewAttributeDescriptors = function () {
 	var attrDescriptorMap = this._attrDescriptorMap;
-	var newAttributeDescriptors = Object.keys(this._attrDescriptorMap).filter(function(key) {
+	var newAttributeDescriptors = Object.keys(attrDescriptorMap).filter(function(key) {
 	    return attrDescriptorMap[key].getAttributeId() < 0;
 	}).map(function(key) {
 	    return attrDescriptorMap[key];
 	});
 	
-	for (index in newAttributeDescriptors) {
-		console.log("Confirm ne attribute descriptor :  index = " + index + ", id = " + newAttributeDescriptors[index].getAttributeId());
+	for (var index in newAttributeDescriptors) {
+		console.log("Confirm ne attribute descriptor :  index = " + index + ", id = " + newAttributeDescriptors[index].getAttributeId()
+				                                                          + ", name = " + newAttributeDescriptors[index].getName());
 	}
 	
 	return newAttributeDescriptors;
-}
+};
 
 /**
  * Get the Attribute Descriptor.
  * @param attributeName
  */
 TGGraphMetadata.prototype.getAttributeDescriptor = function(attributeName) {
+	//console.log('getAttributeDescriptor : attributeName = ' + attributeName);
 	return this._attrDescriptorMap[attributeName];
 };
 
@@ -103,6 +112,7 @@ TGGraphMetadata.prototype.getAttributeDescriptor = function(attributeName) {
  */
 TGGraphMetadata.prototype.createAttributeDescriptor = function(attributeName, attributeType, isArray) {
     var attributeDescriptor = new TGAttributeDescriptor(attributeName, attributeType, isArray);
+	//console.log('createAttributeDescriptor : attributeName = ' + attributeName);
     this._attrDescriptorMap[attributeName] = attributeDescriptor;	
 	
     return attributeDescriptor;
@@ -113,9 +123,10 @@ TGGraphMetadata.prototype.createAttributeDescriptor = function(attributeName, at
  * @param nodeName
  * @param parentNodeType - #TGNodeType
  */
-TGGraphMetadata.prototype.createNode = function(nodeName, parentNodeType) {
-    var nodeType = new TGNodeType(this, nodeName, parentNodeType);
-    this._nodeTypeMap[nodeName] = nodeType;
+TGGraphMetadata.prototype.createNodeType = function(nodeTypeName, parentNodeType) {
+    var nodeType = new TGNodeType(this, nodeTypeName, parentNodeType);
+    //this._nodeTypeMap[nodeName] = nodeType;
+    return nodeType;
 };
 
 /**
@@ -123,9 +134,60 @@ TGGraphMetadata.prototype.createNode = function(nodeName, parentNodeType) {
  * @param edgeName
  * @param parentEdgeType - #TGEdgeType
  */
-TGGraphMetadata.prototype.createEdge = function(edgeName, parentEdgeType) {
-    var edgeType = new TGEdgeType(this, edgeName, parentEdgeType);
-    this._edgeTypeMap[edgeName] = parentEdgeType;
+TGGraphMetadata.prototype.createEdgeType = function(edgeTypeName, parentEdgeType) {
+    var edgeType = new TGEdgeType(this, edgeTypeName, parentEdgeType.getDirectionType(), parentEdgeType);
+    //this._edgeTypeMap[edgeName] = parentEdgeType;
+    return edgeType;
+};
+
+TGGraphMetadata.prototype.createCompositeKey = function (typeName) {
+    return new TGCompositeKey(this, typeName);
+};
+
+TGGraphMetadata.prototype.updateMetadata = function(attrDescList, nodeTypeList, edgeTypeList) {
+	var index = null;
+	if (attrDescList) {
+		for (index in attrDescList) {
+			var desc = attrDescList[index];
+			//console.log('Update attribute descriptor : id ' + desc.getAttributeId() + ', name ' + desc.getName());
+			this._descriptorMapById[desc.getAttributeId()] = desc;
+			this._attrDescriptorMap[desc.getName()] = desc;
+		}
+	}
+	if (nodeTypeList) {
+		for (index in nodeTypeList) {
+			var nt = nodeTypeList[index];
+			this._nodeTypeMap[nt.getName()] = nt;
+			this._nodeTypeMapById[nt.getId()] = nt;
+		}
+	}
+	if (edgeTypeList) {
+		for (index in edgeTypeList) {
+			var et = edgeTypeList[index];
+			this._edgeTypeMap[et.getName()] = et;
+			this._edgeTypeMapById[et.getId()] = et;
+		}
+	}
+};
+
+TGGraphMetadata.prototype.getAttributeDescriptorById = function(id) {
+	return this._descriptorMapById[id];
+};
+
+TGGraphMetadata.prototype.getNodeTypeById = function(id) {
+	return this._nodeTypeMapById[id];
+};
+
+TGGraphMetadata.prototype.getEdgeTypeById = function(id) {
+	return this._edgeTypeMapById[id];
+};
+
+TGGraphMetadata.prototype.writeExternal = function(outputStream) {
+
+};
+
+TGGraphMetadata.prototype.readExternal = function(inputStream) {
+
 };
 
 exports.TGGraphMetadata = TGGraphMetadata;

@@ -13,22 +13,38 @@
  * limitations under the License.
  */
 
-var ProtocolDataInputStream = require('../pdu/impl/ProtocolDataInputStream').ProtocolDataInputStream,
-    ProtocolDataOutputStream = require('../pdu/impl/ProtocolDataOutputStream').ProtocolDataOutputStream,
-    TGProtocolVersion       = require('../TGProtocolVersion').TGProtocolVersion;
+var TGNumber                 = require('../datatype/TGNumber'),
+    TGException              = require('../exception/TGException').TGException,
+    TGLogManager             = require('../log/TGLogManager'),
+    TGLogLevel               = require('../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
 
 var globalSequenceNo = 0;
 
 //Class definition
 function AbstractProtocolMessage() {
-	var _sequenceNo = globalSequenceNo;
-	globalSequenceNo++;
-    var _requestId = -1;
-	var _authToken =  0;
-    var _sessionId =  0;
-    var _timestamp = -1;
-    var _bufLength = -1;
-    var_dataOffset = -1;
+	var _sequenceNo = globalSequenceNo++;
+	var _authToken =  TGNumber.getLong(0);
+    var _sessionId =  TGNumber.getLong(0);
+    var _timestamp = new Date();
+    var _dataOffset = -1;
+    
+    var _exception = null;
+    
+    /**
+     * Return exception.
+     */
+    this.getException = function() {
+    	return _exception;
+    };
+
+    /**
+     * Set exception.
+     */
+    this.setException = function(exception) {
+    	_exception = exception;
+    };   
 
     /**
      * Return current sequence number.
@@ -38,11 +54,22 @@ function AbstractProtocolMessage() {
     };
 
     /**
+     * Set current sequence number.
+     */
+    this.setSequenceNo = function(sequenceNo) {
+    	_sequenceNo = sequenceNo;
+    };
+    
+    this.incrementThenUpdateSequenceNo = function() {
+    	this.getSequenceNo(globalSequenceNo++);
+    };
+    
+    /**
      * Get current timestamp.
      */
     this.getTimestamp = function() {
-    	if (_timestamp == null || _timestamp == -1) {
-    		return new Date().getTime();
+    	if (!_timestamp) {
+    		return new Date();
     	}
     	return _timestamp;
     };
@@ -56,33 +83,20 @@ function AbstractProtocolMessage() {
     	}
     };
 
-
-    this.updateSequenceAndTimestamp = function(timestamp) {
-    	if (this.isUpdateable()) {
-    		_sequenceNo = globalSequenceNo;
-    		globalSequenceNo++;
-    		console.log('after updateSequenceAndTimestamp -----------------> ' + _sequenceNo);
-    		_timestamp  = timestamp;
-    		_bufLength  = -1;
-    	} else {
-    		throw new Error('Mutating a readonly message');
-    	}
-    };
-
     /**
      * Get the RequestId for the Message. This will be used as the Co-relationId
      */
-    this.getRequestId = function() {
-    	return _requestId;
-    };
+    //this.getRequestId = function() {
+    //	return _requestId;
+    //};
 
     /**
      * Set the RequestId for the Message.
      */
-    this.setRequestId = function(requestId) {
-    	_requestId = requestId;
-    	console.log('AbstractProtocolMessage::setRequestId ' + requestId + ', ' + _requestId);
-    };
+    //this.setRequestId = function(requestId) {
+    //	_requestId = requestId;
+    //	logger.logDebugWire( 'AbstractProtocolMessage::setRequestId %s, %s', requestId, _requestId);
+    //};
     
     this.getAuthToken = function() {
     	return _authToken;
@@ -90,6 +104,7 @@ function AbstractProtocolMessage() {
 
     this.setAuthToken = function(authToken) {
         _authToken = authToken;
+        logger.logDebugWire( 'AbstractProtocolMessage::setAuthToken %s', _authToken.getHexString());
     };
     
     this.getSessionId = function() {
@@ -98,80 +113,13 @@ function AbstractProtocolMessage() {
 
     this.setSessionId = function(sessionId) {
         _sessionId = sessionId;
+        logger.logDebugWire( 'AbstractProtocolMessage::setSessionId %s', _sessionId.getHexString());
     };
 
-    /**
-     * Convert message to bytes.
-     * TODO Override.
-     */
-    this.toBytes = function() {
-    	console.log("Entering MessageUtils.messageToBytes ..............");
-    	var outputStream = new ProtocolDataOutputStream();
-    	//Write to this array and finally convert to buffer
-    	writeHeader(this, outputStream);
-    	//Write payload
-    	this.writePayload(outputStream);
-    	//Write length at the beginning
-    	outputStream.writeIntAt(0, outputStream.length());
-    	return outputStream.toBuffer();
-    };
-
-    /**
-     * Get the MessageByteBufLength, call this method after the toBytes is called.
-     */
-    this.getMessageByteBufLength = function() {
-
-    };
-
-    this.readHeader = function(inputStream) {
-    	var magic = inputStream.readInt();
-    	if (magic != TGProtocolVersion.getMagic()) {
-    		throw new Error('Bad Message Magic');
-    	}
-
-    	var protocolVersion = inputStream.readShort();
-    	if (!TGProtocolVersion.isCompatible(protocolVersion)) {
-    		throw new Error('Unsupported Protocol version');
-    	}
-
-    	var verbId = inputStream.readShort();
-
-    	_sequenceNo = inputStream.readLong();
-    	_timestamp  = inputStream.readLong();
-    	_requestId  = inputStream.readLong();
-    	
-        // Moved from AuthenticatedMessage
-        _authToken 	 = inputStream.readLong();
-        _sessionId    = inputStream.readLong();
-
-    	_dataOffset = inputStream.readShort();
+    this.setDataOffset = function(dataOffset) {
+    	_dataOffset = dataOffset;
     };
     
-    /**
-     * Reconstruct the message from the buffer.
-     * @param byteBuffer
-     */
-    this.fromBytes = function(byteBuffer) {
-
-    };
 }
-
-function writeHeader(message, outputStream) {
-	console.log("**** Entering commit AbstractProtocolMessage.writeHeader at output buffer position at : %d", outputStream.getPosition());
-    outputStream.writeInt(0);
-    outputStream.writeInt(TGProtocolVersion.getMagic());
-    outputStream.writeShort(TGProtocolVersion.getProtocolVersion());
-    outputStream.writeShort(message.getVerbId().value);
-    outputStream.writeLong(message.getSequenceNo());
-    outputStream.writeLong(message.getTimestamp());
-    outputStream.writeLong(message.getRequestId());
-    
-    // Moved from AuthenticatedMessage
-    outputStream.writeLong(message.getAuthToken());
-    outputStream.writeLong(message.getSessionId());
-    
-    outputStream.writeShort(outputStream.length() + 2);
-	console.log("**** Leaving commit AbstractProtocolMessage.writeHeader at output buffer position at : %d", outputStream.getPosition());
-};
 
 exports.AbstractProtocolMessage = AbstractProtocolMessage;

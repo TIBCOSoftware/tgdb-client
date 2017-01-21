@@ -13,28 +13,22 @@
  * limitations under the License.
  */
 
-var util = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage;
+var util                    = require('util'),
+    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
+    TGException             = require('../../exception/TGException').TGException,
+    TGLogManager            = require('../../log/TGLogManager'),
+    TGLogLevel              = require('../../log/TGLogger').TGLogLevel;
 
-//Class Definition
+var logger = TGLogManager.getLogger();
+
 function AuthenticatedMessage() {
 	AuthenticatedMessage.super_.call(this);
-//	this._authToken;
-//    this._sessionId;
-    this._connectionId;
-    this._clientId;
+    this._connectionId = null;
+    this._clientId = null;
 }
 
 util.inherits(AuthenticatedMessage, AbstractProtocolMessage);
-/*
-AuthenticatedMessage.prototype.getAuthToken = function() {
-	return this._authToken;
-};
 
-AuthenticatedMessage.prototype.setAuthToken = function(authToken) {
-    this._authToken = authToken;
-};
-*/
 AuthenticatedMessage.prototype.getConnectionId = function() {
     return this._connectionId;
 };
@@ -42,15 +36,7 @@ AuthenticatedMessage.prototype.getConnectionId = function() {
 AuthenticatedMessage.prototype.setConnectionId = function(connectionId) {
     this._connectionId = connectionId;
 };
-/*
-AuthenticatedMessage.prototype.getSessionId = function() {
-    this._sessionId;
-};
 
-AuthenticatedMessage.prototype.setSessionId = function(sessionId) {
-    this._sessionId = sessionId;
-};
-*/
 AuthenticatedMessage.prototype.getClientId = function () {
     return this._clientId;
 };
@@ -60,13 +46,18 @@ AuthenticatedMessage.prototype.setClientId = function (clientId) {
 };
 
 AuthenticatedMessage.prototype.writePayload = function (outputStream) {
-	console.log("**** Entering commit AuthenticatedMessage.writePayload at output buffer position at : %d", outputStream.getPosition());
-    if ((this._authToken == -1) || (this._sessionId == -1))
+	logger.logDebugWire( 
+			"**** Entering commit AuthenticatedMessage.writePayload at output buffer position at : %d", 
+			outputStream.getPosition());
+    if ((this._authToken === -1) || (this._sessionId === -1)) {
         throw new Error("Message not authenticated");
+    }
 
     outputStream.writeLong(this._authToken);
     outputStream.writeLong(this._sessionId);
-	console.log("**** Leaving commit AuthenticatedMessage.writePayload at output buffer position at : %d", outputStream.getPosition());
+    logger.logDebugWire( 
+    		"**** Leaving commit AuthenticatedMessage.writePayload at output buffer position at : %d", 
+    		outputStream.getPosition());
 };
 
 AuthenticatedMessage.prototype.readPayload = function (inputStream) {

@@ -13,20 +13,39 @@
  * limitations under the License.
  */
 
-var channel = require('../channel/AbstractChannel'),
-    con     = require('../connection/TGCConnection');
+var TCPConnection        = require('./tcp/TCPConnection'),
+    TGLogManager         = require('../log/TGLogManager'),
+    TGLogLevel           = require('../log/TGLogger').TGLogLevel;
 
-//Class definition
+var logger = TGLogManager.getLogger();
+
+var globleConnPoolIds = 1;
+
 function TGConnectionPool(channels, poolSize, properties) {
+	this._connPoolId = globleConnPoolIds++;
+	
     this._connections = [];
     this._channels = channels;
     this._properties = properties;
 
-    for (var loop = 0; loop < poolSize; loop++) {
-        var channel = this._channels[loop];
-        var connection = new con.TGCConnection(this, channel, properties);
-        this._connections.push(connection);
-    }
+    var connection = null;
+    var connections = this._connections;
+    var me = this;
+    this._channels.forEach(function(channel) {
+    	if(!properties.ConnectionImpl) {
+        	connection = new TCPConnection(me, channel, properties);    		
+    	} else {
+    		var ConnectionModule = require(properties.ConnectionImpl);
+    		connection = new ConnectionModule(me, channel, properties);
+    	}
+        
+        channel.setLinkEventHandler(connection);
+        connections.push(connection);
+        //channel.setLinkEventHandler(this);
+    	logger.logDebug('[TGConnectionPool] connection initialized, id = %s', connection.getId());
+    });
+    
+    
 }
 
 /**
@@ -34,6 +53,22 @@ function TGConnectionPool(channels, poolSize, properties) {
  */
 TGConnectionPool.prototype.setExceptionListener = function() {
 
+};
+
+/**
+ *   LinkEventHandler interface
+ */
+
+TGConnectionPool.prototype.onException = function(ex, duringClose) {
+	logger.logInfo('[TGConnectionPool.prototype.onException] Exception happens!!');
+};
+
+TGConnectionPool.prototype.onReconnect = function() {
+	
+};
+
+TGConnectionPool.prototype.getTerminatedText = function () {
+	
 };
 
 /**
@@ -62,11 +97,12 @@ TGConnectionPool.prototype.disconnect = function() {
 TGConnectionPool.prototype.get = function() {
     //Check if any connection is available.
     var connections = this._connections;
-    if (connections.length == 0) {
+    if (connections.length === 0) {
         //Return null for now
         return null;
     }
     return connections.pop();
+    //return connections[0];
 };
 
 /**
@@ -84,5 +120,22 @@ TGConnectionPool.prototype.getNumFreeConnections = function() {
     var connections = this._connections;
     return connections.length;
 };
+
+TGConnectionPool.prototype.onException = function (ex, duringClose) {
+    this.disconnect();
+
+    if (!lsnr) {
+        lsnr.onException(ex);
+    }
+};
+
+TGConnectionPool.prototype.onReconnect = function () {
+	return false;
+};
+
+TGConnectionPool.prototype.getTerminatedText = function () {
+	
+};
+
 
 exports.TGConnectionPool = TGConnectionPool;

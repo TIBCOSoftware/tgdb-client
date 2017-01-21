@@ -13,9 +13,9 @@
  * limitations under the License.
  */
 
-var inherits                  = require('util').inherits,
-    AbstractChannel           = require('../AbstractChannel').AbstractChannel,
-    TGProperties              = require('../../utils/TGProperties').TGProperties;
+var inherits     = require('util').inherits,
+    TGChannel    = require('../TGChannel').TGChannel,
+    TGProperties = require('../../utils/TGProperties').TGProperties;
 
 //Class definition
 /**
@@ -30,7 +30,7 @@ function TESTChannel(serverURL, properties) {
     this._properties = new TGProperties(properties);
 }
 
-inherits(TESTChannel, AbstractChannel);
+inherits(TESTChannel, TGChannel);
 
 /**
  * Connect using TEST.
@@ -44,7 +44,7 @@ TESTChannel.prototype.makeConnection = function(callback) {
     };
     //var eventEmitter = new TCPConnectionEventEmitter(this);
     var channel = this;
-    console.log("[TESTChannel::makeConnection] here I am ........ ");
+    ////console.log("[TESTChannel::makeConnection] here I am ........ ");
 };
 
 exports.TESTChannel = TESTChannel;

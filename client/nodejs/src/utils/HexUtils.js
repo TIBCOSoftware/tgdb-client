@@ -65,8 +65,9 @@ exports.HexUtils = {
 };
 
 function decimalToHexString(number, padding) {
-	if (!padding)
+	if (!padding) {
 		padding = 2;
+	}
 	if (number < 0) {
 		number = 0xFFFFFFFF + number + 1;
 	}

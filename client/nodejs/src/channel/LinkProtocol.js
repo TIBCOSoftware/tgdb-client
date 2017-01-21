@@ -13,22 +13,12 @@
  * limitations under the License.
  */ 
 
-function LinkProtocol() {
-
-}
-
-LinkProtocol.Type = {
-    TCP: 0,
-    SSL: 1,
-    HTTP: 2,
-    HTTPS: 3,
-    TEST : 4
+var LinkProtocol = {
+    TCP:   { type : 0, prefix : 'tcp://'},
+    SSL:   { type : 1, prefix : 'ssl://'},
+    HTTP:  { type : 2, prefix : 'http://'},
+    HTTPS: { type : 3, prefix : 'https://'},
+    TEST : { type : 4, prefix : 'test://'}
 };
-
-LinkProtocol.TCP   = 'tcp://';
-LinkProtocol.TCPS  = 'ssl://';
-LinkProtocol.HTTP  = 'http://';
-LinkProtocol.HTTPS = 'https://';
-LinkProtocol.TEST = 'test://';
 
 exports.LinkProtocol = LinkProtocol;

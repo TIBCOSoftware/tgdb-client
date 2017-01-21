@@ -13,19 +13,18 @@
  * limitations under the License.
  */
 
-var util = require('util'),
-    AbstractProtocolMessage = require('../AbstractProtocolMessage').AbstractProtocolMessage,
-    VerbId       = require('./VerbId').VerbId;
+var util        = require('util'),
+    VerbId      = require('./VerbId').VerbId,
+    Request     = require('./Request').Request,
+    TGException = require('../../exception/TGException').TGException;
 
-
-//Class Definition
 function HandshakeRequest() {
 	HandshakeRequest.super_.call(this);
     this._sslMode = false;
     this._challenge = 0;
 }
 
-util.inherits(HandshakeRequest, AbstractProtocolMessage);
+util.inherits(HandshakeRequest, Request);
 
 HandshakeRequest.prototype.getVerbId = function() {
     return VerbId.HANDSHAKE_REQUEST;
@@ -33,6 +32,18 @@ HandshakeRequest.prototype.getVerbId = function() {
 
 HandshakeRequest.prototype.isUpdateable = function() {
     return true;
+};
+
+HandshakeRequest.prototype.updateSequenceAndTimestamp = function(timestamp) {
+	if (this.isUpdateable()) {
+		this.incrementThenUpdateSequenceNo();
+		if(!(!timestamp)) {
+			this.setTimestamp(timestamp);
+		}
+		//_bufLength  = -1;
+	} else {
+		throw new TGException('Mutating a readonly message');
+	}
 };
 
 HandshakeRequest.prototype.writePayload = function(outputStream) {

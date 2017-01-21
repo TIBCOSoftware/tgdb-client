@@ -13,8 +13,26 @@
  * limitations under the License.
  */
 
-var	TGGraphObjectFactory = require('../model/TGGraphObjectFactory').TGGraphObjectFactory,
-PrintUtility             = require('../utils/PrintUtility').PrintUtility;
+var	TGGraphObjectFactory = require('./TGGraphObjectFactory').TGGraphObjectFactory,
+    TGAbstractEntity     = require('./TGAbstractEntity').TGAbstractEntity,
+    TGEntityKind         = require('./TGEntityKind').TGEntityKind,
+    TGException          = require('../exception/TGException').TGException,
+    PrintUtility         = require('../utils/PrintUtility'),
+    TGLogManager         = require('../log/TGLogManager'),
+    TGLogLevel           = require('../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
+
+function checkEntity(entity) {
+	if(entity.getEntityKind() === TGEntityKind.EDGE) {
+		var nodes = entity.getVertices();
+		nodes.forEach(function(node){
+			if(!node) {
+				throw new TGException('A undefined node found for an edge.');
+			}
+		});
+	}
+}
 
 function TGEntityManager() {
 	
@@ -33,7 +51,18 @@ function TGEntityManager() {
     
     this.newAttrDecsSet = function() {
         return _graphObjectFactory.getGraphMetaData().getNewAttributeDescriptors(); 
-    }
+    };
+    
+    this.getCachedGraphMetaData = function() {
+		return _graphObjectFactory.getGraphMetaData();
+    };
+    
+    this.updateGraphMetaData = function(attrDescList, nodeTypeList, edgeTypeList) {
+		var graphMetadata = _graphObjectFactory.getGraphMetaData();
+		graphMetadata.updateMetadata(attrDescList, nodeTypeList, edgeTypeList);
+
+		return graphMetadata; 
+    };
     
     /**
      * New Entity Created.
@@ -43,9 +72,11 @@ function TGEntityManager() {
     this.entityCreated = function(tgEntity) {
     	var attributes = tgEntity.getAttributes();
     	var attKeys = Object.keys(attributes);
-        console.log('Entity is created - virtualId = %s - %s', tgEntity.getVirtualId(),  (0!=attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
+    	logger.logDebugWire(
+    		'Entity is created - Id = %s - %s', tgEntity.getId(),  
+    		(0!==attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
         // Should be using the virtualId here because it's brand new
-        _addedEntities[tgEntity.getVirtualId()] = tgEntity;    	
+        _addedEntities[tgEntity.getId().getHexString()] = tgEntity;    	
     };
 
     /**
@@ -57,8 +88,10 @@ function TGEntityManager() {
     this.nodeAdded = function(tgGraph, tgNode) {
     	var attributes = tgNode.getAttributes();
     	var attKeys = Object.keys(attributes);
-        console.log('tgNode is added - virtualId = %s - %s', tgNode.getVirtualId(),  (0!=attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
-        _addedEntities[tgNode.getVirtualId()] = tgNode;
+    	logger.logDebugWire(
+    		'tgNode is added - Id = %s - %s', tgNode.getId(),  
+    		(0!==attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
+        _addedEntities[tgNode.getId().getHexString()] = tgNode;
     };
 
     /**
@@ -67,17 +100,74 @@ function TGEntityManager() {
      * @param attribute
      */
     this.attributeAdded = function(tgAttribute, tgEntityOwner) {
-        console.log("Attribute is created");
+        //console.log("Attribute is created");
     };
 
     this.entityUpdated = function(tgEntity) {
     	var attributes = tgEntity.getAttributes();
     	var attKeys = Object.keys(attributes);
-        console.log('Entity is created - virtualId = %s - %s', tgEntity.getVirtualId(),  (0!=attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
+    	logger.logDebugWire(
+    		'Entity is updated - Id = %s - %s', tgEntity.getId(),  
+    		(0!==attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
         // Should be using the virtualId here because it's brand new
-        _updatedEntities[tgEntity.getVirtualId()] = tgEntity;    	
+        _updatedEntities[tgEntity.getId().getHexString()] = tgEntity;    	
     };
-
+    
+    this.updateChangedListForNewEdge = function () {
+        //Include existing nodes to the changed list if it's part of a new edge
+    	
+        Object.keys(_addedEntities).forEach(function(key) {
+			var entity = _addedEntities[key];
+        	if (entity.getEntityKind() === TGEntityKind.EDGE) {
+        		// Since it's an edge, we can call getVertices to get nodes which asscociated with this edge.
+        		entity.getVertices().forEach(function(node){
+        			if (!node.isNew()) {
+        				_updatedEntities[node.getId().getHexString()] = node;
+        				logger.logDebugWire(
+        						"New edge added to an existing node : %s", 
+        						node.getId().getHexString());
+        			}
+        		});
+        	}
+        });
+    };
+    
+    this.updateChangedListForUpdatedEdge = function () {
+        Object.keys(_updatedEntities).forEach(function(key) {
+			var entity = _updatedEntities[key];
+        	if (entity.getEntityKind() === TGEntityKind.EDGE) {
+        		// Since it's an edge, we can call getVertices to get nodes which asscociated with this edge.
+        		entity.getVertices().forEach(function(node) {
+        			if (!node.isNew()) {
+        				_updatedEntities[node.getId().getHexString()] = node;
+        				logger.logDebugWire(
+        						"Edge updated for an existing node : %s", 
+        						node.getId().getHexString());
+        			}
+        		});
+        	}
+        });
+    };
+    
+    this.updateRemovedListForRemovesEdge = function () {
+        Object.keys(_removedEntities).forEach(function(key) {
+			var entity = _removedEntities[key];
+        	if (entity.getEntityKind() === TGEntityKind.EDGE) {
+        		// Since it's an edge, we can call getVertices to get nodes which asscociated with this edge.
+        		entity.getVertices().forEach(function(node) {
+        			if (!node.isNew()) {
+        				if(!_removedEntities[node.getId().getHexString()]) {
+        					_updatedEntities[node.getId().getHexString()] = node;
+        					logger.logDebugWire(
+        							"Edge removed but node is not : %s", 
+        							node.getId().getHexString());
+        				}
+        			}
+        		});
+        	}
+        });
+    };    
+    
     /**
      * Called when an attribute is set.
      * 
@@ -87,7 +177,7 @@ function TGEntityManager() {
      */
     this.attributeChanged = function(tgAttribute, oldValue,
     		newValue) {
-        console.log("Attribute is changed");
+        //console.log("Attribute is changed");
     };
 
     /**
@@ -97,7 +187,7 @@ function TGEntityManager() {
      */
     this.attributeRemoved = function(tgAttribute,
     		tgEntityOwner) {
-        console.log("Attribute is removed");
+        //console.log("Attribute is removed");
     };
 
     /**
@@ -107,7 +197,7 @@ function TGEntityManager() {
      * @param node
      */
     this.nodeRemoved = function(tgGraph, tgNode) {
-        console.log("Node is removed");
+        //console.log("Node is removed");
         _removedEntities[tgNode.getVirtualId()] = tgNode;
     };
 
@@ -119,37 +209,84 @@ function TGEntityManager() {
     this.entityDeleted = function(tgEntity) {
     	var attributes = tgEntity.getAttributes();
     	var attKeys = Object.keys(attributes);
-        console.log('Entity is deleted - virtualId = %s - %s', tgEntity.getVirtualId(),  (0!=attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
-        _removedEntities[tgEntity.getVirtualId()] = tgEntity;
+        logger.logDebugWire(
+        		'Entity is deleted - Id = %s - %s', tgEntity.getId(),  
+        		(0!==attKeys.length ? attributes[attKeys[0]].getValue() : "no attribute found"));
+        _removedEntities[tgEntity.getId().getHexString()] = tgEntity;
     };
     
     this.updateEntityIds = function(response) {
-    	console.log('(((((((((((((((((((((((((( updateEntityIds )))))))))))))))))))))))))))');
-        fixUpAttrDescIds(response, _graphObjectFactory.getGraphMetaData().getNewAttributeDescriptors());
-        fixUpEntityIds(response, _addedEntities);
-    }
+    	logger.logDebugWire(
+    			'(((((((((((((((((((((((((( updateEntityIds )))))))))))))))))))))))))))');
+    	fixUpAttrDescriptors(response, _graphObjectFactory.getGraphMetaData().getNewAttributeDescriptors());
+        fixUpEntityIds(response, _addedEntities, _updatedEntities);
+    	
+        var changeList = [];
+        Object.keys(_removedEntities).forEach(function(key) {
+        	_removedEntities[key].markDeleted();
+        	changeList.push(_removedEntities[key]);
+        });
+        
+        //for (var key in _removedEntities) {
+        //	_removedEntities[key].markDeleted();
+        //	changeList.push(_removedEntities[key]);
+        //}
+    	
+        Object.keys(_updatedEntities).forEach(function(key) {
+        	_updatedEntities[key].resetModifiedAttributes();
+        	changeList.push(_updatedEntities[key]);
+        });
+        
+        //for(var key in _updatedEntities) {
+        //	_updatedEntities[key].resetModifiedAttributes();
+        //	changeList.push(_updatedEntities[key]);
+        //}
+        
+        Object.keys(_addedEntities).forEach(function(key) {
+        	_addedEntities[key].resetModifiedAttributes();
+        	changeList.push(_addedEntities[key]);
+        });
+        
+        //for(var key in _addedEntities) {
+        //	_addedEntities[key].resetModifiedAttributes();
+        //	changeList.push(_addedEntities[key]);
+        //}
+        
+        this.clear();
+        return changeList;
+    };
     
     this.clear = function (){
-        for(var key in _updatedEntities) {
-        	_updatedEntities[key].resetModifiedAttributes();
-        }
-        
-        for(var key in _addedEntities) {
-        	_addedEntities[key].resetModifiedAttributes();
+    	
+        if(logger.isDebug) {
+        	logger.logDebug(
+			    '[TGEntityManager.clear] Before clean up !!!!');
+            PrintUtility.printEntityMap(_addedEntities, 'addedEntities');
+            PrintUtility.printEntityMap(_updatedEntities, 'updatedEntities');
+            PrintUtility.printEntityMap(_removedEntities, 'removedEntities');        	
         }
         
         _addedEntities = {};
         _updatedEntities = {};
         _removedEntities = {};
         
-        PrintUtility.printEntityMap(_addedEntities, 'addedEntities');
-        PrintUtility.printEntityMap(_updatedEntities, 'updatedEntities');
-        PrintUtility.printEntityMap(_removedEntities, 'removedEntities');
+        if(logger.isDebug) {
+        	logger.logDebug(
+		        '[TGEntityManager.clear] After clean up !!!!');
+            PrintUtility.printEntityMap(_addedEntities, 'addedEntities');
+            PrintUtility.printEntityMap(_updatedEntities, 'updatedEntities');
+            PrintUtility.printEntityMap(_removedEntities, 'removedEntities');        	
+        }
     };
 }
 
-function fixUpAttrDescIds (response, attrDescSet) {
-    console.log("Fixup attribute descriptor ids");
+/*
+ *  Private methods
+ * */
+
+function fixUpAttrDescriptors (response, attrDescSet) {
+	logger.logDebugWire( 
+			"[TGEntityManager::fixUpAttrDescriptors] Fixup attribute descriptor ids");
     var attrDescCount = response.getAttrDescCount();
     var attrDescIdList = response.getAttrDescIdList();
     for (var i=0; i<attrDescCount; i++) {
@@ -157,35 +294,61 @@ function fixUpAttrDescIds (response, attrDescSet) {
     	var realId = attrDescIdList[(i*2) + 1];
     	
 		for(var index in attrDescSet) {
-    		if (attrDescSet[index].getAttributeId() == tempId) {
-    			console.log("Replace descriptor id : %d by %d", attrDescSet[index].getAttributeId(), realId);
+    		if (attrDescSet[index].getAttributeId() === tempId) {
+    			logger.logDebugWire( 
+    					"[TGEntityManager::fixUpAttrDescriptors] Replace descriptor id : %d by %d", 
+    					attrDescSet[index].getAttributeId(), realId);
     			attrDescSet[index].setAttributeId(realId);
+    			break;
     		}
 		}
     }
 }
 
-function fixUpEntityIds (response, addedList) {
-    console.log("Fixup entity ids");
+function fixUpEntityIds (response, addedEntities, updatedEntities) {
+	logger.logDebugWire( 
+			"[TGEntityManager::fixUpEntityIds] Fixup entity ids");
     var addedIdCount = response.getAddedEntityCount();
     var addedIdList = response.getAddedIdList();
+    var key = null;
+    var version = null;
     for (var i=0; i<addedIdCount; i++) {
-    	var tempId = addedIdList[i*2]; 
-    	var realId = addedIdList[(i*2) + 1];
-
-		for(var key in addedList) {
-			
-//			console.log('---------------- key = ' + key + ', vid = ' + addedList[key].getVirtualId() + ', tempId = ' + tempId);
-			
-    		if (addedList[key].getVirtualId() == tempId) {
-    			console.log("Replace entity id : %d by %d", tempId, realId);
-    			addedList[key].setEntityId(realId);
-    			addedList[key].setIsNew(false);
+    	var tempId = addedIdList[i*3]; 
+    	var realId = addedIdList[(i*3) + 1];
+    	version = addedIdList[(i*3) + 2];
+		logger.logDebugWire( 
+				"[TGEntityManager::fixUpEntityIds::added] Try to replace entity id : %s by %s, version %s", 
+				tempId, realId, version);
+		for(key in addedEntities) {	
+    		if (addedEntities[key].getId().equalsToBytes(tempId)) {
+    			logger.logDebugWire( 
+    				"[TGEntityManager::fixUpEntityIds::added] Replace entity id : %s by %s", 
+    				tempId, realId);
+    			addedEntities[key].getId().setBytes(realId);
+    			addedEntities[key].setIsNew(false);
+    			addedEntities[key].setVersion(version);
     		}
     	}
     }
-//    PrintUtility.printEntityMap(addedList, 'FixedAddedEntities');
 
+    var updatedIdCount = response.getUpdatedEntityCount();
+    var updatedIdList = response.getUpdatedIdList();
+    for (i=0; i<updatedIdCount; i++) {
+    	var id = updatedIdList[i*2]; 
+    	version = updatedIdList[(i*2) + 1];
+		logger.logDebugWire( 
+				"[TGEntityManager::fixUpEntityIds::updated] Try to update for id : %s, version %s", 
+				id, version);
+   		for(key in updatedEntities) {
+			logger.logDebugWire( 
+    				"[TGEntityManager::fixUpEntityIds::updated] Replace entity id : %s, version %s", 
+    				id, version);
+   			if (updatedEntities[key].getId().equalsToBytes(id)) {
+   				updatedEntities[key].setVersion(version);
+   			    break;
+   			}
+   		}
+    }
 }
 
 exports.TGEntityManager = TGEntityManager;

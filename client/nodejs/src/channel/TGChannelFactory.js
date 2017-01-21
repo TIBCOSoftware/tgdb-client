@@ -18,6 +18,14 @@ var LinkProtocol = require('./LinkProtocol').LinkProtocol,
     TESTChannel   = require('./test/TESTChannel').TESTChannel,
     CONFIG_NAMES = require('../utils/ConfigName').CONFIG_NAMES;
 
+function setUserAndPassword(properties, username, password) {
+    properties[CONFIG_NAMES.CHANNEL_USER_ID.name] = username;
+
+    if (password !== null && password.length !== 0) {
+        properties[CONFIG_NAMES.CHANNEL_PASSWD.name] = password;
+    }
+}
+
 function TGChannelFactory() {
 
 }
@@ -31,10 +39,10 @@ function TGChannelFactory() {
  * @returns {*|TCPChannel}
  */
 TGChannelFactory.createChannel = function(channelURL, username, password, properties) {
-    if (properties == null) {
+    if (properties === null) {
         properties = {};
     }
-    if (channelURL == undefined) {
+    if (channelURL === undefined) {
         throw new Error('Invalid url');
     }
     setUserAndPassword(properties, username, password);
@@ -42,19 +50,11 @@ TGChannelFactory.createChannel = function(channelURL, username, password, proper
     var protocol = channelURL.getProtocol();
 
     switch (protocol) {
-        case LinkProtocol.Type.TCP :
+        case LinkProtocol.TCP :
             return new TCPChannel(channelURL, properties);
-        case LinkProtocol.Type.TEST :
+        case LinkProtocol.TEST :
             return new TESTChannel(channelURL, properties);
     }
 };
-
-function setUserAndPassword(properties, username, password) {
-    properties[CONFIG_NAMES.CHANNEL_USER_ID.name] = username;
-
-    if (password != null && password.length != 0) {
-        properties[CONFIG_NAMES.CHANNEL_PASSWD.name] = password;
-    }
-}
 
 exports.TGChannelFactory = TGChannelFactory;

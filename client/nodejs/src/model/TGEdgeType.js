@@ -13,44 +13,26 @@
  * limitations under the License.
  */
 
-var TGAbstractEntity = require('./TGAbstractEntity').TGAbstractEntity,
-    util             = require('util');
+var TGEntityType = require('./TGEntityType'),
+	TGSystemObject = require('./TGSystemObject').TGSystemObject,
+    TGAbstractEntity = require('./TGAbstractEntity').TGAbstractEntity,
+    util         = require('util');
 
-
-/**
- *
- * @param graphMetadata - #TGGraphMetadata
- * @param name
- * @param directionType - #TGEdge#DirectionType
- * @param parentType - #TGEdgeType
- * @constructor
- */
-//Class definition
 function TGEdgeType(graphMetadata, name, directionType, parentType) {
-    TGAbstractEntity.call(graphMetadata);
-    this._graphMetadata  = graphMetadata;
+	TGEdgeType.super_.call(this);
     this._name           = name;
     this._directionType  = directionType;
     this._parentType     = parentType;
 }
 
-util.inherits(TGEdgeType, TGAbstractEntity);
+util.inherits(TGEdgeType, TGEntityType);
+
+TGEdgeType.prototype.getSystemType = function() {
+    return TGSystemObject.TGSystemType.EdgeType;
+};
 
 TGEdgeType.prototype.getDirectionType = function() {
     return this._directionType;
 };
 
-
-TGEdgeType.prototype.getTypeName = function() {
-    return this._name;
-};
-
-
-TGEdgeType.prototype.getDerivedFrom = function() {
-    return this._parentType;
-};
-
-
-TGEdgeType.prototype.getEntityKind = function() {
-    return TGAbstractEntity.EntityKind.EDGETYPE;
-};
+module.exports = TGEdgeType;

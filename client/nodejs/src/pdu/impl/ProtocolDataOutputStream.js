@@ -12,6 +12,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var TGNumber = require('../../datatype/TGNumber');
+var HexUtils = require('../../utils/HexUtils').HexUtils;
+var TGLogManager  = require('../../log/TGLogManager');
+var TGLogLevel    = require('../../log/TGLogger').TGLogLevel;
+
+var logger = TGLogManager.getLogger();
 
 function ProtocolDataOutputStream() {
 	// Internal buffer
@@ -25,22 +31,25 @@ ProtocolDataOutputStream.prototype.getPosition = function() {
 
 ProtocolDataOutputStream.prototype.writeBoolean = function(value) {
 	var start = this.getPosition();
-	console.log("before writeBoolean buffer (%s) position at : %d", value, this.getPosition());
+	logger.logDebugWire("before writeBoolean buffer (%s) position at : %d", value, this.getPosition());
 	this._buffer.push(value ? 1 : 0);
 	this._currentLength++;
 	var end = this.getPosition();
-	console.log("after writeBoolean buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	logger.logDebugWire("after writeBoolean buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
-ProtocolDataOutputStream.prototype.writeByte = function(value) {
+ProtocolDataOutputStream.prototype.writeByte = function(value, verbose) {
 	var start = this.getPosition();
-	console.log("before writeByte buffer (%s) position at : %d", value, this.getPosition());
-	if (value > 255 || value < -1)
+	if(!verbose)
+		logger.logDebugWire("before writeByte buffer (%s) position at : %d", value, this.getPosition());
+	if (value > 255 || value < -1) {
 		throw new Error('Invalid byte : ' + value);
+	}
 	this._buffer.push(value);
 	this._currentLength++;
 	var end = this.getPosition();
-	console.log("after writeByte buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	if(!verbose)
+	    logger.logDebugWire("after writeByte buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
 ProtocolDataOutputStream.prototype.writeBytes = function(bytes) {
@@ -52,6 +61,39 @@ ProtocolDataOutputStream.prototype.writeBytes = function(bytes) {
 	}
 };
 
+ProtocolDataOutputStream.prototype.writeTGLong = function(tgLong) {
+	var bytes = tgLong.getBytes();
+	logger.logDebugWire("before writeTGLong buffer (%s) position at : %d", tgLong.getHexString(), this.getPosition());
+	var length = bytes.length;
+	if(length!==8) {
+		throw new Error('Invalid buffer length, expected : 8');
+	}
+	for (var i = 0; i < length; i++) {
+		this.writeByte(bytes[i], 'yes');
+	}
+	logger.logDebugWire("after writeTGLong buffer (%s) position at : %d", tgLong.getHexString(), this.getPosition());
+};
+
+ProtocolDataOutputStream.prototype.writeLongAsBytes = function(bytes) {
+	logger.logDebugWire("before writeLongAsBytes buffer (%s) position at : %d", bytes, this.getPosition());
+	var length = bytes.length;
+	if(length!==8) {
+		throw new Error('Invalid buffer length, expected : 8');
+	}
+	for (var i = 0; i < length; i++) {
+		this.writeByte(bytes[i], 'yes');
+	}
+	logger.logDebugWire("after writeLongAsBytes buffer (%s) position at : %d", bytes, this.getPosition());
+};
+
+ProtocolDataOutputStream.prototype.writeDate = function(date) {
+	var start = this.getPosition();
+	logger.logDebugWire("before writeDate buffer (%s) position at : %d", date, this.getPosition());
+	this._currentLength += writeLong64(date.getTime(), this._buffer);
+	var end = this.getPosition();
+	logger.logDebugWire("after writeDate buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+};
+
 /**
  * Write java-like short (16 bits)
  * 
@@ -59,10 +101,19 @@ ProtocolDataOutputStream.prototype.writeBytes = function(bytes) {
  */
 ProtocolDataOutputStream.prototype.writeShort = function(value) {
 	var start = this.getPosition();
-	console.log("before writeShort buffer (%s) position at : %d", value, this.getPosition());
+	logger.logDebugWire("before writeShort buffer (%s) position at : %d", value, this.getPosition());
 	this._currentLength += bitwiseOperation(value, this._buffer, 2);
 	var end = this.getPosition();
-	console.log("after writeShort buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	logger.logDebugWire("after writeShort buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+};
+
+ProtocolDataOutputStream.prototype.writeChar = function(value) {
+	var start = this.getPosition();
+	logger.logDebugWire("before writeChar (%s) buffer position at : %d\", value", this.getPosition());
+	this._buffer[this._currentLength++] = (value >> 8) & (0xFF);
+	this._buffer[this._currentLength++] = (value) & (0xFF);
+	var end = this.getPosition();
+	logger.logDebugWire("after writeChar (%s) buffer position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
 /**
@@ -70,12 +121,12 @@ ProtocolDataOutputStream.prototype.writeShort = function(value) {
  * 
  * @param value
  */
-ProtocolDataOutputStream.prototype.writeInt = function(value) {
+ProtocolDataOutputStream.prototype.writeInt = function(value, verbose) {
 	var start = this.getPosition();
-	console.log("before writeInt buffer (%s) position at : %d", value, this.getPosition());
+	logger.logDebugWire("before writeInt buffer (%s) position at : %d", value, this.getPosition());
 	this._currentLength += bitwiseOperation(value, this._buffer, 4);
 	var end = this.getPosition();
-	console.log("after writeInt buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	logger.logDebugWire("after writeInt buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
 /**
@@ -87,12 +138,12 @@ ProtocolDataOutputStream.prototype.writeInt = function(value) {
  */
 ProtocolDataOutputStream.prototype.writeIntAt = function(position, value) {
 	var start = this.getPosition();
-	console.log("before writeIntAt buffer (%s) position at : %d", value, position);
+	logger.logDebugWire("before writeIntAt buffer (%s) position at : %d", value, position);
 	for (var byte = 24; byte >= 0; byte -= 8) {
 		this._buffer[position++] = (value >> byte) & (0xFF);
 	}
 	var end = this.getPosition();
-	console.log("after writeIntAt buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), position);
+	logger.logDebugWire("after writeIntAt buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), position);
 };
 
 /**
@@ -163,7 +214,7 @@ ProtocolDataOutputStream.prototype.writeIntAt = function(position, value) {
 
 ProtocolDataOutputStream.prototype.writeFloat = function(value) {
 	var start = this.getPosition();
-	console.log("before writeFloat (%s) buffer position at : %d", value, this.getPosition());
+	logger.logDebugWire("before writeFloat (%s) buffer position at : %d", value, this.getPosition());
 	// floating[sign, exponent, fraction]
 	var encodingPara = getIEEE754EncodingParameters(value, 8, 23);
 
@@ -176,7 +227,7 @@ ProtocolDataOutputStream.prototype.writeFloat = function(value) {
 
 	this._currentLength += 4;
 	var end = this.getPosition();
-	console.log("after writeFloat (%s) buffer position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	logger.logDebugWire("after writeFloat (%s) buffer position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
 /**
@@ -186,10 +237,10 @@ ProtocolDataOutputStream.prototype.writeFloat = function(value) {
  */
 ProtocolDataOutputStream.prototype.writeLong = function(value) {
 	var start = this.getPosition();
-	console.log("before writeLong buffer (%s) position at : %d", value, this.getPosition());
+	logger.logDebugWire("before writeLong buffer (%s) position at : %d", value, this.getPosition());
 	this._currentLength += writeLong64(value, this._buffer);
 	var end = this.getPosition();
-	console.log("after writeLong buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	logger.logDebugWire("after writeLong buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
 /**
@@ -300,7 +351,7 @@ ProtocolDataOutputStream.prototype.writeLong = function(value) {
  */
 ProtocolDataOutputStream.prototype.writeDouble = function(value) {
 	var start = this.getPosition();
-	console.log("before writeDouble buffer (%s) position at : %d", value, this.getPosition());
+	logger.logDebugWire("before writeDouble buffer (%s) position at : %d", value, this.getPosition());
 	// [sign, exponent, fraction]
 	var encodingPara = getIEEE754EncodingParameters(value, 11, 52);
 
@@ -321,7 +372,7 @@ ProtocolDataOutputStream.prototype.writeDouble = function(value) {
 
 	this._currentLength += 8;
 	var end = this.getPosition();
-	console.log("after writeDouble buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	logger.logDebugWire("after writeDouble buffer (%s) position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
 function getIEEE754EncodingParameters(value, exponentBits, fractionBits) {
@@ -357,7 +408,7 @@ function getIEEE754EncodingParameters(value, exponentBits, fractionBits) {
 					/ Math.pow(2, 1 - biasedExponent - fractionBits));
 		}
 	}
-	//console.log('sign = ' + encodingPara[0] + ', exponent = ' + encodingPara[1]
+	//logger.logDebugWire('sign = ' + encodingPara[0] + ', exponent = ' + encodingPara[1]
 	//		+ ', fraction = ' + encodingPara[2]);
 
 	return encodingPara;
@@ -369,7 +420,7 @@ function getIEEE754EncodingParameters(value, exponentBits, fractionBits) {
  */
 ProtocolDataOutputStream.prototype.writeUTF = function(string) {
 	var start = this.getPosition();
-	console.log("before writeUTF (%s) buffer position at : %d", string, this.getPosition());
+	logger.logDebugWire("before writeUTF (%s) buffer position at : %d", string, this.getPosition());
 	var utfLength = 0;
 
 	for (var i = 0; i < string.length; i++) {
@@ -389,7 +440,7 @@ ProtocolDataOutputStream.prototype.writeUTF = function(string) {
 	this.writeShort(utfLength);
 	writeUTFString(this, string, utfLength);
 	var end = this.getPosition();
-	console.log("after writeUTF (%s) buffer position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
+	logger.logDebugWire("after writeUTF (%s) buffer position at : %d", bufferDelta(start, end, this._buffer), this.getPosition());
 };
 
 /**
@@ -516,3 +567,20 @@ function bufferDelta(start, end, buffer) {
 }
 
 exports.ProtocolDataOutputStream = ProtocolDataOutputStream;
+
+function testUTF() {
+	var logger = TGLogManager.getLogger();
+	logger.setLevel(TGLogLevel.DebugWire);
+
+	var utfString = '是超人嗎';
+	for(var i = 0 ; i<utfString.length; i++){
+		logger.logDebugWire(utfString.charCodeAt(i));
+	}
+	
+	var outputStream = new ProtocolDataOutputStream();
+	outputStream.writeUTF(utfString);
+	logger.logDebugWire(HexUtils.formatHex(outputStream._buffer));
+}
+
+//testUTF();
+
