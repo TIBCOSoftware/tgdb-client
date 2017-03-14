@@ -18,7 +18,7 @@ package com.tibco.tgdb.channel.impl;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AbstractChannel.java 859 2016-06-14 00:53:54Z cltran $
+ * SVN Id: $Id: AbstractChannel.java 1345 2017-02-03 03:33:02Z vchung $
  */
 
 import com.tibco.tgdb.TGProtocolVersion;
@@ -188,7 +188,7 @@ public abstract class AbstractChannel implements TGChannel {
         sendLock.lock(); //Ensure nobody can send.
 
         try {
-            if (isClosed() || isClosing()) {
+            if (!isConnected()) {
                 return;
             };
 
@@ -196,14 +196,15 @@ public abstract class AbstractChannel implements TGChannel {
             {
                 gLogger.log(TGLogger.TGLevel.Debug, "Stopping channel");
                 
+                disablePing();
+                reader.stop();
+
                 // Send the disconnect request.
                 DisconnectChannelRequest request = (DisconnectChannelRequest) TGMessageFactory.getInstance().createMessage(VerbId.DisconnectChannelRequest);
                 // sendRequest will not receive a channel response since the channel will be disconnected.
                 this.send(request);
 
                 state = LinkState.Closing;
-                disablePing();
-                reader.stop();
                 closeSocket();
 
                 MultiChannelPinger.getInstance().removeChannel(this);
@@ -215,7 +216,9 @@ public abstract class AbstractChannel implements TGChannel {
         }
 
         finally {
-            state = LinkState.Closed;
+        	if (isClosing()) {
+        		state = LinkState.Closed;
+        	}
             sendLock.unlock();
         }
     }
@@ -243,9 +246,10 @@ public abstract class AbstractChannel implements TGChannel {
     public final synchronized void disconnect() {
 
         sendLock.lock();  //Ensure nobody is sending when we are disconnecting.
+        if (!isConnected()) {
+        	return;
+        }
         try {
-            //gLogger.logException("Channel disconnect is called", new Exception());
-
             if (numConnections.get() == 0) {
                 gLogger.log(TGLogger.TGLevel.Error, "Calling disconnect more than the number of connects.");
                 return;

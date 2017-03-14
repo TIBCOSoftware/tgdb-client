@@ -16,7 +16,7 @@
  * Created on: 1/13/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionTest1.java 1169 2016-11-03 18:31:31Z ssubrama $
+ * SVN Id: $Id: ConnectionTest1.java 1347 2017-02-03 03:34:36Z vchung $
  */
 
 
@@ -735,6 +735,7 @@ public class ConnectionTest1 {
             //Query1.close();
             conn.executeQuery("@nodetype = 'testnode' and ((nickname = '壞人' and level = 11.0) or (level = 3.0));",
                 TGQueryOption.DEFAULT_QUERY_OPTION);
+            System.out.println("End test query");
         }
 
 

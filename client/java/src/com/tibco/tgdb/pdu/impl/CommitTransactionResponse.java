@@ -16,7 +16,7 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: CommitTransactionResponse.java 1227 2016-11-13 07:12:05Z ssubrama $
+ * SVN Id: $Id: CommitTransactionResponse.java 1302 2017-01-13 22:31:31Z ssubrama $
  */
 
 
@@ -50,7 +50,8 @@ public class CommitTransactionResponse extends AbstractProtocolMessage {
         TGTransactionUniqueConstraintViolation,
         TGTransactionOptimisticLockFailed,
         TGTransactionResourceExceeded,
-        TGCurrentThreadNotinTransaction;
+        TGCurrentThreadNotinTransaction,
+        TGTransactionUniqueIndexKeyAttributeNullError;
 
         private int status;
 
@@ -175,6 +176,7 @@ public class CommitTransactionResponse extends AbstractProtocolMessage {
             case TGTransactionUniqueConstraintViolation:
             case TGTransactionOptimisticLockFailed:
             case TGTransactionResourceExceeded:
+            case TGTransactionUniqueIndexKeyAttributeNullError:
             default:
                 try {
                     msg = is.readUTF();

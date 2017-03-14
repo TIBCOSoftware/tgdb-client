@@ -294,7 +294,7 @@ public class QueryTest {
     }
 
     public void testComplex() throws Exception {
-        System.out.println("Start test query");
+        System.out.println("Start complex query");
 //        TGQuery Query1 = conn.createQuery("testquery < X '5ef';");
 //        Query1.execute();
         TGResultSet resultSet = conn.executeQuery("@nodetype =     'testnode'    and nickname = 'Criminal' and level = 3.0 and (rate = 5.8 or rate = 6.5);", TGQueryOption.DEFAULT_QUERY_OPTION);
@@ -306,6 +306,21 @@ public class QueryTest {
 //        Query1.close();
 //        resultSet = conn.executeQuery("testquery < X '5ef';", TGQueryOption.DEFAULT_QUERY_OPTION);
 
+        System.out.println("End complex query");
+    }
+
+    public void testNodeTypeOnly() throws Exception {
+        System.out.println("Start node type only query");
+        TGResultSet resultSet = conn.executeQuery("@nodetype = 'testnode';", TGQueryOption.DEFAULT_QUERY_OPTION);
+        if (resultSet != null) {
+            int i=1;
+            while (resultSet.hasNext()) {
+                TGNode node = (TGNode) resultSet.next();
+                System.out.printf("Node : %d\n", i++);
+                printEntitiesBreadth(node, 5);
+            }
+        }
+        System.out.println("End node type only query");
     }
 
     public void connect() throws Exception {
@@ -419,6 +434,7 @@ public class QueryTest {
         qt.testGreaterThan();
         qt.testLessThan();
         qt.testRange();
+        qt.testNodeTypeOnly();
         //testComplex();
 
         qt.disconnect();

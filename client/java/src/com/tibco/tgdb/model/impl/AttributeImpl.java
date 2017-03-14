@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeImpl.java 1131 2016-10-27 13:48:59Z ssubrama $
+ * SVN Id: $Id: AttributeImpl.java 1303 2017-01-19 01:00:36Z ssubrama $
  */
 
 
@@ -301,7 +301,7 @@ public class AttributeImpl implements TGAttribute {
                 os.writeShort(0);
                 os.writeByte(0);
                 os.writeByte(0);
-                os.writeByte(cal.get(Calendar.HOUR)); //HR
+                os.writeByte(cal.get(Calendar.HOUR_OF_DAY)); //24 HR format
                 os.writeByte(cal.get(Calendar.MINUTE)); //Min
                 os.writeByte(cal.get(Calendar.SECOND)); //Sec
                 os.writeShort(cal.get(Calendar.MILLISECOND)); //msec
@@ -317,7 +317,7 @@ public class AttributeImpl implements TGAttribute {
                 os.writeShort(cal.get(Calendar.YEAR));
                 os.writeByte(cal.get(Calendar.MONTH));
                 os.writeByte(cal.get(Calendar.DAY_OF_MONTH));
-                os.writeByte(cal.get(Calendar.HOUR)); //HR
+                os.writeByte(cal.get(Calendar.HOUR_OF_DAY)); //24 HR format
                 os.writeByte(cal.get(Calendar.MINUTE)); //Min
                 os.writeByte(cal.get(Calendar.SECOND)); //Sec
                 os.writeShort(cal.get(Calendar.MILLISECOND)); //msec

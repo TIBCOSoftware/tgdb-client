@@ -19,16 +19,15 @@ import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.model.*;
 import com.tibco.tgdb.query.TGQueryOption;
-import com.tibco.tgdb.utils.SortedProperties;
-import com.tibco.tgdb.utils.TGProperties;
 
-import java.io.DataOutputStream;
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 public class TransactionUnitTest {
 
-    public String url = "tcp://scott@localhost:8223";
+    public String url = "tcp://scott@localhost:8222";
     //public String url = "tcp://scott@10.98.201.111:8228/{connectTimeout=30}";
     //public String url = "tcp://scott@[fe80::1c15:49f2:b621:7ced%en0:8222]";
     //public String url = "tcp://scott@localhost6:8228";
@@ -37,7 +36,7 @@ public class TransactionUnitTest {
     TGGraphObjectFactory gof;
     TGGraphMetadata gmd;
     TGConnection conn;
-    TGNodeType basicNodeType, rateNodeType;
+    TGNodeType basicNodeType, rateNodeType, testNodeType, nodeAllAttrs;
     TGNode john, smith, kelly;
     TGEdge brother, wife;
     
@@ -62,12 +61,22 @@ public class TransactionUnitTest {
 
         rateNodeType = gmd.getNodeType("ratenode");
         if (rateNodeType == null) throw new TGException("Node type ratenode not found");
-        
-        
+
+        testNodeType = gmd.getNodeType("testnode");
+        if (testNodeType == null) throw new TGException("Node type testnode not found");
+
+
+
+
+
+
     }
     
     public void runTestCases() throws TGException
     {
+        //jira_testCase_157();
+        //jira_testCase_182();
+        //testCase0();
         testCase1();
 
         testCase1_1();
@@ -93,7 +102,126 @@ public class TransactionUnitTest {
             return gof.createNode();
         }
     }
-    
+
+    public void jira_testCase_157() throws TGException {
+
+        System.out.println("Begin test2");
+        nodeAllAttrs = gmd.getNodeType("nodeAllAttrs");
+        if (nodeAllAttrs == null) throw new TGException("Node type nodeAllAttrs not found");
+
+        TGNode node = gof.createNode(nodeAllAttrs);
+
+        node.setAttribute("boolAttr", false);
+        node.setAttribute("byteAttr", (byte) 0xba);
+        node.setAttribute("charAttr", '*');
+        node.setAttribute("shortAttr", (short) 6385);
+        node.setAttribute("numberAttr", new BigDecimal("907323.070"));
+        node.setAttribute("intAttr", 73741825);
+        node.setAttribute("longAttr", (long) 1342177281);
+        node.setAttribute("floatAttr", (float) 2.23);
+        node.setAttribute("doubleAttr", 2336.32424);
+        node.setAttribute("stringAttr", "betterStringKey");
+        node.setAttribute("dateAttr", new Calendar
+                .Builder()
+                .setDate(2016, 10, 31)
+                .build());
+        node.setAttribute("timeAttr", new Calendar
+                .Builder()
+                .setTimeOfDay(21, 32, 12, 845)
+                .setTimeZone(TimeZone.getDefault())
+                .build());
+        node.setAttribute("timestampAttr", new Calendar
+                .Builder()
+                .setDate(2016, 10, 25)
+                .setTimeOfDay(8,9,30,999)
+                .build());
+
+
+        conn.insertEntity(node);
+        System.out.println("before commit");
+        conn.commit();
+        System.out.println("after commit");
+
+        TGKey key = gof.createCompositeKey("nodeAllAttrs");
+        key.setAttribute("stringAttr", "betterStringKey");
+        TGQueryOption option = TGQueryOption.createQueryOption();
+
+        TGEntity entity = conn.getEntity(key, option);
+
+        // FIXME the commented lines below indicate attrdesc that do not have a get() function
+        if (entity instanceof TGNode) {
+            System.out.println("Found node.");
+            System.out.println("stringAttr = " + entity.getAttribute("stringAttr").getAsString());
+            System.out.println("boolAttr = " + entity.getAttribute("boolAttr").getAsBoolean());
+            System.out.println("charAttr = " + entity.getAttribute("charAttr").getAsChar());
+            System.out.println("shortAttr = " + entity.getAttribute("shortAttr").getAsShort());
+            System.out.println("intAttr = " + entity.getAttribute("intAttr").getAsInt());
+            System.out.println("longAttr = " + entity.getAttribute("longAttr").getAsLong());
+            System.out.println("floatAttr = " + entity.getAttribute("floatAttr").getAsFloat());
+            System.out.println("doubleAttr = " + entity.getAttribute("doubleAttr").getAsDouble());
+            //    System.out.println("numberAttr = " + entity.getAttribute("numberAttr").getAsString());
+            //    System.out.println("dateAttr = " + entity.getAttribute("dateAttr").getAsString());
+            //    System.out.println("timeAttr = " + entity.getAttribute("timeAttr").getAsLong());
+            //    System.out.println("timestampAttr = " + entity.getAttribute("timestampAttr").getAsLong());
+        }
+    }
+
+    private void jira_testCase_182() throws TGException
+    {
+        TGNode basic1 = gof.createNode(basicNodeType);
+        TGNode basic2 = gof.createNode(basicNodeType);
+        TGEdge edge1;
+
+        edge1 = gof.createEdge(basic1, basic2, TGEdge.DirectionType.UnDirected);
+        edge1.setAttribute("ratedate", new Calendar
+                .Builder()
+                .setDate(2016, 12, 1)
+                .set(Calendar.ERA, GregorianCalendar.BC)
+                .build());
+        basic1.setAttribute("name", "Mike");
+        basic2.setAttribute("name", "Kevin");
+        conn.insertEntity(basic1);
+        conn.insertEntity(basic2);
+        conn.insertEntity(edge1);
+
+        conn.commit();
+        System.out.println("Entities created");
+
+        conn.getGraphMetadata(true);
+        TGKey key = gof.createCompositeKey("basicnode");
+
+        key.setAttribute("name", "Mike");
+        TGEntity entity = conn.getEntity(key, null);
+        if (entity != null) {
+            System.out.println("Name = " + entity.getAttribute("name").getValue());
+        }
+    }
+
+
+
+    private void testCase0() throws TGException
+    {
+        try {
+            System.out.println("Test Case 0: Insert Simple Node(No Primary key) of testnode type with a few properties");
+
+            TGNode node = createNode(testNodeType);
+
+            node.setAttribute("name", "john");
+            node.setAttribute("multiple", 30);
+            node.setAttribute("rate", new Double("23.45"));
+
+            node.setAttribute("nickname", "美麗");
+
+            conn.insertEntity(node);
+            conn.commit();
+
+        }
+        catch (TGException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void testCase1() throws TGException
     {
         try {
@@ -107,10 +235,10 @@ public class TransactionUnitTest {
             node.setAttribute("createtm", new Calendar
                     .Builder()
                     .setDate(2016, 10, 25)
-                    .setTimeOfDay(8, 9, 30, 999)
+                    .setTimeOfDay(15, 9, 30, 999)
                     .build());
 
-            node.setAttribute("networth", new BigDecimal(2378989.567));
+            node.setAttribute("networth", new BigDecimal("2378989.567"));
             node.setAttribute("flag", 'D');
 
             conn.insertEntity(node);

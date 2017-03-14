@@ -16,7 +16,7 @@
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionImpl.java 1238 2016-11-17 21:20:33Z vchung $
+ * SVN Id: $Id: ConnectionImpl.java 1307 2017-01-24 02:30:04Z ssubrama $
  */
 
 
@@ -365,7 +365,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
                         }
                     }
            		} else {
-           			gLogger.log(TGLevel.Warning, "Received invalid entity kind %d", kind);
+           			gLogger.log(TGLevel.Warning, "Received invalid entity kind %s", kind);
            		}
         	}
             return entityFound;

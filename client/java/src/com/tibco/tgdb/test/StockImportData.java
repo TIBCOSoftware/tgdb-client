@@ -125,17 +125,25 @@ public class StockImportData {
     				logLevel = TGLogger.TGLevel.valueOf(ll);
     			} catch(IllegalArgumentException e) {
     				System.out.printf("Invalid log level value '%s'...ignored\n", ll);
-    			}
-    		} else if (s.equalsIgnoreCase("-importfile") || s.equalsIgnoreCase("-f")) {
-    			importFileName = getStringValue(argIter, "importfile");
-    		} else if (s.equalsIgnoreCase("-treatdoubleasstring") || s.equalsIgnoreCase("-dtos")) {
-    			treatDoubleAsString = true;
-    		} else if (s.equalsIgnoreCase("-noyeartoday") || s.equalsIgnoreCase("-noy2d")) {
-    			noYearToDayEdge = true;
-    		} else {
-    			System.out.printf("Skip argument %s\n", s);
-    		}
-    	}
+    	        }
+            } else if (s.equalsIgnoreCase("-importfile") || s.equalsIgnoreCase("-f")) {
+                   importFileName = getStringValue(argIter, "importfile");
+            } else if (s.equalsIgnoreCase("-treatdoubleasstring") || s.equalsIgnoreCase("-dtos")) {
+                   treatDoubleAsString = true;
+            } else if (s.equalsIgnoreCase("-noyeartoday") || s.equalsIgnoreCase("-noy2d")) {
+                   noYearToDayEdge = true;
+            } else if (s.equalsIgnoreCase("-edgecount") || s.equalsIgnoreCase("-ec")) {
+                   edgeFetchCount = getIntValue(argIter, edgeFetchCount);
+            } else if (s.equalsIgnoreCase("-nodecount") || s.equalsIgnoreCase("-nc")) {
+                   nodeFetchCount = getIntValue(argIter, nodeFetchCount);
+               } else if (s.equalsIgnoreCase("-nodecommitcount") || s.equalsIgnoreCase("-ncc")) {
+                   nodeCommitCount = getIntValue(argIter, nodeCommitCount);
+               } else if (s.equalsIgnoreCase("-edgecommitcount") || s.equalsIgnoreCase("-ecc")) {
+                   edgeCommitCount = getIntValue(argIter, edgeCommitCount);
+            } else {
+                System.out.printf("Skip argument %s\n", s);
+            }
+        }
     }
 
     void initMetaData() throws TGException {

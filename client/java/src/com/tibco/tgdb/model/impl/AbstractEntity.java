@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AbstractEntity.java 1124 2016-10-25 23:32:42Z vchung $
+ * SVN Id: $Id: AbstractEntity.java 1331 2017-01-31 22:42:18Z ssubrama $
  */
 
 
@@ -33,6 +33,9 @@ import com.tibco.tgdb.pdu.TGOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public abstract class AbstractEntity implements TGEntity {
 
@@ -62,7 +65,10 @@ public abstract class AbstractEntity implements TGEntity {
 
     @Override
     public Collection<TGAttribute> getAttributes() {
-        return attributes.values();
+        Collection<TGAttribute> forReturn = new ArrayList<TGAttribute>();
+        Predicate<TGAttribute> p = x -> (x.getAttributeType().getName().compareToIgnoreCase("@name") != 0); //Add anyother Lambda expressions
+        attributes.values().stream().filter(p).collect(Collectors.toCollection(()->forReturn));
+        return forReturn;
     }
 
     @Override

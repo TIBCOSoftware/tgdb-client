@@ -57,6 +57,9 @@ public class TGTransactionException extends TGException {
 
             case TGTransactionResourceExceeded:
                 return new TGTransactionResourceExceededException(msg);
+
+            case TGTransactionUniqueIndexKeyAttributeNullError:
+                return new TGTransactionUniqueIndexKeyAttributeNullError(msg);
         }
         return new TGTransactionException(msg);
     }
@@ -107,6 +110,10 @@ public class TGTransactionException extends TGException {
         TGTransactionResourceExceededException(String ex) {
             super(ex);
         }
+    }
+
+    private static class TGTransactionUniqueIndexKeyAttributeNullError extends TGTransactionException {
+        TGTransactionUniqueIndexKeyAttributeNullError(String ex) { super(ex); }
     }
 }
 
