@@ -18,7 +18,7 @@ package com.tibco.tgdb.model;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGAttribute.java 771 2016-05-05 11:40:52Z vchung $
+ *		SVN Id: $Id: TGAttribute.java 1738 2017-10-10 02:11:19Z vchung $
  *
  */
 
@@ -31,10 +31,17 @@ import com.tibco.tgdb.pdu.TGSerializable;
 public interface TGAttribute extends TGSerializable {
 
     /**
+     * @deprecated
      * Return the TGAttributeDescriptor for this attribute
      * @return TGAttributeDescriptor
      */
     TGAttributeDescriptor getAttributeType();
+
+    /**
+     * Return the TGAttributeDescriptor for this attribute
+     * @return TGAttributeDescriptor
+     */
+    TGAttributeDescriptor getAttributeDescriptor();
 
     /**
      * Get owner Entity.

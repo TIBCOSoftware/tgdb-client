@@ -32,7 +32,6 @@ import com.tibco.tgdb.pdu.TGOutputStream;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class EntityTypeImpl implements TGEntityType {
 
@@ -67,6 +66,17 @@ public abstract class EntityTypeImpl implements TGEntityType {
         return id;
     }
 
+    void updateMetadata(TGGraphMetadata gmd) {
+        for (String attrName : attributes.keySet()) {
+            TGAttributeDescriptor desc = gmd.getAttributeDescriptor(attrName);
+            if (desc == null) {
+    	        gLogger.log(TGLevel.Warning, "Cannot find '%s' attribute descriptor", attrName);
+                continue;
+            }
+            attributes.put(attrName, desc);
+        }
+    }
+
     @Override
     public String getName() {
     	return name;
@@ -96,6 +106,7 @@ public abstract class EntityTypeImpl implements TGEntityType {
     	name = is.readUTF();
 
     	int pageSize = is.readInt(); // pagesize
+
     	int attrCount = is.readShort();
     	for (int i=0; i<attrCount; i++) {
     		String name = is.readUTF();

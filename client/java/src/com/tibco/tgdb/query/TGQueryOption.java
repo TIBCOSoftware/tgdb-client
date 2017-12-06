@@ -37,16 +37,49 @@ public interface TGQueryOption extends TGProperties<String,String> {
         return new QueryOptionImpl(true);
     }
 
+    /**
+     * Set a limit on the number of entities(nodes and edges) return in a query. Default is 1000
+     *
+     * @param size number of entities to be returned
+     */
     public abstract void setPrefetchSize(int size);
+
+    /**
+     * Return the current value of the pre-fetch size
+     */
     public abstract int getPrefetchSize();
 
+    /**
+     * Set the additional level of traversal from the query result set. Default is 3.
+     *
+     * @param depth starts with value 1 for one level from the result nodes.
+     */
     public abstract void setTraversalDepth(int depth);
+
+    /** 
+     * Return the current value of traversal depth
+     */
     public abstract int getTraversalDepth();
 
-    public abstract void setEdgeLimit(int depth);
+    /**
+     * Set the number of edges per node to be returned in a query.  Default is 0 which means unlimited.
+     * 
+     * @param limit number of edges
+     */
+    public abstract void setEdgeLimit(int limit);
+
+    /**
+     * Return the current value of edge limit
+     */
     public abstract int getEdgeLimit();
 
+    public abstract void setSortAttrName(String name);
+    public abstract String getSortAttrName();
 
+    public abstract void setSortOrderDsc(boolean isDsc);
+    public abstract boolean isSortOrderDsc();
 
+    public abstract void setSortResultLimit(int limit);
+    public abstract int getSortResultLimit();
 
 }

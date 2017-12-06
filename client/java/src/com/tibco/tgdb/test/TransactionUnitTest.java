@@ -23,11 +23,12 @@ import com.tibco.tgdb.query.TGQueryOption;
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.TimeZone;
 
 public class TransactionUnitTest {
 
-    public String url = "tcp://scott@localhost:8222";
+    public String url = "tcp://scott@localhost:8223";
     //public String url = "tcp://scott@10.98.201.111:8228/{connectTimeout=30}";
     //public String url = "tcp://scott@[fe80::1c15:49f2:b621:7ced%en0:8222]";
     //public String url = "tcp://scott@localhost6:8228";
@@ -64,22 +65,22 @@ public class TransactionUnitTest {
 
         testNodeType = gmd.getNodeType("testnode");
         if (testNodeType == null) throw new TGException("Node type testnode not found");
+    }
 
-
-
-
-
-
+    void disconnect() {
+        conn.disconnect();
     }
     
-    public void runTestCases() throws TGException
+    public void runTestCases() throws TGException, Exception
     {
         //jira_testCase_157();
         //jira_testCase_182();
         //testCase0();
+        //testCase1_1();
+
         testCase1();
 
-        testCase1_1();
+
         testCase1_2();
         testCase2();
 
@@ -88,10 +89,12 @@ public class TransactionUnitTest {
         testCase4();
         testCase4_0();
         testCase5();
-
         testCase6();
         testCase6_1();
+        testCase1();
         //testCase7();
+        System.out.println("Done all the cases...");
+
 
     }
 
@@ -198,22 +201,63 @@ public class TransactionUnitTest {
     }
 
 
+    String keyName1 = new String ("Gabe");
+    String keyName2 = new String ("Georgia");
 
     private void testCase0() throws TGException
     {
         try {
-            System.out.println("Test Case 0: Insert Simple Node(No Primary key) of testnode type with a few properties");
+            System.out.println("Test Case 1: Insert Simple Node(John) of basicnode with a few properties");
 
-            TGNode node = createNode(testNodeType);
+            TGNode j1 = createNode(basicNodeType);
 
-            node.setAttribute("name", "john");
-            node.setAttribute("multiple", 30);
-            node.setAttribute("rate", new Double("23.45"));
+            j1.setAttribute("name", keyName1); //name is the primary key
+            j1.setAttribute("age", 30);
+            //j1.setAttribute("nickname", "美麗");
+            j1.setAttribute("createtm", new Calendar
+                    .Builder()
+                    .setDate(2016, 10, 25)
+                    .setTimeOfDay(15, 9, 30, 999)
+                    .build());
 
-            node.setAttribute("nickname", "美麗");
+            j1.setAttribute("networth", new BigDecimal("2378989.567"));
+            j1.setAttribute("flag", 'D');
+            j1.setAttribute("desc", "Hi TIBCO Team!\n" +
+                    "\n" +
+                    "The second stop on the TIBCO NOW Global Tour is just days away. We saw extreme value from Singapore and the excitement and now we do it again in Berlin this time with 545 registered attendees! We have reached and exceeded our target and will be closing registration before we run into any capacity issues. We are very excited about this event and to see what is coming with some game changing product updates shown for the first time at TIBCO NOW Berlin. (There will be a Sharpen the Saw on this Friday)\n" +
+                    "\n");
 
-            conn.insertEntity(node);
+            conn.insertEntity(j1);
+
+            TGNode j2 = createNode(basicNodeType);
+
+            j2.setAttribute("name", keyName2); //name is the primary key
+            j2.setAttribute("age", 30);
+            //j2.setAttribute("nickname", "美麗");
+            j2.setAttribute("createtm", new Calendar
+                    .Builder()
+                    .setDate(2016, 10, 25)
+                    .setTimeOfDay(15, 9, 30, 999)
+                    .build());
+
+            j2.setAttribute("networth", new BigDecimal("2378989.567"));
+            j2.setAttribute("flag", 'D');
+            j2.setAttribute("desc", "Hi TIBCO Team!\n" +
+                    "\n" +
+                    "The second stop on the TIBCO NOW Global Tour is just days away. We saw extreme value from Singapore and the excitement and now we do it again in Berlin this time with 545 registered attendees! We have reached and exceeded our target and will be closing registration before we run into any capacity issues. We are very excited about this event and to see what is coming with some game changing product updates shown for the first time at TIBCO NOW Berlin. (There will be a Sharpen the Saw on this Friday)\n" +
+                    "\n");
+
+            conn.insertEntity(j2);
+
+            for (int i=0;i<1000;i++) {
+                TGEdge edge = gof.createEdge(j1, j2, TGEdge.DirectionType.Directed);
+                edge.setAttribute("name", "spouse");
+                edge.setAttribute("desc", "This is test...");
+                conn.insertEntity(edge);
+            }
             conn.commit();
+            john = j1;
+
 
         }
         catch (TGException e) {
@@ -229,7 +273,7 @@ public class TransactionUnitTest {
 
             TGNode node = createNode(basicNodeType);
 
-            node.setAttribute("name", "john"); //name is the primary key
+            node.setAttribute("name", keyName1); //name is the primary key
             node.setAttribute("age", 30);
             node.setAttribute("nickname", "美麗");
             node.setAttribute("createtm", new Calendar
@@ -255,7 +299,7 @@ public class TransactionUnitTest {
     {
         System.out.println("Test Case 1_0: Get the Entity that we inserted");
         TGKey key = gof.createCompositeKey("basicnode");
-        key.setAttribute("name", "john");
+        key.setAttribute("name", "john2");
         TGQueryOption option = TGQueryOption.createQueryOption();
         //option.setPrefetchSize(0); //Test for Server Crash
         /*
@@ -277,7 +321,7 @@ public class TransactionUnitTest {
     private void testCase1_2() throws TGException
     {
         try {
-            System.out.println("Test Case 1_1: Again insert John. This should raise Unique Key Constraint violation.");
+            System.out.println("Test Case 1_2: Again insert John. This should raise Unique Key Constraint violation.");
             TGNode node = createNode(basicNodeType);
             node.setAttribute("name", "john");
             node.setAttribute("age", 30);
@@ -287,7 +331,7 @@ public class TransactionUnitTest {
         }
         catch (TGException e) {
             e.printStackTrace();
-            System.out.printf("Expected exception for TestCase 1_1: %s\n", e.getErrorCode());
+            System.out.printf("Expected exception for TestCase 1_2: %s\n", e.getErrorCode());
         }
         return;
 
@@ -435,14 +479,18 @@ public class TransactionUnitTest {
     
 
     public static void main(String[] args) {
+        TransactionUnitTest tut = new TransactionUnitTest(args);
         try {
-            TransactionUnitTest tut = new TransactionUnitTest(args);
+
             tut.connect();
             tut.runTestCases();
 
         }
         catch (Exception e) {
             e.printStackTrace();
+        }
+        finally {
+            tut.disconnect();
         }
     }
 

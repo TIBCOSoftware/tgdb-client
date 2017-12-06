@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AbstractEntity.java 1331 2017-01-31 22:42:18Z ssubrama $
+ * SVN Id: $Id: AbstractEntity.java 1618 2017-08-16 20:12:48Z vchung $
  */
 
 
@@ -66,7 +66,7 @@ public abstract class AbstractEntity implements TGEntity {
     @Override
     public Collection<TGAttribute> getAttributes() {
         Collection<TGAttribute> forReturn = new ArrayList<TGAttribute>();
-        Predicate<TGAttribute> p = x -> (x.getAttributeType().getName().compareToIgnoreCase("@name") != 0); //Add anyother Lambda expressions
+        Predicate<TGAttribute> p = x -> (x.getAttributeDescriptor().getName().compareToIgnoreCase("@name") != 0); //Add anyother Lambda expressions
         attributes.values().stream().filter(p).collect(Collectors.toCollection(()->forReturn));
         return forReturn;
     }
@@ -85,7 +85,7 @@ public abstract class AbstractEntity implements TGEntity {
 
     @Override
     public void setAttribute(TGAttribute attr) {
-        attributes.put(attr.getAttributeType().getName(), attr);
+        attributes.put(attr.getAttributeDescriptor().getName(), attr);
     }
 
     //FIXME:  Need to add the following method.  
@@ -213,12 +213,14 @@ public abstract class AbstractEntity implements TGEntity {
         this.version = is.readInt();
         int entityTypeId = is.readInt();
         if (entityTypeId != 0) {
-        	TGEntityType et = ((GraphMetadataImpl) graphMetadata).getNodeType(entityTypeId);
-        	this.entityType = et;
-        	if (et == null) {
-        		//FIXME: retrieve entity type together with the entity?
-        		gLogger.log(TGLevel.Warning, "Cannot lookup entity type %d from graph meta data cache", entityTypeId);
-        	}
+            TGEntityType et = ((GraphMetadataImpl) graphMetadata).getNodeType(entityTypeId);
+            if (et == null)
+                et = ((GraphMetadataImpl) graphMetadata).getEdgeType(entityTypeId);
+            this.entityType = et;
+            if (et == null) {
+                //FIXME: retrieve entity type together with the entity?
+                gLogger.log(TGLevel.Warning, "Cannot lookup entity type %d from graph meta data cache", entityTypeId);
+            }
         }
 
         int count = is.readInt();

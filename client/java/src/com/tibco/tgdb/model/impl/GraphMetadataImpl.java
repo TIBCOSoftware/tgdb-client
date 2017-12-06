@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: GraphMetadataImpl.java 748 2016-04-25 17:10:38Z vchung $
+ * SVN Id: $Id: GraphMetadataImpl.java 1624 2017-08-17 17:33:42Z vchung $
  */
 
 
@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 //TODO: There is no deletion of meta data ??
 public class GraphMetadataImpl implements TGGraphMetadata {
 	
+	private boolean isInitialized = false;
 	private HashMap<String, TGAttributeDescriptor> descriptorMap;
 	private HashMap<String, TGNodeType> nodeTypeMap;
 	private HashMap<String, TGEdgeType> edgeTypeMap;
@@ -129,28 +130,35 @@ public class GraphMetadataImpl implements TGGraphMetadata {
     	}
     	if (nodeTypeList != null) {
     		for (TGNodeType nt : nodeTypeList) {
+                ((NodeTypeImpl) nt).updateMetadata(this);
     			nodeTypeMap.put(nt.getName(), nt);
     			nodeTypeMapById.put(((NodeTypeImpl)nt).getId(), nt);
     		}
     	}
     	if (edgeTypeList != null) {
     		for (TGEdgeType et : edgeTypeList) {
+                ((EdgeTypeImpl) et).updateMetadata(this);
     			edgeTypeMap.put(et.getName(), et);
     			edgeTypeMapById.put(((EdgeTypeImpl)et).getId(), et);
     		}
     	}
+    	isInitialized = true;
     }
 
     public TGAttributeDescriptor getAttributeDescriptor(int id) {
     	return descriptorMapById.get(id);
     }
 
-    public TGNodeType getNodeType(int id) {
+    TGNodeType getNodeType(int id) {
     	return nodeTypeMapById.get(id);
     }
 
-    public TGEdgeType getEdgeType(int id) {
+    TGEdgeType getEdgeType(int id) {
     	return edgeTypeMapById.get(id);
+    }
+
+    public boolean isInitialized() {
+    	return isInitialized;
     }
 
     @Override

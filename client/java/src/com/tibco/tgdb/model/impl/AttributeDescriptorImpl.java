@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeDescriptorImpl.java 1110 2016-10-25 00:04:04Z ssubrama $
+ * SVN Id: $Id: AttributeDescriptorImpl.java 1614 2017-08-15 20:44:16Z vchung $
  */
 
 
@@ -48,6 +48,13 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
     private short precision;
 
     private AttributeDescriptorImpl() {}
+
+    //Used during meta data fetch
+    AttributeDescriptorImpl(int id) {
+        this.type = TGAttributeType.Invalid;
+        this.attributeId = id;
+        this.isArray = false;
+    }
 
 	public AttributeDescriptorImpl (String name, TGAttributeType type) {
 		this.name = name;

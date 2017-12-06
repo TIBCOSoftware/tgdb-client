@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeImpl.java 1303 2017-01-19 01:00:36Z ssubrama $
+ * SVN Id: $Id: AttributeImpl.java 1738 2017-10-10 02:11:19Z vchung $
  */
 
 
@@ -74,9 +74,13 @@ public class AttributeImpl implements TGAttribute {
         return owner;
     }
 
-    //FIXME:  Need to change this name to getAttributeDescriptor
     @Override
     public TGAttributeDescriptor getAttributeType() {
+        return type;
+    }
+
+    @Override
+    public TGAttributeDescriptor getAttributeDescriptor() {
         return type;
     }
 
@@ -346,7 +350,10 @@ public class AttributeImpl implements TGAttribute {
         sec     = in.readByte();
         ms      = in.readUnsignedShort();
         tztype  = in.readByte();
-        //tzid    = in.readShort();
+
+        if (tztype != -1) {
+            tzid    = in.readShort();
+        }
 
         switch (component2read) {
             case DATE_ONLY:

@@ -1,6 +1,7 @@
 package com.tibco.tgdb.channel.impl;
 
 import com.tibco.tgdb.channel.TGChannelUrl;
+import com.tibco.tgdb.exception.TGAuthenticationException;
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.pdu.TGMessage;
@@ -32,7 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TcpChannel.java 834 2016-05-15 02:16:24Z vchung $
+ * SVN Id: $Id: TcpChannel.java 1880 2017-11-04 02:29:10Z vchung $
  */
 public class TcpChannel extends AbstractChannel {
 
@@ -276,7 +277,7 @@ public class TcpChannel extends AbstractChannel {
                 gLogger.log(TGLogger.TGLevel.Info, "Connected successfully using user:" + this.getUserName());
                 return;
             }
-            throw new TGException("Bad username/password combination.");
+            throw new TGAuthenticationException("Bad username/password combination", -1, "Bad username/password combination", "tgdb");
         }
         catch (IOException ioe) {
             gLogger.logException("doAuthenticate failed", ioe);

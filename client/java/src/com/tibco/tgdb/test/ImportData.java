@@ -46,7 +46,12 @@ public class ImportData {
     public int edgeFetchCount = -1;
     public int nodeFetchCount = -1;
     public int nodeCommitCount = 1000;
-    public int edgeCommitCount = 10000;
+    public int edgeCommitCount = 1000;
+    public String hEscFile = "./hESC_mESC.csv";
+    public String hEscNetworkFile = "./hESC_comp_network_025.dat";
+	public String mEscNetworkFile = "./mESC_comp_network_025.dat";
+
+
     boolean treatDoubleAsString = false;
     
     String getStringValue(Iterator<String> argIter) {
@@ -107,7 +112,13 @@ public class ImportData {
     		} else if (s.equalsIgnoreCase("-edgecommitcount") || s.equalsIgnoreCase("-ecc")) {
     			edgeCommitCount = getIntValue(argIter, edgeCommitCount);
     		} else if (s.equalsIgnoreCase("-treatdoubleasstring") || s.equalsIgnoreCase("-dtos")) {
-    			treatDoubleAsString = true;
+				treatDoubleAsString = true;
+			} else if (s.equalsIgnoreCase("-hESC")) {
+				hEscFile = getStringValue(argIter, hEscFile);
+			} else if (s.equalsIgnoreCase("-hESCNET")) {
+				hEscNetworkFile = getStringValue(argIter, hEscNetworkFile);
+			} else if (s.equalsIgnoreCase("-mESCNET")) {
+				mEscNetworkFile = getStringValue(argIter, mEscNetworkFile);
     		} else {
     			System.out.printf("Skip argument %s\n", s);
     		}
@@ -135,7 +146,7 @@ public class ImportData {
 
         // Nodes
         String line;
-    	String file = "./hESC_mESC.csv";
+    	String file = hEscFile;
     	TGGraphMetadata gmd = conn.getGraphMetadata(true);
         HashMap<String, TGNode> mESCmap = new HashMap<String, TGNode>();
         HashMap<String, TGNode> hESCmap = new HashMap<String, TGNode>();
@@ -154,7 +165,9 @@ public class ImportData {
             		continue;
             	}
                 TGNode hESCNode = gof.createNode(hESCNodetype);
-                hESCNode.setAttribute("symbol", arr[1]);
+				//System.out.printf("Human - Symbol:%s name:%s\n", arr[1], arr[4]);
+				//System.out.printf("Mouse - Symbol:%s name:%s\n", arr[3], arr[4]);
+				hESCNode.setAttribute("symbol", arr[1]);
                 hESCNode.setAttribute("name", arr[4]);
                 hESCmap.put(arr[0], hESCNode);
                 
@@ -168,7 +181,7 @@ public class ImportData {
 
                 count+=2;
                 if (count%nodeCommitCount == 0) {
-                	conn.commit();
+					conn.commit();
                 }
                 if (count == nodeFetchCount) {
                 	break;
@@ -184,7 +197,7 @@ public class ImportData {
         // hESC Edges
     	TGNode fromNode;
     	TGNode toNode;
-    	file = "./hESC_comp_network_025.dat";
+    	file = hEscNetworkFile;
     	try (BufferedReader hESCEdgeReader = new BufferedReader(new FileReader(file))) {
             int count = 0;
 
@@ -204,8 +217,11 @@ public class ImportData {
 	                conn.insertEntity(edge);	
 	                count++;
 	                if (count%edgeCommitCount == 0) {
+						//System.out.println("Waiting to commit edges");
+						//System.in.read();
 	                	conn.commit();
 	                	System.out.printf("Count:%d\n", count);
+	                	//System.exit(0);
 	                }
                 }
             }
@@ -217,7 +233,7 @@ public class ImportData {
         }
     	
         // mESC Edges
-    	file = "./mESC_comp_network_025.dat";
+    	file = mEscNetworkFile;
     	try (BufferedReader mESCEdgeReader = new BufferedReader(new FileReader(file))) {
             int count = 0;
 

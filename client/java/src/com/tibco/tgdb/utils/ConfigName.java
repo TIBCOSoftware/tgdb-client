@@ -18,7 +18,7 @@ package com.tibco.tgdb.utils;
  * Created on: 12/31/14
  * Created by: suresh
 
- * SVN Id: $Id: ConfigName.java 623 2016-03-19 21:41:13Z ssubrama $
+ * SVN Id: $Id: ConfigName.java 1678 2017-09-19 22:49:32Z ssubrama $
  */
 
 /**
@@ -45,7 +45,7 @@ public enum ConfigName {
             ("tgdb.channel.pingInterval", "pingInterval", "30"),
 
     ChannelConnectTimeout
-            ("tgdb.channel.connectTimeout", "connectTimeout", "30"),
+            ("tgdb.channel.connectTimeout", "connectTimeout", "1000"), //1 sec timeout.
 
     ChannelFTHosts
             ("tgdb.channel.ftHosts", "ftHosts", null),

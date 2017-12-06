@@ -16,7 +16,7 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: QueryRequest.java 1238 2016-11-17 21:20:33Z vchung $
+ * SVN Id: $Id: QueryRequest.java 1713 2017-10-05 02:24:18Z vchung $
  */
 
 
@@ -36,6 +36,9 @@ import java.io.IOException;
 public class QueryRequest extends AbstractProtocolMessage {
 
     private String queryExpr;
+    private String edgeExpr;
+    private String traverseExpr;
+    private String endExpr;
     private long queryHashId;
     private int command;
     private TGQuery queryObject;
@@ -43,6 +46,9 @@ public class QueryRequest extends AbstractProtocolMessage {
 	private short batchSize = 50;
 	private short traversalDepth = 3;
 	private short edgeFetchSize = 0; // zero means no limitation
+    private String sortAttrName;
+    private boolean sortOrderDsc = false;
+    private int sortResultLimit = 50; // 0 means no limit
     
     static TGLogger gLogger = TGLogManager.getInstance().getLogger();
 
@@ -102,6 +108,30 @@ public class QueryRequest extends AbstractProtocolMessage {
     	return traversalDepth;
     }
 
+    public void setSortAttrName(String name) {
+        sortAttrName = name;
+    }
+
+    public String getSortAttrName() {
+        return sortAttrName;
+    }
+
+    public void setSortOrderDsc(boolean isDsc) {
+        sortOrderDsc = isDsc; 
+    }
+
+    public boolean isSortOrderDsc() {
+        return sortOrderDsc;
+    }
+
+    public void setSortResultLimit(int limit) {
+        sortResultLimit = limit;
+    }
+
+    public int getSortResultLimit() {
+        return sortResultLimit;
+    }
+
     @Override
     protected void writePayload(TGOutputStream os) throws TGException, IOException {
         int startPos = os.getPosition();
@@ -113,9 +143,43 @@ public class QueryRequest extends AbstractProtocolMessage {
         os.writeShort(batchSize);
         os.writeShort(traversalDepth);
         os.writeShort(edgeFetchSize);
+        //Has sort attr
+        if (sortAttrName != null) {
+            os.writeBoolean(true);
+            os.writeUTF(sortAttrName);
+            os.writeBoolean(sortOrderDsc);
+            os.writeInt(sortResultLimit);
+        } else {
+            os.writeBoolean(false);
+        }
+
         // CREATE, EXECUTE.
         if (command == 1 || command == 2) {
-            os.writeUTF(this.queryExpr);
+        	if (queryExpr == null) {
+        		//isNull is true
+        		os.writeBoolean(true);
+        	} else {
+        		os.writeBoolean(false);
+        		os.writeUTF(queryExpr);
+        	}
+        	if (edgeExpr == null) {
+        		os.writeBoolean(true);
+        	} else {
+        		os.writeBoolean(false);
+        		os.writeUTF(this.edgeExpr);
+        	}
+        	if (traverseExpr == null) {
+        		os.writeBoolean(true);
+        	} else {
+        		os.writeBoolean(false);
+        		os.writeUTF(this.traverseExpr);
+        	}
+        	if(endExpr == null) {
+        		os.writeBoolean(true);
+        	} else {
+        		os.writeBoolean(false);
+        		os.writeUTF(this.endExpr);
+        	}
         }
         // EXECUTEID, CLOSE
         else if (command == 3 || command == 4){
@@ -140,6 +204,18 @@ public class QueryRequest extends AbstractProtocolMessage {
 
     public void setQuery(String expr) {
         this.queryExpr = expr;
+    }
+    
+    public void setEdgeFilter(String expr) {
+        this.edgeExpr = expr;
+    }
+    
+    public void setTraversalCondition(String expr) {
+        this.traverseExpr = expr;
+    }
+    
+    public void setEndCondition(String expr) {
+        this.endExpr = expr;
     }
     
     public void setQueryHashId(long queryHashId) {

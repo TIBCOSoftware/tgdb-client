@@ -27,6 +27,9 @@ public class QueryOptionImpl extends SortedProperties<String,String> implements 
     private static String QUERY_OPTION_FETCHSIZE = "fetchsize";
     private static String QUERY_OPTION_TRAVERSALDEPTH = "traversaldepth";
     private static String QUERY_OPTION_EDGELIMIT = "edgelimit";
+    private static String QUERY_OPTION_SORTATTR = "sortattrname";
+    private static String QUERY_OPTION_SORTORDER = "sortorder"; // 0 - asc, 1 - dsc
+    private static String QUERY_OPTION_SORTLIMIT = "sortresultlimit";
 
 
     public QueryOptionImpl(boolean mutable) {
@@ -75,4 +78,51 @@ public class QueryOptionImpl extends SortedProperties<String,String> implements 
         String s = this.get(QUERY_OPTION_EDGELIMIT);
         return Integer.valueOf(s);
     }
+
+    @Override
+    public void setSortAttrName(String name) {
+        if (!mutable) throw new RuntimeException("Can't modify a immutable Option");
+        if (name == null || name.length() == 0) {
+            throw new RuntimeException("Invalid attribute name");
+        }
+        this.put(QUERY_OPTION_SORTATTR, name);
+    }
+
+    @Override
+    public String getSortAttrName() {
+        String s = this.get(QUERY_OPTION_SORTATTR);
+        return s;
+    }
+
+    @Override
+    public void setSortOrderDsc(boolean isDsc) {
+        if (!mutable) throw new RuntimeException("Can't modify a immutable Option");
+        if (isDsc) {
+            this.put(QUERY_OPTION_SORTORDER, "1");
+        } else {
+            this.put(QUERY_OPTION_SORTORDER, "0");
+        }
+    }
+
+    @Override
+    public boolean isSortOrderDsc() {
+        String s = this.get(QUERY_OPTION_SORTORDER);
+        return s.equals("1");
+    }
+
+    @Override
+    public void setSortResultLimit(int limit) {
+        if (!mutable) throw new RuntimeException("Can't modify a immutable Option");
+        if (limit <= 0) {
+            throw new RuntimeException("Invalid sort limit");
+        }    
+        this.put(QUERY_OPTION_SORTLIMIT, String.valueOf(limit));
+    }
+
+    @Override
+    public int getSortResultLimit() {
+        String s = this.get(QUERY_OPTION_SORTLIMIT);
+        return Integer.valueOf(s);
+    }
+
 }

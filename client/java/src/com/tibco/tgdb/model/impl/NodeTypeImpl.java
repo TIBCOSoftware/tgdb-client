@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: NodeTypeImpl.java 978 2016-09-18 21:43:27Z vchung $
+ * SVN Id: $Id: NodeTypeImpl.java 1622 2017-08-17 02:37:39Z vchung $
  */
 
 
@@ -24,16 +24,21 @@ package com.tibco.tgdb.model.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.model.TGEntityType;
+import com.tibco.tgdb.log.TGLogger.TGLevel;
+import com.tibco.tgdb.model.TGAttributeDescriptor;
+import com.tibco.tgdb.model.TGAttributeType;
 import com.tibco.tgdb.model.TGGraphMetadata;
 import com.tibco.tgdb.model.TGNodeType;
 import com.tibco.tgdb.pdu.TGInputStream;
 
 public class NodeTypeImpl extends EntityTypeImpl implements TGNodeType {
 
-    ArrayList<String> pKeys = new ArrayList<String>();
+    private List<TGAttributeDescriptor> pKeys = new ArrayList<TGAttributeDescriptor>();
+    private List<Integer> idxIds = new ArrayList<Integer>();
+    long numEntries; //transient
 
     public NodeTypeImpl(String name, TGNodeType parent) {
     }
@@ -43,19 +48,44 @@ public class NodeTypeImpl extends EntityTypeImpl implements TGNodeType {
     	return TGSystemType.NodeType;
     }
 
+    void updateMetadata(TGGraphMetadata gmd) {
+        super.updateMetadata(gmd);
+        int i = 0;
+        for (TGAttributeDescriptor attr : pKeys) {
+        	String attrName = attr.getName();
+            TGAttributeDescriptor desc = gmd.getAttributeDescriptor(attrName);
+            if (desc != null) {
+                pKeys.set(i, desc);
+            } else {
+    	        gLogger.log(TGLevel.Warning, "Cannot find attribute descriptor pkey attribute : %s", attrName);
+            }
+            i++;
+        }
+    }
+
+    @Override 
+    public TGAttributeDescriptor[] getPKeyAttributeDescriptors() {
+        return pKeys.toArray(new TGAttributeDescriptor[0]);
+    }
+
     @Override
     public void readExternal(TGInputStream is) throws TGException, IOException {
     	super.readExternal(is);
 
     	int attrCount = is.readShort();
     	for (int i=0; i<attrCount; i++) {
-    		pKeys.add(is.readUTF());
+            String attrName = is.readUTF();
+    		TGAttributeDescriptor attrDesc = new AttributeDescriptorImpl(attrName, TGAttributeType.String);
+    		pKeys.add(attrDesc);
     	}
 
     	int idxCount = is.readShort();
     	for (int i=0; i<idxCount; i++) {
             //FIXME: Get meta data needs to return index definitions
-    		is.readInt();
+    		int id = is.readInt();
+            idxIds.add(id);
     	}
+    	numEntries = is.readLong();
+
     }
 }

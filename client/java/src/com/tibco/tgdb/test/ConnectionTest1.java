@@ -16,7 +16,7 @@
  * Created on: 1/13/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionTest1.java 1347 2017-02-03 03:34:36Z vchung $
+ * SVN Id: $Id: ConnectionTest1.java 1775 2017-10-20 19:00:42Z vchung $
  */
 
 
@@ -795,7 +795,7 @@ public class ConnectionTest1 {
     	ct1.getArgs(args);
     	if (ct1.interactiveGet) {
     		ct1.interactiveGet();
-    	} if (ct1.testTransaction) {
+    	} else if (ct1.testTransaction) {
             ct1.testTransaction();
         }else {
     		ct1.test();

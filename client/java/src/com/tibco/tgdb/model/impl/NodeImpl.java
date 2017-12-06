@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: NodeImpl.java 813 2016-05-09 15:38:00Z vchung $
+ * SVN Id: $Id: NodeImpl.java 1583 2017-08-10 04:16:44Z vchung $
  */
 
 
@@ -67,8 +67,17 @@ public class NodeImpl extends AbstractEntity implements TGNode {
 
     @Override
     public Collection<TGEdge> getEdges(TGEdge.DirectionType directionType) {
-    	//VC:FIXME
-        return Collections.EMPTY_LIST;
+    	if (edges.size() == 0) {
+    		return Collections.<TGEdge> emptyList();
+    	}
+
+        List<TGEdge> col = new ArrayList<TGEdge>();
+        for (TGEdge edge : edges) {
+        	if (edge.getDirectionType() == directionType) {
+        		col.add(edge);
+        	}
+        }
+    	return Collections.unmodifiableCollection(col);
     }
 
     @Override

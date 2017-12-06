@@ -21,7 +21,7 @@ import java.util.Map;
  * Created on: 12/16/14
  * Created by: suresh
 
- * SVN Id: $Id: TGEnvironment.java 623 2016-03-19 21:41:13Z ssubrama $
+ * SVN Id: $Id: TGEnvironment.java 1679 2017-09-19 22:51:09Z ssubrama $
  */
 public class TGEnvironment {
 
@@ -81,7 +81,7 @@ public class TGEnvironment {
         if (value != null) {
             return Integer.parseInt(value);
         }
-        return 30;
+        return 1000;
 
     }
 

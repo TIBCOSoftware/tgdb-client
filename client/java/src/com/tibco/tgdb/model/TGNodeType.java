@@ -18,9 +18,9 @@ package com.tibco.tgdb.model;
  * Created on: 1/22/15
  * Created by: suresh
 
- * SVN Id: $Id: TGNodeType.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: TGNodeType.java 1622 2017-08-17 02:37:39Z vchung $
  */
 
 public interface TGNodeType extends TGEntityType {
-
+    public TGAttributeDescriptor[] getPKeyAttributeDescriptors();
 }

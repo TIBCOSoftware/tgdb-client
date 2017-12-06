@@ -16,7 +16,7 @@
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionImpl.java 1307 2017-01-24 02:30:04Z ssubrama $
+ * SVN Id: $Id: ConnectionImpl.java 1713 2017-10-05 02:24:18Z vchung $
  */
 
 
@@ -205,7 +205,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     		if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
     			for (TGEntity entity : addedList.values()) {
     				for (TGAttribute attr : entity.getAttributes()) {
-    					int attrId = attr.getAttributeType().getAttributeId();
+    					int attrId = attr.getAttributeDescriptor().getAttributeId();
     					if (attrId < 0) {
     						List<TGAttribute> attrList = attrByTypeList.get(attrId);
     						if (attrList == null) {
@@ -218,7 +218,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     			}
     			for (TGEntity entity : changedList.values()) {
     				for (TGAttribute attr : entity.getAttributes()) {
-    					int attrId = attr.getAttributeType().getAttributeId();
+    					int attrId = attr.getAttributeDescriptor().getAttributeId();
     					if (attrId < 0) {
     						List<TGAttribute> attrList = attrByTypeList.get(attrId);
     						if (attrList == null) {
@@ -292,6 +292,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
 
     @Override
     public TGEntity getEntity(TGKey key, TGQueryOption props) throws TGException {
+    	initMetadata();
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
@@ -379,7 +380,8 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
 
     @Override
     public TGResultSet getEntities(TGKey key, TGProperties<String, String> props) throws TGException
-    {
+    { 
+    	initMetadata();
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
@@ -502,6 +504,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     @Override
     // Need to implement TGQuery and change this type to TGQuery.
     public TGQuery createQuery(String expr) throws TGException {
+    	initMetadata();
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
@@ -537,6 +540,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
 
     @Override
     public TGResultSet executeQuery(String query,TGQueryOption queryOption) throws TGException {
+    	initMetadata();
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
@@ -623,7 +627,100 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         }
     }
 
+    @Override
+	public TGResultSet executeQuery(String query, String edgeFilter, String traversalCondition, String endCondition, TGQueryOption queryOption) throws TGException {
+    	initMetadata();
+        connPool.adminlock();
+
+        TGChannelResponse channelResponse;
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+
+        long requestId  = requestIds.getAndIncrement();
+        channelResponse = new BlockingChannelResponse(requestId, timeout);
+        try {
+            QueryRequest request = (QueryRequest) TGMessageFactory.getInstance().createMessage(VerbId.QueryRequest, channel.getAuthToken(), channel.getSessionId());
+        	configureQueryRequest(request, queryOption);
+            request.setCommand(command.EXECUTE.getValue());
+//            request.setConnectionId(connId);
+            request.setQuery(query);
+            request.setEdgeFilter(edgeFilter);
+            request.setTraversalCondition(traversalCondition);
+            request.setEndCondition(endCondition);
+            QueryResponse response = (QueryResponse) this.channel.sendRequest(request, channelResponse);
+            gLogger.log(TGLogger.TGLevel.Debug, "Send execute query completed");
+
+        	//Need to check status
+        	if (!response.hasResult()) {
+        		return null;
+        	}
+            int resultCount = response.getResultCount();
+            int currResultCount = 0;
+    		TGInputStream entityStream = response.getEntityStream();
+    		HashMap<Long, TGEntity> fetchedEntities = null;
+            ResultSetImpl resultSet = null;
+        	if (resultCount > 0) {
+         		fetchedEntities = new HashMap<Long, TGEntity>();
+                entityStream.setReferenceMap(fetchedEntities);
+                resultSet = new ResultSetImpl(this, 0);
+        	}
+            int totalCount = response.getTotalCount();
+        	for (int i=0; i<totalCount; i++) {
+        		TGEntity.TGEntityKind kind = TGEntity.TGEntityKind.fromValue(entityStream.readByte());
+          		if (kind != TGEntity.TGEntityKind.InvalidKind) {
+           			long id = entityStream.readLong();
+           			TGEntity entity = fetchedEntities.get(id);
+           			if (kind == TGEntity.TGEntityKind.Node) {
+           				//Need to put shell object into hashmap to be deserialized later
+           				TGNode  node = (TGNode) entity;
+           				if (node == null) {
+           					node = gof.createNode();
+           					entity = node;
+           					fetchedEntities.put(id, node);
+           					if (currResultCount < resultCount) {
+                                resultSet.addEntityToResultSet(node);
+           					}
+           				}
+           				node.readExternal(entityStream);
+           			} else if (kind == TGEntity.TGEntityKind.Edge) {
+           				TGEdge edge = (TGEdge) entity;
+           				if (edge == null) {
+           					//edge = gof.createEdge(null, null, TGEdge.DirectionType.BiDirectional);
+           					edge = (TGEdge) ((GraphObjectFactoryImpl)gof).createEntity(TGEntity.TGEntityKind.Edge);
+           					fetchedEntities.put(id, edge);
+           				}
+           				edge.readExternal(entityStream);
+           			}
+        	        if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
+                        gLogger.log(TGLevel.Debug, "Kind : %d, Id : %d, hc : %d", entity.getEntityKind().kind(), ((AbstractEntity) entity).getEntityId(), entity.hashCode());
+                        for (TGAttribute attrib : entity.getAttributes()) {
+                            gLogger.log(TGLevel.Debug, "Attr : %s", attrib.getValue());
+                        }
+                        if (entity.getEntityKind() == TGEntity.TGEntityKind.Node) {
+                            for (TGEdge edge : ((TGNode) entity).getEdges()) {
+                                gLogger.log(TGLevel.Debug, "    Edge : %d, hc : %d", ((AbstractEntity) edge).getEntityId(), edge.hashCode());
+                            }
+                        } if (entity.getEntityKind() == TGEntity.TGEntityKind.Edge) {
+                            TGNode[] nodes = ((TGEdge) entity).getVertices();
+                            for (int j=0; j<nodes.length; j++) {
+                                gLogger.log(TGLevel.Debug, "    Node : %d, hc : %d", ((AbstractEntity) nodes[j]).getEntityId(), nodes[j].hashCode());
+                            }
+                        }
+                    }
+           		} else {
+           			gLogger.log(TGLevel.Warning, "Received invalid entity kind %d", kind);
+           		}
+        	}
+            return resultSet;
+        } catch (IOException ioe) {
+        	throw new TGException(ioe.getMessage());
+        }
+        finally {
+            connPool.adminUnlock();
+        }
+    }
+
     public TGResultSet executeQueryWithId(long queryHashId,TGQueryOption queryOption) throws TGException {
+    	initMetadata();
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
@@ -700,7 +797,13 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     }
 
     @Override
-    public TGGraphObjectFactory getGraphObjectFactory() {
+    public TGGraphObjectFactory getGraphObjectFactory() throws TGException  {
+    	try {
+    		initMetadata();
+    	} catch (TGException e) {
+    		gLogger.logException("Cannot initialize meta data", e);
+    		throw e;
+    	}
         return gof;
     }
 
@@ -938,5 +1041,36 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     		short tdepth = Short.parseShort(val);
     		qryr.setEdgeFetchSize(tdepth);
     	}
+
+    	val = properties.get("sortattrname");
+    	if (val != null) {
+    		qryr.setSortAttrName(val);
+    	}
+
+    	val = properties.get("sortorder");
+    	if (val != null) {
+    		short order = Short.parseShort(val);
+    		qryr.setSortOrderDsc(order == 1);
+    	}
+
+    	val = properties.get("sortresultlimit");
+    	if (val != null) {
+    		int limit = Integer.parseInt(val);
+            if (limit >=0) {
+    		    qryr.setSortResultLimit(limit);
+            }
+    	}
+    }
+    
+    private void  initMetadata() throws TGException {
+    	if (gof == null) {
+    		return;
+    	}
+    	GraphMetadataImpl gmd = (GraphMetadataImpl) gof.getGraphMetaData();
+    	if (gmd.isInitialized()) {
+    		return;
+    	}
+    	
+    	getGraphMetadata(true);
     }
 }

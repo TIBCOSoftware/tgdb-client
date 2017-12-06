@@ -30,7 +30,7 @@ import com.tibco.tgdb.utils.TGProperties;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGConnection.java 1169 2016-11-03 18:31:31Z ssubrama $
+ *		SVN Id: $Id: TGConnection.java 1713 2017-10-05 02:24:18Z vchung $
  *
  */
 public interface TGConnection {
@@ -92,8 +92,8 @@ public interface TGConnection {
 
     /**
      * Insert a new entity constructed using createNode/Edge 
-     * @param entity - a new entity to be inserted into the database
-     * @throws TGException - Throws an exception if insert failed
+     * @param entity
+     * @throws TGException
      */
     void insertEntity(TGEntity entity) throws TGException;
     
@@ -131,6 +131,22 @@ public interface TGConnection {
 	TGResultSet executeQuery(String expr, TGQueryOption option) throws TGException;
 	
     /**
+     * Execute an immediate Query with  query options
+     * The query option is place holder at this time
+     *
+     * @param expr A subset of SQL-92 where clause. @see com.tibco.tgdb.query.TGQuery
+     * @param edgeFilter filter used for selecting edges to be returned
+     * @param traversalCondition condition used for selecting edges to be traversed and returned
+     * @param endCondition condition used to stop the traversal
+     * @param option Query options for executing. Can be null, then it will use the default option
+     *
+     * @return A navigatable ResultSet if successful in executing the query. The result set will indicate errors if
+     * the query had any exceptions
+     * @throws com.tibco.tgdb.exception.TGException Throws an exception if there was any error while updating the object
+     */
+	TGResultSet executeQuery(String expr, String edgeFilter, String traversalCondition, String endCondition, TGQueryOption option) throws TGException;
+
+    /**
      * Create a Resuable Query
      * @param expr A subset of SQL-92 where clause. @see com.tibco.tgdb.query.TGQuery
      * @return A resuable query object
@@ -148,7 +164,8 @@ public interface TGConnection {
     /**
      * Get the Graph Object Factory for Object creation.
      * @return TGGraphObjectFactory for creating objects
+     * @throws TGException 
      */
-    TGGraphObjectFactory getGraphObjectFactory();
+    TGGraphObjectFactory getGraphObjectFactory() throws TGException;
 
 }

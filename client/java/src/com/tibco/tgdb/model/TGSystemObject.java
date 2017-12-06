@@ -26,7 +26,7 @@ public interface TGSystemObject extends TGSerializable{
     enum TGSystemType {
     	InvalidType(-1),
     	AttributeDescriptor(0),
-    	NodeType(1), //FIXME: Should we call it something else? All the rest are entity also.
+    	NodeType(1),
         EdgeType(2),
         Index(3),
         Prinicapl(4),

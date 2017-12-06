@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: EdgeImpl.java 1103 2016-10-24 17:14:40Z vchung $
+ * SVN Id: $Id: EdgeImpl.java 1633 2017-08-26 04:44:08Z ssubrama $
  */
 
 
@@ -90,6 +90,7 @@ public class EdgeImpl extends AbstractEntity implements TGEdge {
         	os.writeLong(((AbstractEntity) toNode).getVirtualId());
         } else {
         	//FIXME:  Not sending the direction, is it ok?
+            os.writeByte(directionType.ordinal()); //The Server expects it - so better send it.
         	os.writeLong(((AbstractEntity) fromNode).getVirtualId());
         	os.writeLong(((AbstractEntity) toNode).getVirtualId());
         }

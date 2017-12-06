@@ -26,24 +26,11 @@ import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.log.TGLogger.TGLevel;
-import com.tibco.tgdb.model.TGAttributeDescriptor;
-import com.tibco.tgdb.model.TGAttributeType;
-import com.tibco.tgdb.model.TGEdge;
-import com.tibco.tgdb.model.TGEdgeType;
-import com.tibco.tgdb.model.TGEntityId;
-import com.tibco.tgdb.model.TGNodeType;
-import com.tibco.tgdb.model.TGSystemObject.TGSystemType;
-import com.tibco.tgdb.model.impl.AttributeDescriptorImpl;
-import com.tibco.tgdb.model.impl.ByteArrayEntityId;
-import com.tibco.tgdb.model.impl.EdgeTypeImpl;
-import com.tibco.tgdb.model.impl.NodeTypeImpl;
 import com.tibco.tgdb.pdu.TGInputStream;
 import com.tibco.tgdb.pdu.TGOutputStream;
 import com.tibco.tgdb.pdu.VerbId;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class GetEntityResponse extends AbstractProtocolMessage {
     static TGLogger gLogger        = TGLogManager.getInstance().getLogger();

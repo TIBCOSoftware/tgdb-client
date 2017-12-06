@@ -16,7 +16,7 @@
  * Created on: 1/28/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: GraphObjectFactoryImpl.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: GraphObjectFactoryImpl.java 1614 2017-08-15 20:44:16Z vchung $
  */
 
 
@@ -37,7 +37,11 @@ public class GraphObjectFactoryImpl implements TGGraphObjectFactory {
     	//And one object factory per connection even though connections can share 
     	//the same channel. How do we handle update notifications from other clients?
         //this.graphMetadata = graphMetadata;
-        this.graphMetadata = new GraphMetadataImpl();
+        if (graphMetadata == null) {
+            this.graphMetadata = new GraphMetadataImpl();
+        } else {
+            this.graphMetadata = graphMetadata;
+        }
         this.lsnr = lsnr;
     }
 

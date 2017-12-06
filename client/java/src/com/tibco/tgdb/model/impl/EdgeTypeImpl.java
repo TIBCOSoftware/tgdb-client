@@ -16,24 +16,45 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: EdgeTypeImpl.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: EdgeTypeImpl.java 1614 2017-08-15 20:44:16Z vchung $
  */
 
 
 package com.tibco.tgdb.model.impl;
 
+import java.io.IOException;
+
+import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.model.TGEdge;
 import com.tibco.tgdb.model.TGEdgeType;
-import com.tibco.tgdb.model.TGEntityType;
 import com.tibco.tgdb.model.TGGraphMetadata;
+import com.tibco.tgdb.model.TGNodeType;
+import com.tibco.tgdb.pdu.TGInputStream;
 
 public class EdgeTypeImpl extends EntityTypeImpl implements TGEdgeType {
-    TGEdge.DirectionType directionType;
+    private TGEdge.DirectionType directionType;
+    private int fromTypeId;
+    private int toTypeId;
+    private TGNodeType fromNodeType;
+    private TGNodeType toNodeType;
 
     //FIXME: Can directionType different from parent direction type?
     public EdgeTypeImpl(String name, TGEdge.DirectionType directionType, TGEdgeType parent) {
     	super();
     	this.directionType = directionType;
+    }
+
+    int getFromId() {
+        return fromTypeId;
+    }
+
+    int getToId() {
+        return toTypeId;
+    }
+
+    void updateMetadata(TGGraphMetadata gmd) {
+        fromNodeType = ((GraphMetadataImpl) gmd).getNodeType(fromTypeId);
+        toNodeType = ((GraphMetadataImpl) gmd).getNodeType(toTypeId);
     }
 
     @Override
@@ -44,5 +65,31 @@ public class EdgeTypeImpl extends EntityTypeImpl implements TGEdgeType {
     @Override
     public TGEdge.DirectionType getDirectionType() {
         return directionType;
+    }
+
+    @Override
+    public TGNodeType getFromNodeType() {
+        return fromNodeType;
+    }
+
+    @Override
+    public TGNodeType getToNodeType() {
+        return toNodeType;
+    }
+
+    @Override
+    public void readExternal(TGInputStream is) throws TGException, IOException {
+    	super.readExternal(is);
+
+        fromTypeId = is.readInt();
+        toTypeId = is.readInt();
+        byte dir = is.readByte();
+        if (dir == 0) {
+        	this.directionType = TGEdge.DirectionType.UnDirected;
+        } else if (dir == 1) {
+        	this.directionType = TGEdge.DirectionType.Directed;
+        } else {
+        	this.directionType = TGEdge.DirectionType.BiDirectional;
+        }
     }
 }

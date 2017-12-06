@@ -16,10 +16,15 @@ package com.tibco.tgdb.model;
 
  * File name : TGEdgeType.java
  * Created by: suresh
- * SVN Id: $Id: TGEdgeType.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: TGEdgeType.java 1583 2017-08-10 04:16:44Z vchung $
  */
 
 public interface TGEdgeType extends TGEntityType {
 
     TGEdge.DirectionType getDirectionType();
+    
+    TGNodeType getFromNodeType();
+    
+    TGNodeType getToNodeType();
+    
 }
