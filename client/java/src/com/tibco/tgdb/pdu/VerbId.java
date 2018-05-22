@@ -18,7 +18,7 @@ package com.tibco.tgdb.pdu;
  * Created on: 12/26/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: VerbId.java 859 2016-06-14 00:53:54Z cltran $
+ * SVN Id: $Id: VerbId.java 2164 2018-03-20 00:11:11Z ssubrama $
  */
 public enum VerbId {
 
@@ -77,11 +77,14 @@ public enum VerbId {
      * Disconnect Request verbs
      */
     DisconnectChannelRequest(23, com.tibco.tgdb.pdu.impl.DisconnectChannelRequest.class),
+    SessionForcefullyTerminated(40, com.tibco.tgdb.pdu.impl.SessionForcefullyTerminated.class),
+
     
     /**
      * Unknown Exception Message on the server.
      */
     ExceptionMessage(100, com.tibco.tgdb.pdu.impl.ExceptionMessage.class),
+
 
     InvalidMessage(-1, com.tibco.tgdb.pdu.impl.InvalidMessage.class);
 

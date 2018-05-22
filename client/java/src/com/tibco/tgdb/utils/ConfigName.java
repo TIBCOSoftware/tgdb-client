@@ -18,8 +18,10 @@ package com.tibco.tgdb.utils;
  * Created on: 12/31/14
  * Created by: suresh
 
- * SVN Id: $Id: ConfigName.java 1678 2017-09-19 22:49:32Z ssubrama $
+ * SVN Id: $Id: ConfigName.java 2182 2018-03-30 19:59:00Z ssubrama $
  */
+
+import javax.sql.ConnectionPoolDataSource;
 
 /**
  * Enumeration class that provides a configuration name, alias name and a defaultValue;
@@ -50,6 +52,12 @@ public enum ConfigName {
     ChannelFTHosts
             ("tgdb.channel.ftHosts", "ftHosts", null),
 
+    ChannelFTRetryIntervalSeconds
+            ("tgdb.channel.ftRetryIntervalSeconds", "ftRetryIntervalSeconds", "10"),
+
+    ChannelFTRetryCount
+            ("tgdb.channel.ftRetryCount", "ftRetryCount", "3"),
+
     ChannelDefaultUserID
             ("tgdb.channel.defaultUserID", null, null),
 
@@ -59,7 +67,7 @@ public enum ConfigName {
     ChannelPassword
             ("tgdb.channel.password", "password", null),
 
-    ChannelClientId("tgdb.channel.clientId", "clientId",null),
+    ChannelClientId("tgdb.channel.clientId", "clientId","tgdb.java-api.client"),
 
     ConnectionPoolUseDedicatedChannelPerConnection
             ("tgdb.connectionpool.useDedicatedChannelPerConnection", "useDedicatedChannelPerConnection", "false"),
@@ -67,8 +75,12 @@ public enum ConfigName {
     ConnectionPoolDefaultPoolSize
             ("tgdb.connectionpool.defaultPoolSize", "defaultPoolSize", "10"),
 
-    ConnectionOperationTimeout
-            ("tgdb.connection.operationTimeout", "connectionOperationTimeout", "10000"),  //Represented in ms. Default Value is 10sec
+    ConnectionReserveTimeoutSeconds
+            ("tgdb.connectionpool.connectionReserveTimeoutSeconds", "connectionReserveTimeoutSeconds", "10"),
+            //0 = mean immediate, Integer Max for indefinite.
+
+    ConnectionOperationTimeoutSeconds
+            ("tgdb.connection.operationTimeoutSeconds", "connectionOperationTimeoutSeconds", "10"),  //Represented in ms. Default Value is 10sec
 
 
     
@@ -117,4 +129,6 @@ public enum ConfigName {
     public String getName() {
         return propName;
     }
+
+
 }

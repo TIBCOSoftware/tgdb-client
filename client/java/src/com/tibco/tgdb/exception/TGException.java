@@ -21,7 +21,7 @@ import java.io.IOException;
  * File name :TGException
  * Created by: suresh
  *
- * SVN Id: $Id: TGException.java 1205 2016-11-09 02:05:16Z ssubrama $
+ * SVN Id: $Id: TGException.java 2164 2018-03-20 00:11:11Z ssubrama $
  */
 public class TGException extends Exception {
 
@@ -70,7 +70,7 @@ public class TGException extends Exception {
         this.errorCode = errorCode;
     }
 
-    public TGException(TGException cause) {
+    public TGException(Exception cause) {
         super(cause);
     }
     /**
@@ -103,7 +103,10 @@ public class TGException extends Exception {
         ProtocolNotSupported,
         BadAuthentication,
         IOException,
-        GeneralException
+        ConnectionTimeout,
+        GeneralException,
+        RetryIOException,
+        DisconnectedException
     }
 
     @Override

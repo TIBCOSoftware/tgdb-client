@@ -16,7 +16,7 @@
  * Created on: 1/17/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ExceptionMessage.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: ExceptionMessage.java 2164 2018-03-20 00:11:11Z ssubrama $
  */
 
 
@@ -37,14 +37,21 @@ public class ExceptionMessage extends AbstractProtocolMessage {
     String msg;
     TGException.ExceptionType exceptionType;
 
+    ExceptionMessage() {}
+
+    public ExceptionMessage(TGException.ExceptionType type, String msg) {
+        this.msg = msg;
+        this.exceptionType = type;
+    }
+
     public static ExceptionMessage buildFromException(Exception ex) {
-        ExceptionMessage exMsg = new ExceptionMessage();
+        TGException.ExceptionType type;
         if (ex instanceof TGException) {
-            exMsg.exceptionType = ((TGException) ex).getExceptionType();
+            type = ((TGException) ex).getExceptionType();
         } else if (ex instanceof IOException) {
-            exMsg.exceptionType = TGException.ExceptionType.IOException;
+            type = TGException.ExceptionType.IOException;
         } else {
-            exMsg.exceptionType = TGException.ExceptionType.GeneralException;
+            type = TGException.ExceptionType.GeneralException;
         }
 
         StringWriter sw = new StringWriter();
@@ -52,8 +59,8 @@ public class ExceptionMessage extends AbstractProtocolMessage {
         ex.printStackTrace(pw);
         pw.flush();
 
-        exMsg.msg = String.format("%s.\nRemoteTrace:%s", ex.getMessage(), sw.toString());
-        return exMsg;
+        String msg = String.format("%s.\nRemoteTrace:%s", ex.getMessage(), sw.toString());
+        return new ExceptionMessage(type, msg);
     }
 
     @Override

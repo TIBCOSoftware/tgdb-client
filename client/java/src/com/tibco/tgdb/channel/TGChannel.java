@@ -16,10 +16,11 @@ package com.tibco.tgdb.channel;
  *
  * File name : TGChannel
  * Created by: Suresh
- * SVN Id : $Id: TGChannel.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id : $Id: TGChannel.java 2155 2018-03-19 04:31:41Z ssubrama $
  */
 
 import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.pdu.TGMessage;
 
 import java.util.Map;
 
@@ -34,15 +35,28 @@ public interface TGChannel {
         Closing,
         Closed,
         FailedOnSend,
-        FailedOnRecv
+        FailedOnRecv,
+        FailedOnProcessing,
+        Reconnecting,
+        Terminated,
     }
 
     public enum ResendMode {
         DontReconnectAndIgnore,
         ReconnectAndResend,
         ReconnectAndRaiseException,
-        ReconnectAndIgnore
+        ReconnectAndIgnore,
     }
+
+    public enum ReconnectState {
+        ReconnectChannelClosed,
+        ReconnectSuccess,
+        ReconnectFailed,
+        ReconnectFailedAllAttempts,
+
+    }
+
+
 
     public interface LinkEventHandler {
         public void     onException(Exception ex, boolean duringClose);
@@ -94,13 +108,6 @@ public interface TGChannel {
     void connect() throws TGException;
 
     /**
-     *
-     * Forcefully reconnect to the FT Urls
-     * @return
-     */
-    boolean reconnect();
-
-    /**
      * Start the channel for send and recving messages. Set the LinkEventHandler before starting the Channel.
      *
      * @throws TGException
@@ -119,10 +126,21 @@ public interface TGChannel {
      */
     void stop(boolean bForcefully);
 
+
     /**
-     * Set the Link Event Handler.
-     * @param handler
+     * Send a Message on this channel, and returns immediately.
+     * @param msg
+     * @throws TGException
      */
-    void setLinkEventHandler(LinkEventHandler handler);
+    public void sendMessage(TGMessage msg) throws TGException;
+
+    /**
+     * Send a Message waiting for a response. The thread blocks till it gets the response.
+     * @param msg
+     * @param response
+     * @return
+     * @throws TGException
+     */
+    public TGMessage sendRequest(TGMessage msg, TGChannelResponse response) throws TGException;
 
 }

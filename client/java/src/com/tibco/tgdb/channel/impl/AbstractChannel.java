@@ -18,13 +18,16 @@ package com.tibco.tgdb.channel.impl;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AbstractChannel.java 1345 2017-02-03 03:33:02Z vchung $
+ * SVN Id: $Id: AbstractChannel.java 2219 2018-04-06 21:31:13Z ssubrama $
  */
 
 import com.tibco.tgdb.TGProtocolVersion;
 import com.tibco.tgdb.channel.TGChannel;
 import com.tibco.tgdb.channel.TGChannelResponse;
 import com.tibco.tgdb.channel.TGChannelUrl;
+import com.tibco.tgdb.exception.TGAuthenticationException;
+import com.tibco.tgdb.exception.TGChannelDisconnectedException;
+import com.tibco.tgdb.exception.TGConnectionTimeoutException;
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
@@ -32,34 +35,64 @@ import com.tibco.tgdb.pdu.TGMessage;
 import com.tibco.tgdb.pdu.TGMessageFactory;
 import com.tibco.tgdb.pdu.VerbId;
 import com.tibco.tgdb.pdu.impl.DisconnectChannelRequest;
+import com.tibco.tgdb.pdu.impl.ExceptionMessage;
 import com.tibco.tgdb.utils.ConfigName;
+import com.tibco.tgdb.utils.HexUtils;
 import com.tibco.tgdb.utils.TGConstants;
 import com.tibco.tgdb.utils.TGProperties;
 
 import java.io.IOException;
+import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static com.tibco.tgdb.channel.impl.AbstractChannel.ExceptionHandleResult.Disconnected;
+import static com.tibco.tgdb.channel.impl.AbstractChannel.ExceptionHandleResult.RethrowException;
+import static com.tibco.tgdb.channel.impl.AbstractChannel.ExceptionHandleResult.RetryOperation;
 
 /**
  * Physical link between the Client and the Server. A Connection is a logical abstract which uses the channel.
  */
 public abstract class AbstractChannel implements TGChannel {
 
+
+
+    enum ExceptionHandleResult {
+        RethrowException(TGException.ExceptionType.GeneralException, "TGDB-CHANNEL-FAIL:Failed to reconnect"),
+        RetryOperation(TGException.ExceptionType.RetryIOException, "TGDB-CHANNEL-RETRY:Channel Reconnected, Retry Operation"),
+        Disconnected(TGException.ExceptionType.DisconnectedException, "TGDB-CHANNEL-FAIL:Failed to reconnect");
+
+        ExceptionHandleResult(TGException.ExceptionType type, String msg) {
+            this.type = type;
+            this.msg = msg;
+        }
+        TGException.ExceptionType type;
+        String msg;
+    }
+
+
     static TGLogger gLogger        = TGLogManager.getInstance().getLogger();
 
 
     final Lock sendLock = new ReentrantLock();
+    final Lock exceptionLock = new ReentrantLock();
+    final Condition exceptionCond = exceptionLock.newCondition();
 
-    LinkUrl             linkURL             = null;
-    LinkEventHandler    linkHandler         = null;
+    private int connectionIndex;
+    TGChannelUrl        linkURL             = null;
+    TGChannelUrl        primaryURL          = null;
     TGProperties<String, String> properties = null;
-    LinkState           state               = LinkState.NotConnected;
+    AtomicReference<LinkState> state        = new AtomicReference<LinkState>(LinkState.NotConnected);
 
     AtomicBoolean       bNeedsPing          = new AtomicBoolean(false);
     AtomicInteger       numConnections      = new AtomicInteger(0);  //number of logical connection
@@ -69,17 +102,19 @@ public abstract class AbstractChannel implements TGChannel {
     ChannelReader       reader              = null;
     ConcurrentMap<Long, TGChannelResponse>  responses    = new ConcurrentHashMap<>();
 
-
     String              clientId            = null;
     String              inboxAddr           = null;
     long                sessionId           = -1;
     long                authToken           = -1;
 
 
+
     protected AbstractChannel(TGChannelUrl linkUrl, TGProperties<String, String> props) {
-        this.linkURL = (LinkUrl) linkUrl;
+        this.linkURL = linkUrl;
+        this.primaryURL = linkUrl;
         this.properties = props;
         reader = new ChannelReader(this);
+        this.connectionIndex = 0;
     }
 
     abstract void createSocket() throws TGException;
@@ -90,13 +125,12 @@ public abstract class AbstractChannel implements TGChannel {
 
 
     /**
-     * Send Message to the server with the Resend Mode flag set
-     *
-     * @param data       The message that needs to be sent to the server
-
+     * Send Message to the server, compress and or encrypt.
+     * Hence it is abstraction, that the Channel knows about it.
+     * @param msg       The message that needs to be sent to the server
      * @throws TGException, IOException
      */
-    abstract void send(TGMessage data) throws TGException, IOException;
+    abstract void send(TGMessage msg) throws TGException, IOException;
 
     /**
      *
@@ -105,11 +139,6 @@ public abstract class AbstractChannel implements TGChannel {
      */
     abstract TGMessage readWireMsg() throws TGException, IOException;
 
-    @Override
-    public void setLinkEventHandler(LinkEventHandler handler) {
-        this.linkHandler = handler;
-        lastActiveTime = System.currentTimeMillis();
-    }
 
     /**
      * --------------------------------------------------------------
@@ -126,7 +155,11 @@ public abstract class AbstractChannel implements TGChannel {
      * --------------------------------------------------------------
      */
     public boolean isClosed() {
-        return this.getLinkState() == LinkState.Closed;
+        return (
+                this.getLinkState() == LinkState.Closed  ||
+                this.getLinkState() == LinkState.Closing ||
+                this.getLinkState() == LinkState.Terminated
+        );
     }
 
     protected boolean needsPing() { return bNeedsPing.get(); }
@@ -135,7 +168,10 @@ public abstract class AbstractChannel implements TGChannel {
 
     protected void enablePing() { bNeedsPing.set(true); }
 
-    protected String getClientId() { return properties.getProperty(ConfigName.ChannelClientId);}
+    protected String getClientId() {
+     /*SSB: Fix for JIRA 356*/
+     return this.clientId;
+    }
 
     protected String getInboxAddr() { return inboxAddr;}
 
@@ -148,27 +184,62 @@ public abstract class AbstractChannel implements TGChannel {
         return s == null ? TGConstants.EmptyByteArray : s.getBytes();
     }
 
+    private void _connect(boolean sleepOnFirstInvocation) throws TGException
+    {
+        int connectInterval =  Integer.parseInt(properties.getProperty(ConfigName.ChannelFTRetryIntervalSeconds));
+        int retryCount      =  Integer.parseInt(properties.getProperty(ConfigName.ChannelFTRetryCount));
+        List<TGChannelUrl> ftUrls =  this.primaryURL.getFTUrls();
+        int idx = this.connectionIndex;
+        int urlCount = ftUrls.size();
+
+        do {
+            this.linkURL = ftUrls.get(idx);
+            for (int i=0; i<retryCount; i++) {
+                try {
+                    gLogger.log(TGLogger.TGLevel.Info, "Attempt:%d to connect to url:%s", i, this.linkURL.getUrlAsString());
+                    if (sleepOnFirstInvocation) {
+                        Thread.sleep(connectInterval * 1000);
+                        sleepOnFirstInvocation = false;
+                    }
+                    createSocket();
+                    onConnect();
+                    this.connectionIndex = idx;
+                    return;
+                } catch (TGAuthenticationException | TGChannelDisconnectedException te) {
+                    throw te;
+                } catch (Exception e) {
+                    gLogger.logException(String.format("Failed connecting to urlstr:%s, reattempting", this.linkURL), e);
+                    closeSocket();
+                }
+            }
+            idx = (idx + 1) % urlCount;
+
+        } while (idx != this.connectionIndex);
+
+        throw new TGConnectionTimeoutException(String.format("%s:Failed %d attempts to connect to TGDB Server.", "TGDB-CONNECT-ERR", retryCount));
+
+    }
     public final synchronized void connect() throws TGException {
         if (isConnected()) {
             numConnections.incrementAndGet();
             return;
         }
 
-        if ((isClosed()) || (state == LinkState.NotConnected)) {
-            createSocket();
-            onConnect();
+        if ((isClosed()) || (state.get() == LinkState.NotConnected)) {
+//            createSocket();
+//            onConnect();
+            _connect(false);
         }
         else {
-            throw new TGException("Connect called on an invalid state :=" + state.name());
+            throw new TGException("Connect called on an invalid state :=" + state.get().name());
         }
-
-        state = LinkState.Connected;
+        state.set(LinkState.Connected);
         numConnections.incrementAndGet();
         return;
     }
 
     public synchronized void start() throws TGException {
-        if (state == LinkState.Connected) {
+        if (isConnected()) {
             enablePing();
             reader.start();
             MultiChannelPinger.getInstance().addChannel(this);
@@ -199,14 +270,11 @@ public abstract class AbstractChannel implements TGChannel {
                 disablePing();
                 reader.stop();
 
-                // Send the disconnect request.
+                // Send the disconnect request. sendRequest will not receive a channel response since the channel will be disconnected.
                 DisconnectChannelRequest request = (DisconnectChannelRequest) TGMessageFactory.getInstance().createMessage(VerbId.DisconnectChannelRequest);
-                // sendRequest will not receive a channel response since the channel will be disconnected.
                 this.send(request);
-
-                state = LinkState.Closing;
+                state.set(LinkState.Closing);
                 closeSocket();
-
                 MultiChannelPinger.getInstance().removeChannel(this);
                 MultiChannelPinger.getInstance().stop();
             }
@@ -217,7 +285,7 @@ public abstract class AbstractChannel implements TGChannel {
 
         finally {
         	if (isClosing()) {
-        		state = LinkState.Closed;
+        		state.set(LinkState.Closed);
         	}
             sendLock.unlock();
         }
@@ -225,22 +293,28 @@ public abstract class AbstractChannel implements TGChannel {
 
     //SS:TODO
     //SS:This needs to be revisited
-    public final synchronized boolean reconnect() {
+     boolean reconnect() {
         // This is needed here to avoid a FD leak
         closeSocket();
 
-        switch (state) {
-            case Closed:
-            case Closing:
-                return false;
+        TGChannelUrl oldurl    = this.linkURL;
+        int connectInterval =  Integer.parseInt(properties.getProperty(ConfigName.ChannelFTRetryIntervalSeconds));
+        int retryCount      =  Integer.parseInt(properties.getProperty(ConfigName.ChannelFTRetryCount));
+        gLogger.log(TGLogger.TGLevel.Info, "Retrying to reconnnect %d times at interval of %d seconds to FTUrls.", retryCount, connectInterval);
 
-            case FailedOnSend:
-            case FailedOnRecv:
-                return linkHandler.onReconnect();
-
+        this.state.set(LinkState.Reconnecting);
+        MultiChannelPinger.getInstance().removeChannel(this);
+        try {
+          _connect(true);
+            this.state.set(LinkState.Connected);
+            MultiChannelPinger.getInstance().addChannel(this);
+            return true;
         }
-
-        return false;
+        catch (TGException e) {
+            this.linkURL = (LinkUrl) oldurl;
+            this.state.set(LinkState.Closed);
+            return false;
+        }
     }
 
     public final synchronized void disconnect() {
@@ -264,10 +338,68 @@ public abstract class AbstractChannel implements TGChannel {
         }
     }
 
-    //---------------------------------------------------------------
-    // sendRequestMsg
-    //---------------------------------------------------------------
 
+    public void sendMessage(TGMessage msg, boolean resend) throws TGException
+    {
+        ResendMode resendmode = resend ? ResendMode.ReconnectAndResend : ResendMode.ReconnectAndRaiseException;
+
+        while (true) {
+            try {
+                if (!isConnected()) throw new TGException("Channel Closed", "TGDB-CHANNEL-ERR" );
+                sendLock.lock();
+                send(msg);
+                return;
+            }
+
+            catch (Exception e) {
+                ExceptionHandleResult ehr = handleException(e, false);
+                if (ehr == RethrowException) {
+                    if (e instanceof TGException) throw (TGException)e;
+                    throw TGException.buildException("Failed to send message", "TGDB-SND-ERR", e);
+                }
+                else if (ehr == Disconnected) {
+                    throw new TGChannelDisconnectedException(e);
+                }
+                else {
+                    gLogger.log(TGLogger.TGLevel.Info, "Retrying to send message on urlstr:%s", this.linkURL);
+                }
+            }
+            finally {
+                sendLock.unlock();
+            }
+
+        }
+
+    }
+
+    public void sendMessage(TGMessage msg) throws TGException
+    {
+        sendMessage(msg, true);
+    }
+
+    protected TGMessage requestReply(TGMessage request) throws TGException
+    {
+        while (true) {
+            try {
+                sendLock.lock();
+                this.send(request);
+                TGMessage msg = readWireMsg();
+                return msg;
+            } catch (Exception e) {
+                ExceptionHandleResult ehr = handleException(e, true);
+                if (ehr == RethrowException) {
+                    if (e instanceof TGException) throw (TGException) e;
+                    throw TGException.buildException("Failed to send message", "TGDB-SND-ERR", e);
+                } else if (ehr == Disconnected) {
+                    throw new TGChannelDisconnectedException(e);
+                } else {
+                    gLogger.log(TGLogger.TGLevel.Info, "Retrying to send message on urlstr:%s", this.linkURL);
+                }
+            } finally {
+                sendLock.unlock();
+            }
+        }
+    }
     public TGMessage sendRequest(TGMessage msg, TGChannelResponse response) throws TGException {
         return sendRequest(msg, response, true);
     }
@@ -284,92 +416,42 @@ public abstract class AbstractChannel implements TGChannel {
      *
      */
     public TGMessage sendRequest(TGMessage request, TGChannelResponse channelResponse, boolean resend) throws TGException {
-        ResendMode resendmode = ResendMode.ReconnectAndRaiseException;
 
         final long key = channelResponse.getRequestId(); //FIXME: How do we get request id before we send out an request??
         request.setRequestId(key);
 
-        if (resend)
-            resendmode = ResendMode.ReconnectAndResend;
-
-        TGException exception ;
-
         while(true) {
             try {
-                exception = null;
-                if (state != LinkState.Connected)
-                    throw new TGException("Connection is closed");
-
-                responses.put(key,channelResponse);
-
-                //We set it everytime, because, if it reconnected, these values will be changed.
-                //request.setAuthToken(this.authToken);
-                //request.setSessionId(this.sessionId);
-                //request.setClientId(this.clientId);
-                //request.getRequestId();
-
+                if (!isConnected()) throw new TGException("Connection is closed", "TGDB-CHANNEL-ERR");
+                sendLock.lock();
+                responses.put(key, channelResponse);
                 send(request);
-            }
-            catch(IOException ioe) {
-            	if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-            		gLogger.logException("sendRequest failed with IOException", ioe);
-            	}
-                exception = TGException.buildException("Failed to send due to IO issues", null, ioe);
+                if (!channelResponse.isBlocking()) return null;
+                channelResponse.await(p -> p == TGChannelResponse.Status.Waiting);
                 responses.remove(key);
-
-                if (isClosed() || isClosing()) throw exception;
-
-                state = LinkState.FailedOnSend;
-
-                if (!reconnect()) {
-                    exception =  TGException.buildException("Failed to send & reconnect due to IO issues", null, ioe);
+                TGMessage msg =  channelResponse.getReply();
+                if (msg instanceof ExceptionMessage) {
+                    ExceptionMessage exMsg = (ExceptionMessage) msg;
+                    if (exMsg.getExceptionType() == TGException.ExceptionType.RetryIOException) continue;
+                    throw TGException.buildException(exMsg);
                 }
-
-                if (resendmode == ResendMode.ReconnectAndRaiseException) {
-                    throw exception;
+                return msg;
+            } catch (Exception e) {
+                ExceptionHandleResult ehr = handleException(e, false);
+                if (ehr == RethrowException) {
+                    if (e instanceof TGException) throw (TGException) e;
+                    throw TGException.buildException("Failed to send message", "TGDB-SND-ERR", e);
+                } else if (ehr == Disconnected) {
+                    throw new TGChannelDisconnectedException(e);
+                } else {
+                    gLogger.log(TGLogger.TGLevel.Info, "Retrying to send message on urlstr:%s", this.linkURL);
                 }
-
-                // else loop back and resend
-            }
-            catch(TGException e) {
-            	if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-            		gLogger.logException("sendRequest failed", e);
-            	}
-                responses.remove(key);
-                throw e;
-            }
-
-            if (exception == null) {  //We didnt have any exception
-                //Non Blocking Channel - return
-                if (!channelResponse.isBlocking())
-                    return null;
-
-                try {
-                    channelResponse.await(p -> p == TGChannelResponse.Status.Waiting);
-                } catch (InterruptedException e) {
-                	if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-                		gLogger.logException("Channel response wait interrupted", e);
-                	}
-                    exception = TGException.buildException("InterruptedException has occurred while waiting for server response", null, e);
-                }
-
-                responses.remove(key);
-
-                if (channelResponse.getStatus() == TGChannelResponse.Status.Resend) {
-                    if (!resend) {
-                        exception = TGException.buildException("Send failed due to fault-tolerant switch", null, null);
-                    }
-                }
-
-                if (exception != null) {
-                    throw exception;
-                }
-
-                // in any case we return reply, it'll be null if
-                // timeout, connection closed or we were pushed
-                return channelResponse.getReply();
+            } finally {
+                sendLock.unlock();
             }
         }
+
+
     }
 
     /**
@@ -385,44 +467,60 @@ public abstract class AbstractChannel implements TGChannel {
             gLogger.log(TGLogger.TGLevel.Error, "Received no response message for corresponding request :%d", requestId);
             return;
         }
-
         try {
-        	if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) gLogger.log(TGLogger.TGLevel.Debug, "Process msg: %s", msg.toBytes());
-        } catch (IOException ioe) {
-        	
-        }
+        	if (gLogger.isEnabled(TGLogger.TGLevel.Debug))
+        	    gLogger.log(TGLogger.TGLevel.Debug, "Process msg: %s", HexUtils.formatHex(msg.toBytes()));
+        } catch (IOException ioe) {}
         channelResponse.setReply(msg);
 
         return;
     }
 
-    protected int handleException(Exception ex) {
+    protected ExceptionHandleResult handleException(Exception ex, boolean bReconnect)
+    {
+        int connectionOpTimeout =  Integer.parseInt(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds));
+        if (!(ex instanceof IOException)) return RethrowException;
         try {
-            sendLock.lock();
 
-            if (isClosed() && ex instanceof IOException) {
-                if (reconnect()) return 1;
+            final ReentrantLock lock = (ReentrantLock) this.exceptionLock;
+            lock.lock();
+            while (!bReconnect) {
+                try {
+                    if (exceptionCond.await(connectionOpTimeout, TimeUnit.SECONDS)) {
+                        if (isConnected()) return RetryOperation;
+                    }
+                    if (isClosed()) return Disconnected;
+                }
+                catch (InterruptedException ie) {}
             }
-            gLogger.logException("Aborting channel due to exception", ex);
-            state = LinkState.Closed;
+            if(reconnect()) return RetryOperation;
+            return Disconnected;
+        }
 
-            //Notify all blocked Threads of the Status
-            for (TGChannelResponse response : responses.values()) {
-                response.signal(TGChannelResponse.Status.Disconnected);
-            }
-            if (linkHandler != null) linkHandler.onException(ex, true);
+        finally {
+            if (bReconnect) this.exceptionCond.signalAll();
+            this.exceptionLock.unlock();
+        }
+    }
+
+    void terminated(String killMsg)
+    {
+        exceptionLock.lock();
+        try {
+            this.state.set(LinkState.Terminated);
+            closeSocket();
+            gLogger.log(TGLogger.TGLevel.Error, String.format("Session killed by :%s", killMsg));
         }
         finally {
-            sendLock.unlock();
+            exceptionLock.unlock();
         }
-        return 0;
     }
 
     protected boolean isClosing() { return this.getLinkState() == LinkState.Closing; }
 
     @Override
     public LinkState getLinkState() {
-        return state;
+        return state.get();
     }
 
     @Override

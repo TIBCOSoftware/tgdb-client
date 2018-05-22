@@ -16,7 +16,7 @@
  * Created on: 1/28/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: GraphObjectFactoryImpl.java 1614 2017-08-15 20:44:16Z vchung $
+ * SVN Id: $Id: GraphObjectFactoryImpl.java 2191 2018-03-31 00:47:05Z vchung $
  */
 
 
@@ -109,6 +109,10 @@ public class GraphObjectFactoryImpl implements TGGraphObjectFactory {
 
     @Override
     public TGKey createCompositeKey(String nodeTypeName) throws TGException {
+    	TGNodeType nodeType = graphMetadata.getNodeType(nodeTypeName);
+    	if (nodeType == null) {
+            throw TGException.buildException("Node type not found", null, null);
+    	}
         return new CompositeKeyImpl(graphMetadata, nodeTypeName);
     }
 }

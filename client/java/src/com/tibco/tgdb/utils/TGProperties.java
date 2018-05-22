@@ -1,5 +1,7 @@
 package com.tibco.tgdb.utils;
 
+import com.tibco.tgdb.exception.TGException;
+
 import java.util.SortedMap;
 
 /**
@@ -19,7 +21,7 @@ import java.util.SortedMap;
  * File name : TGProperties.java
  * Created on: 2/5/15
  * Created by: suresh
-  * SVN Id: $Id: TGProperties.java 622 2016-03-19 20:51:12Z ssubrama $
+  * SVN Id: $Id: TGProperties.java 2179 2018-03-29 21:49:54Z ssubrama $
  */
 
 public interface TGProperties<K,V> extends SortedMap<K,V> {
@@ -27,4 +29,21 @@ public interface TGProperties<K,V> extends SortedMap<K,V> {
     V getProperty(ConfigName cn);
 
     V getProperty(ConfigName cn, V defaultValue);
+
+    public static void setUserAndPassword(TGProperties<String,String> properties, String userName, String password) throws TGException
+    {
+        if ((userName == null) || (userName.length() == 0)) {
+            userName = properties.getProperty(ConfigName.ChannelUserID, TGEnvironment.getInstance().getChannelDefaultUser());
+            if ((userName == null) || (userName.length() == 0)) {
+                throw new TGException("user name not specified.");
+            }
+        }
+        if ((password == null) || (password.length() == 0)) {
+            password = properties.getProperty(ConfigName.ChannelPassword);
+        }
+        properties.put(ConfigName.ChannelUserID.getName(), userName);
+        if ((password != null) || (password.length() != 0)) {
+            properties.put(ConfigName.ChannelPassword.getName(), password);
+        }
+    }
 }

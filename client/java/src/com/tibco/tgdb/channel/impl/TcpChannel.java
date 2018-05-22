@@ -2,6 +2,7 @@ package com.tibco.tgdb.channel.impl;
 
 import com.tibco.tgdb.channel.TGChannelUrl;
 import com.tibco.tgdb.exception.TGAuthenticationException;
+import com.tibco.tgdb.exception.TGChannelDisconnectedException;
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.pdu.TGMessage;
@@ -33,11 +34,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TcpChannel.java 1880 2017-11-04 02:29:10Z vchung $
+ * SVN Id: $Id: TcpChannel.java 2241 2018-04-11 23:31:28Z ssubrama $
  */
 public class TcpChannel extends AbstractChannel {
 
-    final static Lock shutdownLock = new ReentrantLock();
+    final  Lock shutdownLock = new ReentrantLock();
 
     Socket                  socket         = null;
     DataInputStream         input          = null;
@@ -65,32 +66,35 @@ public class TcpChannel extends AbstractChannel {
     void createSocket() throws TGException {
         String host = linkURL.getHost();
         int port = linkURL.getPort();
-        String failureMessage = "Failed to connect to the server at " + linkURL.url;
+        String failureMessage = "Failed to connect to the server at " + linkURL.getUrlAsString();
 
-        state = LinkState.NotConnected;
+        state.set(LinkState.NotConnected);
 
         try {
-            synchronized (shutdownLock) {
-                socket = null;
+            shutdownLock.lock();
+            socket = null;
 
-                AbstractSocket ts = new DefaultSocketImpl(this.properties);
-                socket = ts.createSocket(host, port, TGEnvironment.getInstance().getChannelConnectTimeout());
-                socket.setTcpNoDelay(true);
-                socket.setSoLinger(false, 0);
-                input = new DataInputStream(new BufferedInputStream(socket.getInputStream(), 1024 * 32));
-                output = new DataOutputStream(socket.getOutputStream());
-                clientId = properties.get(ConfigName.ChannelClientId.getName());
+            AbstractSocket ts = new DefaultSocketImpl(this.properties);
+            socket = ts.createSocket(host, port, TGEnvironment.getInstance().getChannelConnectTimeout());
+            socket.setTcpNoDelay(true);
+            socket.setSoLinger(false, 0);
+            input = new DataInputStream(new BufferedInputStream(socket.getInputStream(), 1024 * 32));
+            output = new DataOutputStream(socket.getOutputStream());
+            clientId = properties.get(ConfigName.ChannelClientId.getName());
+            if (clientId == null) {
+                clientId = properties.get(ConfigName.ChannelClientId.getAlias());
                 if (clientId == null) {
-                    clientId = properties.get(ConfigName.ChannelClientId.getAlias());
-                    if (clientId == null) {
-                        clientId = TGEnvironment.getInstance().getChannelClientId();
-                    }
+                    clientId = TGEnvironment.getInstance().getChannelClientId();
                 }
-                inboxAddr = socket.getInetAddress().toString(); //SS:TODO: Is this correct
             }
+            inboxAddr = socket.getInetAddress().toString(); //SS:TODO: Is this correct
+
         } catch (IOException ioex) {
             if (socket != null) closeSocket();
             throw TGException.buildException(failureMessage, null, ioex);
+        }
+        finally {
+            shutdownLock.unlock();
         }
     }
 
@@ -101,25 +105,25 @@ public class TcpChannel extends AbstractChannel {
     void closeSocket() {
         //Flush the output.
         try {
-            sendLock.lock();
+            shutdownLock.lock();
             if (output != null) {
                 output.flush();
                 output.close();
             }
-        } catch (Exception e) {
-        } //ignore the error
+            Socket s = socket;
+            if (s != null) {
+                s.shutdownInput();
+                s.shutdownOutput();
+                s.close();
+            }
+        } catch (Exception e) { } //ignore the error
         finally {
-            sendLock.unlock();
+            shutdownLock.unlock();
+            socket = null;
+            output = null;
+            input  = null;
         }
-        Socket s = socket;
-        if (s != null) {
-            try {s.shutdownInput();}catch(Exception e){}catch(NoSuchMethodError e){}
-            try {s.shutdownOutput();}catch(Exception e){}catch(NoSuchMethodError e){}
-            try {s.close();}catch(Exception e){}
-        }
-        socket = null;
-        output = null;
-        input  = null;
+
     }
 
     /**
@@ -128,20 +132,16 @@ public class TcpChannel extends AbstractChannel {
      */
 
     public void onConnect() throws TGException {
+        TGMessage msg = tryRead(); //For ChannelDisconnected message
+        if (msg instanceof SessionForcefullyTerminated) {
+            throw new TGChannelDisconnectedException(((SessionForcefullyTerminated)msg).getKillString());
+        }
         performHandshake(false);
         doAuthenticate();
     }
 
-    public boolean isConnected() {
-        return (state == LinkState.Connected);
-    }
-
-    public boolean isClosed() {
-        return (state == LinkState.Closed && !reconnecting);
-    }
-
     /**
-     * Read wire message called from the LinkReader
+     * Read wire message called from the ChannelReader
      * @return
      * @throws IOException
      */
@@ -154,46 +154,42 @@ public class TcpChannel extends AbstractChannel {
 
         disablePing();
 
-
-        if (state == LinkState.Closed)
-            return null;
-
-        try {
-            lastActiveTime = System.currentTimeMillis();
-            int size = in.readInt();
-            if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-            	gLogger.log(TGLogger.TGLevel.Debug, "readWireMsg incoming buffer size : %d", size);
-            }
-            if ((size > 0) && (in.available() > 0)) {
-                buffer = new byte[size];
-                in.readFully(buffer, 4, size - 4);
-
-            } else {
-            	gLogger.log(TGLogger.TGLevel.Debug, "readWireMsg data input stream return with no data");
-                throw new EOFException();
-            }
-            intToBytes(size, buffer, 0);
-            if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-            	gLogger.log(TGLogger.TGLevel.Debug, "readWireMsg : %s", HexUtils.formatHex(buffer));
-            }
-            TGMessage msg = TGMessageFactory.getInstance().createMessage(buffer, 0, size);
-
-            //FIXME: channel level exception??  otherwise, command error returns as command response?
-            if (msg.getVerbId() == VerbId.ExceptionMessage) {
-                throw TGException.buildException((ExceptionMessage) msg);
-            }
-            return msg;
-        } catch (TGException  be) {
-            //gLogger.logException(String.format("readWireMsg TGException : %s(url=%s)", be.toString(), linkURL.toString()), be);
-            logMessage(buffer);
-            throw be;
-        } catch (IOException ie) {
-            //gLogger.logException(String.format("readWireMsg IOException : %s(url=%s)", ie.toString(), linkURL.toString()), ie);
-            logMessage(buffer);
-            throw ie;
+        if (isClosed()) return null;
+        lastActiveTime = System.currentTimeMillis();
+        int size = in.readInt();
+        if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
+            gLogger.log(TGLogger.TGLevel.Debug, "readWireMsg incoming buffer size : %d", size);
         }
+        if ((size > 0) && (in.available() > 0)) {
+            buffer = new byte[size];
+            in.readFully(buffer, 4, size - 4);
 
+        } else {
+            gLogger.log(TGLogger.TGLevel.Debug, "readWireMsg data input stream return with no data");
+            throw new EOFException();
+        }
+        intToBytes(size, buffer, 0);
+        if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
+            gLogger.log(TGLogger.TGLevel.Debug, "readWireMsg : %s", HexUtils.formatHex(buffer));
+        }
+        TGMessage msg = TGMessageFactory.getInstance().createMessage(buffer, 0, size);
 
+        //FIXME: channel level exception??  otherwise, command error returns as command response?
+        if (msg.getVerbId() == VerbId.ExceptionMessage) {
+            throw TGException.buildException((ExceptionMessage) msg);
+        }
+        return msg;
+    }
+
+    protected TGMessage tryRead()
+    {
+        try {
+            if (input.available() > 0) {
+                return readWireMsg();
+            }
+        }
+        catch (Exception e) { }
+        return null;
     }
 
     void intToBytes(int value, byte[] bytes, int offset) {
@@ -210,115 +206,94 @@ public class TcpChannel extends AbstractChannel {
      */
     protected void performHandshake(boolean sslMode) throws TGException {
 
-        try {
+        HandshakeRequest request = (HandshakeRequest) TGMessageFactory.getInstance().createMessage(VerbId.HandShakeRequest);
+        request.setRequestType(HandshakeRequest.RequestType.Initiate);
 
-            HandshakeRequest request = (HandshakeRequest) TGMessageFactory.getInstance().createMessage(VerbId.HandShakeRequest);
-            request.setRequestType(HandshakeRequest.RequestType.Initiate);
-            this.send(request);
-
-            TGMessage msg = readWireMsg();
-            if (!(msg instanceof HandshakeResponse)) {
-                throw new TGException("Expecting a HandshakeResponse message, and received :" + msg.getClass());
+        TGMessage msg = this.requestReply(request);
+        if (!(msg instanceof HandshakeResponse)) {
+            if (msg instanceof SessionForcefullyTerminated) {
+                throw new TGChannelDisconnectedException(((SessionForcefullyTerminated)msg).getKillString());
             }
+            throw TGException.buildException(
+                    String.format("Expecting a HandshakeResponse message, and received:%s. Cannot connect to the server at:%s",
+                            msg.getClass(), linkURL.getUrlAsString()),
+                    "TGDB-HNDSHKRESP-ERR", null);
+        }
 
-            HandshakeResponse response = (HandshakeResponse) msg;
-            if (response.getResponseStatus() != HandshakeResponse.ResponseStatus.AcceptChallenge) {
-                throw new TGException("Handshake failed with DB Server.");
+        HandshakeResponse response = (HandshakeResponse) msg;
+        if (response.getResponseStatus() != HandshakeResponse.ResponseStatus.AcceptChallenge) {
+            throw new TGException(String.format("%s:Handshake Failed. Cannot connect to the server at:%s","TGDB-HANDSHAKE-ERR", linkURL.getUrlAsString()));
+        }
+        int challenge = response.getChallenge();
+
+        challenge = challenge * 2 / 3;
+
+        request.updateSequenceAndTimeStamp(-1);
+        request.setRequestType(HandshakeRequest.RequestType.ChallengeAccepted);
+        request.setSslMode(sslMode);
+        request.setChallenge(challenge);
+        msg = this.requestReply(request);
+        if (!(msg instanceof HandshakeResponse)) {
+            if (msg instanceof SessionForcefullyTerminated) {
+                throw new TGChannelDisconnectedException(((SessionForcefullyTerminated)msg).getKillString());
             }
-            int challenge   = response.getChallenge();
-
-            challenge = challenge*2/3;
-
-            request.updateSequenceAndTimeStamp(-1);
-            request.setRequestType(HandshakeRequest.RequestType.ChallengeAccepted);
-            request.setSslMode(sslMode);
-            request.setChallenge(challenge);
-
-            this.send(request);
-
-            response = (HandshakeResponse) readWireMsg();
-
-            if (response.getResponseStatus() != HandshakeResponse.ResponseStatus.ProceedWithAuthentication) {
-                throw new TGException("Handshake failed with DB Server.");
-            }
-
-            gLogger.log(TGLogger.TGLevel.Info, "Hand shake successfull.");
-
-
+            throw TGException.buildException(
+                    String.format("Expecting a HandshakeResponse message, and received:%s. Cannot connect to the server at:%s",
+                            msg.getClass(), linkURL.getUrlAsString()),
+                    "TGDB-HNDSHKRESP-ERR", null);
         }
-        catch(IOException e) {
-            gLogger.logException("performHandshake failed", e);
-            closeSocket();
-            throw TGException.buildException("Failed to connect to the server at "+  linkURL.url, null, e);
+
+        response = (HandshakeResponse) msg;
+
+        if (response.getResponseStatus() != HandshakeResponse.ResponseStatus.ProceedWithAuthentication) {
+            throw new TGException(String.format("%s:Handshake Failed. Cannot connect to the server at:%s","TGDB-HANDSHAKE-ERR", linkURL.getUrlAsString()));
         }
-        catch (Exception e) {
-            gLogger.logException("performHandshake failed", e);
-            closeSocket();
-            if (e instanceof TGException) throw e;
-            throw TGException.buildException("Failed to create Handshake message", null, e);
-        }
+        gLogger.log(TGLogger.TGLevel.Info, "Handshake successfull.");
+        return;
+
     }
 
-    protected void doAuthenticate() throws TGException {
-        try {
-            AuthenticateRequest request = (AuthenticateRequest) TGMessageFactory.getInstance().createMessage(VerbId.AuthenticateRequest);
-            request.setClientId(this.getClientId());
-            request.setInboxAddr(this.getInboxAddr());
-            request.setUserName(this.getUserName());
-            request.setPassword(this.getPassword());
-
-            this.send(request);
-
-            AuthenticateResponse response = (AuthenticateResponse) readWireMsg();
-
-            if (response.isSuccess()) {
-                this.authToken = response.getAuthToken();
-                this.sessionId = response.getSessionId();
-                gLogger.log(TGLogger.TGLevel.Info, "Connected successfully using user:" + this.getUserName());
-                return;
-            }
-            throw new TGAuthenticationException("Bad username/password combination", -1, "Bad username/password combination", "tgdb");
+    protected void doAuthenticate() throws TGException
+    {
+        AuthenticateRequest request = (AuthenticateRequest) TGMessageFactory.getInstance().createMessage(VerbId.AuthenticateRequest);
+        AuthenticateResponse response = null;
+        request.setClientId(this.getClientId());
+        request.setInboxAddr(this.getInboxAddr());
+        request.setUserName(this.getUserName());
+        request.setPassword(this.getPassword());
+        response = (AuthenticateResponse) this.requestReply(request);
+        if (response.isSuccess()) {
+            this.authToken = response.getAuthToken();
+            this.sessionId = response.getSessionId();
+            gLogger.log(TGLogger.TGLevel.Info, "Connected successfully using user:" + this.getUserName());
+            return;
         }
-        catch (IOException ioe) {
-            gLogger.logException("doAuthenticate failed", ioe);
-            closeSocket();
-            throw TGException.buildException("Failed to connect to the server. Bad username and/or password combination "+  linkURL.url, null, ioe);
-        }
+        throw new TGAuthenticationException("Bad username/password combination", -1, "Bad username/password combination", "tgdb");
     }
 
     /**
+     * Basic send implementation. No locking and no exception management. It is taken care at the Abstract Channel level
+     * which calls this method.
      *
      * @param msg
      * @throws TGException
      */
-    public void send(TGMessage msg) throws TGException, IOException {
-        if (state == LinkState.Closed)
-            throw new TGException(linkHandler.getTerminatedText());
+    protected void send(TGMessage msg) throws TGException, IOException {
+        if ((output == null) || (isClosed()))  throw new TGException("Channel is Closed");
 
         if (gLogger.isEnabled(TGLogger.TGLevel.DebugWire)) {
             logMessage(msg);
         }
-
-        // loop while we can successfully reconnect.
-        // if can not reconnect then we throw exception
-        sendLock.lock();
-        try {
-        	if (output == null || state == LinkState.Closed)
-        		throw new TGException(linkHandler.getTerminatedText());
-
-            disablePing();
-            byte[] buf = msg.toBytes();
-            int bufLen = msg.getMessageByteBufLength();
-            if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-            	gLogger.log(TGLogger.TGLevel.Debug, "Send buf : %s", HexUtils.formatHex(buf, bufLen));
-            }
-            output.write(buf, 0, bufLen);
-            output.flush();
-            return;
+        disablePing();
+        byte[] buf = msg.toBytes();
+        int bufLen = msg.getMessageByteBufLength();
+        if (gLogger.isEnabled(TGLogger.TGLevel.DebugWire)) {
+            gLogger.log(TGLogger.TGLevel.DebugWire, "Send buf : %s", HexUtils.formatHex(buf, bufLen));
         }
-        finally {
-            sendLock.unlock();
-        }
+        output.write(buf, 0, bufLen);
+        output.flush();
+        return;
+
     }
 
     private void logMessage(byte[] buf) {
@@ -334,13 +309,14 @@ public class TcpChannel extends AbstractChannel {
 
     private void logMessage(TGMessage m) {
         if (m == null) {
-            if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-                gLogger.log(TGLogger.TGLevel.Debug, "Unrecognized object, can not print it...");
+            if (gLogger.isEnabled(TGLogger.TGLevel.DebugWire)) {
+                gLogger.log(TGLogger.TGLevel.DebugWire, "Unrecognized object, can not print it...");
             }
+            return;
         }
-        if (gLogger.isEnabled(TGLogger.TGLevel.Debug)) {
-            gLogger.log(TGLogger.TGLevel.Debug, "----------------- outgoing message --------------------");
-            gLogger.log(TGLogger.TGLevel.Debug, m.toString());
+        if (gLogger.isEnabled(TGLogger.TGLevel.DebugWire)) {
+            gLogger.log(TGLogger.TGLevel.DebugWire, "----------------- outgoing message --------------------");
+            gLogger.log(TGLogger.TGLevel.DebugWire, m.toString());
         }
     }
 }

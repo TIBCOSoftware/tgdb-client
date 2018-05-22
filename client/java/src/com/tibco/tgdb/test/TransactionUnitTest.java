@@ -19,6 +19,7 @@ import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.model.*;
 import com.tibco.tgdb.query.TGQueryOption;
+import com.tibco.tgdb.query.TGResultSet;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
@@ -88,6 +89,7 @@ public class TransactionUnitTest {
         testCase3_1();
         testCase4();
         testCase4_0();
+        testCase8();
         testCase5();
         testCase6();
         testCase6_1();
@@ -456,6 +458,17 @@ public class TransactionUnitTest {
         conn.deleteEntity(brother);
         conn.commit();
 
+    }
+
+    private void testCase8() throws TGException
+    {
+        String startFilter = "@nodetype = 'basicnode' and name = 'smith';";
+        String traverserFilter = "@degree = 1;";
+        String endFilter = "@nodetype = 'basicnode' and name = 'kelly';";
+        TGResultSet result = conn.executeQuery(startFilter, null, traverserFilter, endFilter, TGQueryOption.DEFAULT_QUERY_OPTION);
+        while (result.hasNext()) {
+            System.out.printf("result.next = %s", result.next());
+        }
     }
 
 

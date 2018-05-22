@@ -16,7 +16,7 @@
  * Created on: 1/6/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: MultiChannelPinger.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: MultiChannelPinger.java 2155 2018-03-19 04:31:41Z ssubrama $
  */
 
 
@@ -99,26 +99,16 @@ public class MultiChannelPinger {
                         AbstractChannel channel = itr.next();
 
                         if (channel.needsPing()) {
-                            try {
-                                PingMessage ping = new PingMessage();
-                                channel.send(ping);
-                            }
-                            catch (Exception ioe) {
-                            	if (isRunning.get()) {
-                            		gLogger.logException("Pinger invoke channel exception callbacks", ioe);
-                            		channel.handleException(ioe);
-                            	} else {
-                            		gLogger.logException("Pinger is preparing to stop", ioe);
-                            	}
-                                channel.disablePing();
-                            }
+                           PingMessage ping = new PingMessage();
+                           channel.sendMessage(ping);
+
                         }
                         else {
                             channel.enablePing();
                         }
                     }
                 }
-                catch (InterruptedException ie) { //Should happen only when the thread is interrupted
+                catch (Exception ie) { //Should happen only when the thread is interrupted
                 	gLogger.logException("Pinger thread stopped with exception", ie);
                     break;
                 }

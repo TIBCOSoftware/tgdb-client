@@ -16,63 +16,91 @@
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionPoolImpl.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: ConnectionPoolImpl.java 2179 2018-03-29 21:49:54Z ssubrama $
  */
 
 
 package com.tibco.tgdb.connection.impl;
 
 import com.tibco.tgdb.channel.TGChannel;
+import com.tibco.tgdb.channel.TGChannelUrl;
+import com.tibco.tgdb.channel.impl.ChannelFactoryImpl;
 import com.tibco.tgdb.connection.TGConnection;
 import com.tibco.tgdb.connection.TGConnectionExceptionListener;
 import com.tibco.tgdb.connection.TGConnectionPool;
+import com.tibco.tgdb.exception.TGConnectionTimeoutException;
 import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.utils.ConfigName;
 import com.tibco.tgdb.utils.TGProperties;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
-public class ConnectionPoolImpl implements TGConnectionPool, TGChannel.LinkEventHandler {
+public class ConnectionPoolImpl implements TGConnectionPool{
 
-    Queue<TGConnection> connPool;
+    static enum ConnectionPoolState {
+        Initialized,
+        Connected,
+        Disconnected,
+        Disconnecting, Connecting, Stopped
+    }
+
+    BlockingQueue<TGConnection> connPool;
     List<TGConnection> connlist;
 
     boolean bUseDedicateChannel;
     int poolSize;
+    int connectReserveTimeOut;
     TGProperties<String,String> properties;
     TGConnectionExceptionListener lsnr = null;
+    Map<Thread, TGConnection> consumers;
+    ConnectionPoolState state;
     private ReadWriteLock adminLock = new ReentrantReadWriteLock();
 
-    public ConnectionPoolImpl(List<TGChannel> channels, boolean bUseDedicatedChannel, int poolSize, TGProperties<String, String> properties) throws TGException
+    public ConnectionPoolImpl(TGChannelUrl url, int poolSize, TGProperties<String, String> properties) throws TGException
     {
-        this.connPool = new ConcurrentLinkedQueue<>();
-        this.connlist = new ArrayList<>();
-        this.bUseDedicateChannel = bUseDedicatedChannel;
-        this.poolSize            = poolSize;
-        this.properties          = properties;
-
-
-
+        this.connPool   = new ArrayBlockingQueue<TGConnection>(poolSize, true);
+        this.connlist   = new ArrayList<>();
+        this.poolSize   = poolSize;
+        this.properties = properties;
+        this.consumers  = new HashMap<>();
+        this.connectReserveTimeOut = Integer.parseInt(properties.getProperty(ConfigName.ConnectionReserveTimeoutSeconds));
+        bUseDedicateChannel = Boolean.parseBoolean(properties.getProperty(ConfigName.ConnectionPoolUseDedicatedChannelPerConnection, "false"));
+        TGChannel channel = null;
+        ChannelFactoryImpl channelFactory = (ChannelFactoryImpl) ChannelFactoryImpl.getInstance();
         for (int i=0; i<poolSize; i++)
         {
-            TGChannel channel = !bUseDedicatedChannel ? channels.get(0) : channels.get(i);
+            if ((channel == null) || (bUseDedicateChannel)) {
+                channel = channelFactory.createChannel(url, properties);
+            }
             TGConnection connection = new ConnectionImpl(this, channel, properties);
             connPool.add(connection);
             connlist.add(connection);
-            channel.setLinkEventHandler(this);
         }
+        state = ConnectionPoolState.Initialized;
     }
 
     @Override
     public void connect() throws Exception {
-
-        for(TGConnection connection : connPool) {
-            connection.connect();
+        adminLock.readLock().lock();
+        try {
+            if (this.state == ConnectionPoolState.Connected) {
+                throw new TGException("ConnectionPool is already connected. Disconnect and then reconnect");
+            }
+            this.state = ConnectionPoolState.Connecting;
+            for (TGConnection connection : connPool) {
+                connection.connect();
+            }
+            state = ConnectionPoolState.Connected;
+        }
+        finally {
+            adminLock.readLock().unlock();
         }
 
     }
@@ -83,20 +111,67 @@ public class ConnectionPoolImpl implements TGConnectionPool, TGChannel.LinkEvent
     }
 
     @Override
-    public void disconnect() throws Exception {
+    public void disconnect() throws Exception
+    {
+        adminLock.readLock().lock();
+        try {
+            if (this.state != ConnectionPoolState.Connected) {
+                throw new TGException(String.format("ConnectionPool is not connected. State is :%s", this.state));
+            }
+            this.state = ConnectionPoolState.Disconnecting;
+            for (TGConnection conn : connlist) {
+                conn.disconnect();
+            }
+        }
+        finally {
+            this.state = ConnectionPoolState.Disconnected;
+            adminLock.readLock().unlock();
+        }
 
-        for (TGConnection conn : connPool) {
-            conn.disconnect();
+    }
+
+    @Override
+    public TGConnection get() throws TGException {
+
+        adminLock.readLock().lock();
+        try {
+            if (this.state != ConnectionPoolState.Connected) {
+                throw new TGException(String.format("ConnectionPool is not connected. State is :%s", this.state));
+            }
+            TGConnection connection = consumers.get(Thread.currentThread());
+            if (connection != null) return connection;
+
+            connection =  connPool.poll(this.connectReserveTimeOut, TimeUnit.SECONDS);
+            if (connection == null) {
+                throw new TGConnectionTimeoutException(String.format("Failed to get connection within :%d seconds", this.connectReserveTimeOut));
+            }
+            consumers.put(Thread.currentThread(), connection);
+            return connection;
+        }
+        catch (InterruptedException ie) {
+              throw  TGException.buildException("ConnectionPool interrupted", "ThreadIntr", ie);
+        }
+        finally {
+            adminLock.readLock().unlock();
         }
     }
 
+    TGConnection getConnection() throws TGException {
 
-
-    @Override
-    public TGConnection get() {
         adminLock.readLock().lock();
         try {
-            return connPool.remove();
+            TGConnection connection = consumers.get(Thread.currentThread());
+            if (connection != null) return connection;
+
+            connection =  connPool.poll(this.connectReserveTimeOut, TimeUnit.SECONDS);
+            if (connection == null) {
+                throw new TGConnectionTimeoutException(String.format("Failed to get connection within :%d seconds", this.connectReserveTimeOut));
+            }
+            consumers.put(Thread.currentThread(), connection);
+            return connection;
+        }
+        catch (InterruptedException ie) {
+              throw  TGException.buildException("ConnectionPool interrupted", "ThreadIntr", ie);
         }
         finally {
             adminLock.readLock().unlock();
@@ -105,7 +180,14 @@ public class ConnectionPoolImpl implements TGConnectionPool, TGChannel.LinkEvent
 
     @Override
     public void release(TGConnection conn) {
-         connPool.offer(conn);  //No need to lock. Let it comeback to the pool
+        adminLock.readLock().lock();
+        try {
+            consumers.remove(Thread.currentThread());
+            connPool.offer(conn);
+        }
+        finally {
+            adminLock.readLock().unlock();
+        }
     }
 
     @Override
@@ -114,7 +196,6 @@ public class ConnectionPoolImpl implements TGConnectionPool, TGChannel.LinkEvent
     }
 
 
-    @Override
     public void onException(Exception ex, boolean duringClose) {
 
         adminLock.writeLock().lock();
@@ -133,15 +214,6 @@ public class ConnectionPoolImpl implements TGConnectionPool, TGChannel.LinkEvent
         }
     }
 
-    @Override
-    public boolean onReconnect() {
-        return false;
-    }
-
-    @Override
-    public String getTerminatedText() {
-        return "ConnectionPool terminated.";
-    }
 
     void adminlock() {
         adminLock.readLock().lock();

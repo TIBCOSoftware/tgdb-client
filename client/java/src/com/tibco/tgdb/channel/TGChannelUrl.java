@@ -2,6 +2,7 @@ package com.tibco.tgdb.channel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Copyright 2016 TIBCO Software Inc. All rights reserved.
@@ -21,7 +22,7 @@ import java.util.Map;
  * Created on: 12/25/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGChannelUrl.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: TGChannelUrl.java 2203 2018-04-04 01:58:36Z ssubrama $
  */
 public interface TGChannelUrl {
 
@@ -68,6 +69,12 @@ public interface TGChannelUrl {
      * @return
      */
     List<TGChannelUrl> getFTUrls();
+
+    /**
+     * Get the String form of the URL.
+     * @return
+     */
+    String getUrlAsString();
 
 
 

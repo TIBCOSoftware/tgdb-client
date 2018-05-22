@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeImpl.java 1738 2017-10-10 02:11:19Z vchung $
+ * SVN Id: $Id: AttributeImpl.java 1974 2017-12-14 22:42:17Z kattaylo $
  */
 
 
@@ -289,7 +289,7 @@ public class AttributeImpl implements TGAttribute {
                 int era = cal.get(Calendar.ERA);
                 os.writeBoolean(era == GregorianCalendar.AD);
                 os.writeShort(cal.get(Calendar.YEAR));
-                os.writeByte(cal.get(Calendar.MONTH));
+                os.writeByte(cal.get(Calendar.MONTH) + 1); // Calendar starts January at 0, server starts January at 1
                 os.writeByte(cal.get(Calendar.DAY_OF_MONTH));
                 os.writeByte(0); //HR
                 os.writeByte(0); //Min
@@ -319,7 +319,7 @@ public class AttributeImpl implements TGAttribute {
                 int era = cal.get(Calendar.ERA);
                 os.writeBoolean(era == GregorianCalendar.AD);
                 os.writeShort(cal.get(Calendar.YEAR));
-                os.writeByte(cal.get(Calendar.MONTH));
+                os.writeByte(cal.get(Calendar.MONTH) + 1); // Calendar starts January at 0, server starts January at 1
                 os.writeByte(cal.get(Calendar.DAY_OF_MONTH));
                 os.writeByte(cal.get(Calendar.HOUR_OF_DAY)); //24 HR format
                 os.writeByte(cal.get(Calendar.MINUTE)); //Min
@@ -354,6 +354,8 @@ public class AttributeImpl implements TGAttribute {
         if (tztype != -1) {
             tzid    = in.readShort();
         }
+
+        --mon; // Java Calendar starts January at 0, server side starts January at 1
 
         switch (component2read) {
             case DATE_ONLY:

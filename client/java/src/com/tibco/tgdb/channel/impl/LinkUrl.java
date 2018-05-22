@@ -29,20 +29,20 @@ import java.util.*;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: LinkUrl.java 1072 2016-10-20 19:50:54Z ssubrama $
+ * SVN Id: $Id: LinkUrl.java 2203 2018-04-04 01:58:36Z ssubrama $
  */
-public class LinkUrl implements TGChannelUrl{
-
-
+public class LinkUrl implements TGChannelUrl
+{
 
     //From http://www.networksorcery.com/enp/protocol/ip/ports08000.htm - looks like no well-established software uses this port.
     private final static String gDefaultHost = "localhost";
     private final static int    gDefaultPort = 8222;
     private final static LinkUrl gDefaultUrl = new LinkUrl(Protocol.TCP, gDefaultHost, gDefaultPort);
+    private final static LinkedList<TGChannelUrl> EMPTY_LINKEDLIST = new LinkedList<TGChannelUrl>();
 
     String user;
     Protocol protocol;
-    String              url         = null;
+    String urlstr = null;
     String              host        = null;
     String              portStr     = null;
     int                 port        = 0;
@@ -51,10 +51,10 @@ public class LinkUrl implements TGChannelUrl{
     List<TGChannelUrl>  ftUrls      = null;
 
 
-    private LinkUrl(String url) throws TGException {
+    private LinkUrl(String urlstr) throws TGException {
 
-        this.url = url;
-        parseInternal(url.toLowerCase().trim());
+        this.urlstr = urlstr;
+        parseInternal(urlstr.toLowerCase().trim());
     }
 
     private LinkUrl(Protocol protocol, String host, int port) {
@@ -62,7 +62,8 @@ public class LinkUrl implements TGChannelUrl{
         this.host = host;
         this.port = port;
         this.user = TGEnvironment.getInstance().getChannelDefaultUser();
-        this.url = String.format("%s://%s:%d", protocol.name().toLowerCase(), host.toLowerCase(), port);
+        this.urlstr = null;
+
     }
 
     public static TGChannelUrl getDefaultUrl()  {
@@ -86,11 +87,11 @@ public class LinkUrl implements TGChannelUrl{
 
         LinkUrl url = (LinkUrl) LinkUrl.parse("tcp://scott@foo.bar.com:8700");
 
-        System.out.println("url - case1 :" + url);
+        System.out.println("urlstr - case1 :" + url);
 
         url = (LinkUrl) LinkUrl.parse("tcp://foo.bar.com:8700/{userID=scott;ftHosts=foo1.bar.com,foo2.bar.com;sendSize=120}");
 
-        System.out.println("url - case2 :" + url);
+        System.out.println("urlstr - case2 :" + url);
 
         List<TGChannelUrl> ftUrls = url.getFTUrls();
 
@@ -132,26 +133,18 @@ public class LinkUrl implements TGChannelUrl{
 
     private void parseInternal(String url) throws TGException
     {
-
         String user =  parseProtocol(url);
-
         String hostAndPort = parseUser(user);
-
         String properties = parseHostAndPort(hostAndPort);
-
         parseProperties(properties.trim());
-
         //this.props.load(new StringReader(properties));
-
     }
 
     private String parseUser(String url) throws TGException
     {
         int posAt = url.indexOf('@');
         if (posAt == -1) return url;
-
         this.user = url.substring(0, posAt);
-
         props.put(ConfigName.ChannelUserID.getName(), user);
         return url.substring(posAt+1);
     }
@@ -162,15 +155,13 @@ public class LinkUrl implements TGChannelUrl{
      * @return
      * @throws TGException
      */
-    private String parseHostAndPort(String hostAndPort) throws TGException {
-
-
+    private String parseHostAndPort(String hostAndPort) throws TGException
+    {
         if (hostAndPort.length() == 0) {
             this.host = "localhost";
             this.port = 8700;  //default values
             return null;
         }
-
         int offset = 0;
         int posIPv6 = hostAndPort.indexOf('[');
         if (posIPv6 != -1) {
@@ -182,7 +173,6 @@ public class LinkUrl implements TGChannelUrl{
             else
                 throw new TGException("Invalid or missing host name");
         }
-
         int pos = 0;
         if (this.isIPv6) {
             pos = hostAndPort.lastIndexOf(':');
@@ -191,17 +181,13 @@ public class LinkUrl implements TGChannelUrl{
             pos = hostAndPort.indexOf(':', offset);
         }
         int lpos = hostAndPort.indexOf("/");
-
-
         if (pos < 0) {
             boolean noPort = true;
-
             if (hostAndPort.indexOf('.') < 0) {
                 host = gDefaultHost;
                 portStr = hostAndPort;
                 noPort = false;
             }
-
             if (noPort) {
                 host = hostAndPort;
                 portStr = Integer.toString(gDefaultPort);
@@ -214,22 +200,14 @@ public class LinkUrl implements TGChannelUrl{
                 startpos = 1;
                 endpos = offset - 1;
             }
-
             host = hostAndPort.substring(startpos,pos);
             portStr = hostAndPort.substring(pos+1, endpos);
         }
-
-        if (host.length() == 0)
-            throw new TGException("Invalid or missing host name");
-        if (portStr.length() == 0)
-            throw new TGException("Invalid or missing port number");
-
-
+        if (host.length() == 0) throw new TGException("Invalid or missing host name");
+        if (portStr.length() == 0) throw new TGException("Invalid or missing port number");
 
         this.port = Integer.parseInt(portStr);
-
         return lpos == -1 ? "" : hostAndPort.substring(lpos+1);
-
     }
 
     /**
@@ -238,9 +216,9 @@ public class LinkUrl implements TGChannelUrl{
      * @return
      * @throws TGException
      */
-    private String parseProtocol(String url) throws TGException{
+    private String parseProtocol(String url) throws TGException
+    {
         int pi;
-
         if (url.startsWith("tcp://")) {
             protocol = Protocol.TCP;
             pi = "tcp://".length();
@@ -260,11 +238,7 @@ public class LinkUrl implements TGChannelUrl{
         else {
             throw new TGException("Invalid protocol specification. for URL. URL is of the form protocol://host:value/{name=value;name=value...}");
         }
-
         return url.substring(pi);
-
-        
-
     }
 
     /**
@@ -275,7 +249,6 @@ public class LinkUrl implements TGChannelUrl{
      */
     private String parseProperties(String properties) throws TGException
     {
-
         if (properties.length() == 0) return properties;
 
         if (!((properties.startsWith("{")) && (properties.endsWith("}")))) {
@@ -283,7 +256,6 @@ public class LinkUrl implements TGChannelUrl{
         }
 
         String kvStr = properties.substring(1, properties.length()-1);
-
         char[] convtBuf = new char[1024];
         int limit;
         int keyLen;
@@ -292,7 +264,6 @@ public class LinkUrl implements TGChannelUrl{
         boolean hasSep;
         boolean precedingBackslash;
         SemiColonReader scr = new SemiColonReader(kvStr.toCharArray());
-
         while ((limit = scr.readSemiColon()) > 0) {
             keyLen = 0;
             valueStart = limit;
@@ -331,9 +302,14 @@ public class LinkUrl implements TGChannelUrl{
             }
             String key = parseUnicode(scr.kvBuf, 0, keyLen, convtBuf);
             String value = parseUnicode(scr.kvBuf, valueStart, limit - valueStart, convtBuf);
-            props.put(key, value);
+            ConfigName cn = ConfigName.fromName(key);
+            if (cn == null) {
+                props.put(key, value);
+            }
+            else {
+                props.put(cn.getName(), value);
+            }
         }
-
         return properties;
     }
 
@@ -342,7 +318,8 @@ public class LinkUrl implements TGChannelUrl{
      * Converts encoded &#92;uxxxx to unicode chars
      * and changes special saved chars to their original forms
      */
-    private String parseUnicode(char[] in, int off, int len, char[] convtBuf) {
+    private String parseUnicode(char[] in, int off, int len, char[] convtBuf)
+    {
         if (convtBuf.length < len) {
             int newLen = len * 2;
             if (newLen < 0) {
@@ -354,7 +331,6 @@ public class LinkUrl implements TGChannelUrl{
         char[] out = convtBuf;
         int outLen = 0;
         int end = off + len;
-
         while (off < end) {
             aChar = in[off++];
             if (aChar == '\\') {
@@ -403,20 +379,17 @@ public class LinkUrl implements TGChannelUrl{
     }
 
     @Override
-    public String getHost() {
-
+    public String getHost()
+    {
         if(host != null) return host;
-
         host = TGEnvironment.getInstance().getChannelDefaultHost();
-
         return host;
-
     }
 
     @Override
-    public int getPort() {
+    public int getPort()
+    {
         if (port != -1) return port;
-
         port = TGEnvironment.getInstance().getChannelDefaultPort();
         return port;
     }
@@ -429,39 +402,37 @@ public class LinkUrl implements TGChannelUrl{
     public String getUser()
     {
         if (user != null) return user;
-
+        user = props.get(ConfigName.ChannelUserID.getAlias());
         if ((user == null) || (user.length() == 0)) {
-            user = props.get(ConfigName.ChannelUserID.getAlias());
-
+            user = props.get(ConfigName.ChannelUserID.getName());
             if ((user == null) || (user.length() == 0)) {
-                user = props.get(ConfigName.ChannelUserID.getName());
-
+                user = TGEnvironment.getInstance().getChannelUser();
                 if ((user == null) || (user.length() == 0)) {
-                    user = TGEnvironment.getInstance().getChannelUser();
-
-                    if ((user == null) || (user.length() == 0)) {
-                        user = TGEnvironment.getInstance().getChannelDefaultUser();
-                    }
+                    user = TGEnvironment.getInstance().getChannelDefaultUser();
                 }
             }
         }
         return user;
     }
 
-    public synchronized List<TGChannelUrl> getFTUrls() {
-
+    public synchronized List<TGChannelUrl> getFTUrls()
+    {
         if (ftUrls != null) return ftUrls;
 
+        String ftHosts = props.get(ConfigName.ChannelFTHosts.getAlias());
+        if ((ftHosts == null) || (ftHosts.length() == 0)) {
+            ftHosts = props.get(ConfigName.ChannelFTHosts.getName());
+        }
+        if ((ftHosts == null) || (ftHosts.length() == 0)) {
+            ftUrls = new LinkedList<>();
+            ftUrls.add(this);
+            return ftUrls;
+        }
+
+        StringTokenizer st = new StringTokenizer(ftHosts.trim(), ",", false);
+        ftUrls = new LinkedList<TGChannelUrl>();
+        ftUrls.add(this);
         try {
-            String ftHosts = props.get(ConfigName.ChannelFTHosts.getAlias());
-            if ((ftHosts == null) || (ftHosts.length() == 0)) {
-                ftHosts = props.get(ConfigName.ChannelFTHosts.getName());
-            }
-
-            if ((ftHosts == null) || (ftHosts.length() == 0)) return Collections.emptyList();
-
-            StringTokenizer st = new StringTokenizer(ftHosts.trim(), ",", false);
-            List<TGChannelUrl> ftUrls = new ArrayList<>();
             while (st.hasMoreTokens()) {
                 String ftHost = st.nextToken();
                 LinkUrl url = new LinkUrl(this.protocol, this.host, this.port);
@@ -470,21 +441,22 @@ public class LinkUrl implements TGChannelUrl{
                 url.props = this.props;
                 ftUrls.add(url);
             }
-            this.ftUrls = ftUrls;
         }
         catch (Exception e) {
             e.printStackTrace(); //SS:TODO log
-            return Collections.emptyList();
         }
-
         return ftUrls;
-
-
     }
 
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
+    public String getUrlAsString() {
+        if (this.urlstr != null) return this.urlstr;
+        this.urlstr = String.format("%s://%s@%s:%d", protocol.name().toLowerCase(), user, host.toLowerCase(), port);
+        return urlstr;
+    }
 
+    public String toString()
+    {
+        StringBuilder builder = new StringBuilder();
         builder.append("user:").append(getUser()).append(", ");
         builder.append("protocol:").append(getProtocol()).append(", ");
         builder.append("host:").append(getHost()).append(", ");
@@ -504,25 +476,19 @@ public class LinkUrl implements TGChannelUrl{
             this.inBuf = inBuf;
             kvBuf = new char[inBuf.length];
         }
-
-
         /**
          * Read upto a semicolon and return the nos of characters read.
          * @return
          */
-        int readSemiColon() {
-
-
+        int readSemiColon()
+        {
             int kvLen = 0;
             int kvPos = 0;
             boolean precedingBackslash = false;
-            while (true) {
-
+            while (true)
+            {
                 if (curPos >= inBuf.length) return kvLen;
-
-
                 char c = inBuf[curPos++];
-
                 switch (c) {
                     case ' ':
                     case '\r':
@@ -543,20 +509,13 @@ public class LinkUrl implements TGChannelUrl{
                         else {
                             return kvLen;  //come out of the loop
                         }
-
                     default:
                         kvBuf[kvPos++] = c;
                         precedingBackslash = false;
                         ++kvLen;
                         break;
                 }
-
-
             }
-
         }
     }
-
-
 }
-

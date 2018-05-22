@@ -1,5 +1,7 @@
 package com.tibco.tgdb.connection;
 
+import com.tibco.tgdb.exception.TGException;
+
 /**
  * Copyright 2016 TIBCO Software Inc. All rights reserved.
  * 
@@ -18,7 +20,7 @@ package com.tibco.tgdb.connection;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGConnectionPool.java 622 2016-03-19 20:51:12Z ssubrama $
+ *		SVN Id: $Id: TGConnectionPool.java 2180 2018-03-29 23:19:38Z ssubrama $
  *
  */
 
@@ -43,13 +45,18 @@ public interface TGConnectionPool {
      */
     void disconnect() throws Exception;
 
-
-
     /**
      * Get a free Connection
      * @return a free Connection object
+     * @throws com.tibco.tgdb.exception.TGConnectionTimeoutException is thrown when there is no connection in the pool
+     * and the time specified has elapsed.
+     * The property ConnectionReserveTimeoutSeconds or tgdb.connectionpool.ConnectionReserveTimeoutSeconds specifies the time
+     * to wait in seconds. It has the following meaning
+     * 0 :      Indefinite
+     * -1 :     Immediate
+     * &gt; :   That many seconds
      */
-    TGConnection get();
+    TGConnection get() throws TGException;
 
     /**
      * Release the connection back to the pool

@@ -17,7 +17,7 @@ package com.tibco.tgdb.model;
  *  File name :TGEdge.java
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGEdge.java 622 2016-03-19 20:51:12Z ssubrama $
+ *		SVN Id: $Id: TGEdge.java 2175 2018-03-27 08:28:32Z vchung $
  *
  */
 
@@ -30,6 +30,12 @@ public interface TGEdge extends TGEntity {
         UnDirected,
         Directed,
         BiDirectional
+    }
+
+    enum Direction {
+    	Inbound,
+    	Outbound,
+    	Any
     }
 
     /**

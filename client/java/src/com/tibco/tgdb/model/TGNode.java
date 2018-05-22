@@ -20,7 +20,7 @@ import java.util.Collection;
  *  File name :TGNode.java
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGNode.java 623 2016-03-19 21:41:13Z ssubrama $
+ *		SVN Id: $Id: TGNode.java 2175 2018-03-27 08:28:32Z vchung $
  *
  */
 
@@ -38,6 +38,14 @@ public interface TGNode extends TGEntity {
      * @return collection edges for the direction type
      */
     Collection<TGEdge> getEdges(TGEdge.DirectionType directionType);
+
+    /**
+     *
+     * @param edgeType the edge type and it can be null
+     * @param direction the edge direction relative to the node(inbound, outbound or any)
+     * @return collection filtered edges
+     */
+    Collection<TGEdge> getEdges(TGEdgeType edgeType, TGEdge.Direction direction);
 
     /**
      * Add an Edge to another Node

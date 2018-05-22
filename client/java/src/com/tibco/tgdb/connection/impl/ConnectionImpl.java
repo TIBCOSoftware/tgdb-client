@@ -16,7 +16,7 @@
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionImpl.java 1713 2017-10-05 02:24:18Z vchung $
+ * SVN Id: $Id: ConnectionImpl.java 2155 2018-03-19 04:31:41Z ssubrama $
  */
 
 
@@ -131,7 +131,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -296,7 +296,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -385,7 +385,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -511,7 +511,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         int result;
         long queryHashId;
         TGQuery queryobj;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -544,7 +544,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -633,7 +633,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -724,7 +724,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -746,7 +746,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         connPool.adminlock();
 
         TGChannelResponse channelResponse;
-        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
         long requestId  = requestIds.getAndIncrement();
         channelResponse = new BlockingChannelResponse(requestId, timeout);
@@ -774,7 +774,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     		connPool.adminlock();
 
     		TGChannelResponse channelResponse;
-    		long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeout, "-1"));
+    		long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
 
     		long requestId  = requestIds.getAndIncrement();
     		channelResponse = new BlockingChannelResponse(requestId, timeout);

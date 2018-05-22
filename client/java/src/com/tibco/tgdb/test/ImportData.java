@@ -155,8 +155,8 @@ public class ImportData {
             String fromId, toId;
             int count = 0;
             float correlation;
-            TGNodeType hESCNodetype = gmd.getNodeType("hESCNodetype");
-            TGNodeType mESCNodetype = gmd.getNodeType("mESCNodetype");
+            TGNodeType hESCNodetype = gmd.getNodeType("hESC");
+            TGNodeType mESCNodetype = gmd.getNodeType("mESC");
             
             while ((line = br.readLine()) != null) {
                 // process the line.

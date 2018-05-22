@@ -24,7 +24,7 @@ import java.util.Map;
  * Created on: 12/25/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGChannelFactory.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: TGChannelFactory.java 2135 2018-03-07 23:42:34Z ssubrama $
  */
 public abstract class TGChannelFactory {
 
@@ -48,9 +48,8 @@ public abstract class TGChannelFactory {
      *               The rules for overriding are in this order
      *               a. The argument 'userId' is the highest priority. If Null then
      *               b. The user@url is considered. If that is Null
-     *               c. The user retrieved from the Properties is considered
-     *               d. the "userID=value" from the URL string is considered.
-     *               e. If all of them is Null, then the default User associated to the installation will be taken.
+     *               c. the "userID=value" from the URL string is considered.
+     *               d. If all of them is Null, then the default User associated to the installation will be taken.
      *
      * @param password An encrypted password associated with the userName
      * @return a Channel
@@ -68,11 +67,11 @@ public abstract class TGChannelFactory {
      *               The rules for overriding are in this order
      *               a. The argument 'userId' is the highest priority. If Null then
      *               b. The user@url is considered. If that is Null
-     *               c. The user retrieved from the Properties is considered
-     *               d. the "userID=value" from the URL string is considered.
+     *               c. the "userID=value" from the URL string is considered.
+     *               d. The user retrieved from the Properties is considered
      *               e. If all of them is Null, then the default User associated to the installation will be taken.
      * @param password Encrypted password
-     * @param props A set of properties that overrides all the properties that are infered.
+     * @param props A properties bag with Connection Properties. The URL infered properties override this property bag.
      * @return a connected channel
      * @throws IOException
      * @throws TGException

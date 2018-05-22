@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AbstractEntity.java 1618 2017-08-16 20:12:48Z vchung $
+ * SVN Id: $Id: AbstractEntity.java 2175 2018-03-27 08:28:32Z vchung $
  */
 
 
@@ -140,6 +140,10 @@ public abstract class AbstractEntity implements TGEntity {
     @Override
     public boolean isDeleted() {
     	return isDeleted;
+    }
+
+    TGEntityType getType() {
+    	return entityType;
     }
 
     @Override

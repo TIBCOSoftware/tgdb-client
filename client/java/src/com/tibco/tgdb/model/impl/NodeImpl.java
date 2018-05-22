@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: NodeImpl.java 1583 2017-08-10 04:16:44Z vchung $
+ * SVN Id: $Id: NodeImpl.java 2175 2018-03-27 08:28:32Z vchung $
  */
 
 
@@ -76,6 +76,38 @@ public class NodeImpl extends AbstractEntity implements TGNode {
         	if (edge.getDirectionType() == directionType) {
         		col.add(edge);
         	}
+        }
+    	return Collections.unmodifiableCollection(col);
+    }
+
+    @Override
+    public Collection<TGEdge> getEdges(TGEdgeType edgeType, TGEdge.Direction direction) {
+    	if (edges.size() == 0) {
+    		return Collections.<TGEdge> emptyList();
+    	}
+    	if (edgeType == null && direction == TGEdge.Direction.Any) {
+    		return Collections.unmodifiableCollection(edges);
+    	}
+        List<TGEdge> col = new ArrayList<TGEdge>();
+        for (TGEdge edge : edges) {
+        	TGEntityType type = ((EdgeImpl) edge).getType();
+        	if (edgeType != null && type != null && !type.getName().equals(edgeType.getName())) {
+        		continue;
+        	}
+        	if (direction == TGEdge.Direction.Any) {
+        		col.add(edge);
+        	} else if (direction == TGEdge.Direction.Outbound) {
+        		if (entityId == ((AbstractEntity)edge.getVertices()[0]).entityId) {
+        			col.add(edge);
+        		}
+        	} else {
+        		if (entityId == ((AbstractEntity)edge.getVertices()[1]).entityId) {
+        			col.add(edge);
+        		}
+        	}
+        }
+        if (col.size() == 0) {
+    		return Collections.<TGEdge> emptyList();
         }
     	return Collections.unmodifiableCollection(col);
     }

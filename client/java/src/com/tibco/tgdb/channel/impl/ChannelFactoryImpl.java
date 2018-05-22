@@ -30,7 +30,7 @@ import java.util.Map;
  * Created on: 12/26/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: ChannelFactoryImpl.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: ChannelFactoryImpl.java 2179 2018-03-29 21:49:54Z ssubrama $
  */
 public class ChannelFactoryImpl extends TGChannelFactory {
 
@@ -41,28 +41,28 @@ public class ChannelFactoryImpl extends TGChannelFactory {
         return createChannel(urlPath, userName, password, emptyMap);
     }
 
-
-
     @Override
     public  TGChannel createChannel(String urlPath, String userName, String password, Map<String,String> props ) throws  TGException
     {
 
-        TGProperties<String,String> properties;
-
-        TGChannelUrl url = LinkUrl.parse(urlPath);
-
-
-        properties = new SortedProperties(String.CASE_INSENSITIVE_ORDER);  //SS:All property names are case insensitive.
-        properties.putAll(url.getProperties());
-
+        TGProperties<String,String> properties = new SortedProperties<String,String>(String.CASE_INSENSITIVE_ORDER);  //SS:All property names are case insensitive.
         if (props != null) {
             properties.putAll(props); //Override the value from userdefined props.
         }
 
+        //System Properties are overridden by the URL properties.
+        TGChannelUrl url = LinkUrl.parse(urlPath);
+        properties.putAll(url.getProperties());
 
-        setUserAndPassword(properties, userName, password);
+        //The API parameters override the URL Properties
+        TGProperties.setUserAndPassword(properties, userName, password);
 
+        return createChannel(url, properties);
 
+    }
+
+    public TGChannel createChannel(TGChannelUrl url, TGProperties<String, String> properties) throws TGException
+    {
         TGChannelUrl.Protocol  protocol = url.getProtocol();
 
         switch(protocol) {
@@ -72,35 +72,10 @@ public class ChannelFactoryImpl extends TGChannelFactory {
             case TCP:
                 return new TcpChannel(url, properties);
 
-
             default:
                 throw new TGException("Protocol not supported");
         }
-
     }
 
-    private void setUserAndPassword(TGProperties<String,String> properties, String userName, String password) throws TGException
-    {
-        if ((userName == null) || (userName.length() == 0)) {
 
-            userName = properties.getProperty(ConfigName.ChannelUserID, TGEnvironment.getInstance().getChannelDefaultUser());
-
-
-            if ((userName == null) || (userName.length() == 0)) {
-                throw new TGException("user name not specified.");
-            }
-        }
-
-        if ((password == null) || (password.length() == 0)) {
-
-            password = properties.getProperty(ConfigName.ChannelPassword);
-
-        }
-
-        properties.put(ConfigName.ChannelUserID.getName(), userName);
-
-        if ((password != null) || (password.length() != 0)) {
-            properties.put(ConfigName.ChannelPassword.getName(), password);
-        }
-    }
 }

@@ -77,6 +77,10 @@ public class MetadataResponse extends AbstractProtocolMessage {
     			for (int i=0; i<typeCount; i++) {
     				TGNodeType nodeType = new NodeTypeImpl("temp", null);
     				nodeType.readExternal(is);
+    				String name = nodeType.getName();
+    				if (name.startsWith("@") || name.startsWith("$")) {
+    					continue;
+    				}
     				nodeTypeList.add(nodeType);
     			}
     		} else if (sysType == TGSystemType.EdgeType.type()) {

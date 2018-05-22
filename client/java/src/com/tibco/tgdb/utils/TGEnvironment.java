@@ -21,7 +21,7 @@ import java.util.Map;
  * Created on: 12/16/14
  * Created by: suresh
 
- * SVN Id: $Id: TGEnvironment.java 1679 2017-09-19 22:51:09Z ssubrama $
+ * SVN Id: $Id: TGEnvironment.java 2135 2018-03-07 23:42:34Z ssubrama $
  */
 public class TGEnvironment {
 
@@ -91,9 +91,6 @@ public class TGEnvironment {
 
     }
 
-
-
-
     public String getChannelDefaultUser() {
         return env.get(ConfigName.ChannelDefaultUserID);
     }
@@ -149,8 +146,20 @@ public class TGEnvironment {
     public String getChannelClientId() {
         String value = env.get(ConfigName.ChannelClientId);
         if (value == null) {
-            return "tgdb.java-api.client";
+            return "tgdb-client";
         }
         return value;
+    }
+
+    public SortedProperties<String, String> getAsSortedProperties()
+    {
+        SortedProperties<String, String> sp = new SortedProperties<String, String>();
+        for (Map.Entry<ConfigName, String> e : env.entrySet()) {
+            ConfigName name = e.getKey();
+            String value = e.getValue();
+            if (name.equals(ConfigName.InvalidName)) continue;
+            sp.put(name.getName(), value);
+        }
+        return sp;
     }
 }

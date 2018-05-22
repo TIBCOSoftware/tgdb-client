@@ -16,7 +16,7 @@
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: DefaultConnectionFactory.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: DefaultConnectionFactory.java 2179 2018-03-29 21:49:54Z ssubrama $
  */
 
 
@@ -24,6 +24,8 @@ package com.tibco.tgdb.connection.impl;
 
 import com.tibco.tgdb.channel.TGChannel;
 import com.tibco.tgdb.channel.TGChannelFactory;
+import com.tibco.tgdb.channel.TGChannelUrl;
+import com.tibco.tgdb.channel.impl.LinkUrl;
 import com.tibco.tgdb.connection.TGConnection;
 import com.tibco.tgdb.connection.TGConnectionFactory;
 import com.tibco.tgdb.connection.TGConnectionPool;
@@ -42,50 +44,32 @@ import java.util.Map;
  */
 public class DefaultConnectionFactory extends TGConnectionFactory {
 
-
-
     @Override
-    public TGConnection createConnection(String url, String userName, String password, Map<String, String> env) throws TGException {
-
-
-        TGProperties<String, String> properties = new SortedProperties<>(String.CASE_INSENSITIVE_ORDER);
-
-        if (env != null) {
-            properties.putAll(env);
-        }
-        properties.put(ConfigName.ConnectionPoolUseDedicatedChannelPerConnection.getName(), "true");
-
-        TGConnectionPool connPool = createConnectionPool(url, userName, password, 1, properties);
-
-        return connPool.get();
+    public TGConnection createConnection(String url, String userName, String password, Map<String, String> env) throws TGException
+    {
+        ConnectionPoolImpl connPool = (ConnectionPoolImpl) createConnectionPool(url, userName, password, 1, env);
+        return connPool.getConnection();
     }
 
     @Override
-    public TGConnectionPool createConnectionPool(String url, String userName, String password, int poolSize, Map<String, String> env) throws TGException {
-
-        boolean bUseDedicatedChannel = false;
-
+    public TGConnectionPool createConnectionPool(String url, String userName, String password, int poolSize, Map<String, String> env) throws TGException
+    {
         if (poolSize <= 0 ) {
             poolSize = TGEnvironment.getInstance().getConnectionPoolDefaultPoolSize();
         }
 
         TGProperties<String, String> properties = new SortedProperties<>(String.CASE_INSENSITIVE_ORDER);
+        TGProperties<String, String> defProps = TGEnvironment.getInstance().getAsSortedProperties();
+        properties.putAll(defProps);
 
         if (env != null) {
            properties.putAll(env);
         }
-        bUseDedicatedChannel = Boolean.parseBoolean(properties.getProperty(ConfigName.ConnectionPoolUseDedicatedChannelPerConnection, "false"));
+        TGChannelUrl channelUrl = LinkUrl.parse(url);
+        properties.putAll(channelUrl.getProperties());
+        TGProperties.setUserAndPassword(properties, userName, password);
 
-
-        int count = bUseDedicatedChannel ? poolSize : 1;
-
-        List<TGChannel> channels = new ArrayList<>(poolSize);
-        for (int i=0;i<count; i++) {
-            channels.add(TGChannelFactory.getInstance().createChannel(url, userName, password, properties));
-        }
-
-        return new ConnectionPoolImpl(channels, bUseDedicatedChannel, poolSize, properties);
+        return new ConnectionPoolImpl(channelUrl, poolSize, properties);
     }
-
 
 }
