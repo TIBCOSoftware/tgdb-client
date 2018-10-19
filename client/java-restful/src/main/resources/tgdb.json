@@ -1,0 +1,17 @@
+{
+	"ontologyTest" : {
+		"url" : "tcp://192.168.1.200:8220",
+		"user" : "scott",
+		"password" : "scott"
+	},
+		"default" : {
+		"url" : "tcp://192.168.1.200:8222",
+		"user" : "scott",
+		"password" : "scott"
+	},
+		"donor" : {
+		"url" : "tcp://192.168.1.200:8224",
+		"user" : "scott",
+		"password" : "scott"
+	}
+}
