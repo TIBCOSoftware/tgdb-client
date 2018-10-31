@@ -1,8 +1,1 @@
-com.tibco.tgdb.test.admin.attribute
-com.tibco.tgdb.test.admin.connect
-com.tibco.tgdb.test.admin.index
-com.tibco.tgdb.test.admin.nodetype
-com.tibco.tgdb.test.admin.user
-com.tibco.tgdb.test.connect
-com.tibco.tgdb.test.datatype.attribute
-com.tibco.tgdb.test.datatype.index
+com.tibco.tgdb.test.lib

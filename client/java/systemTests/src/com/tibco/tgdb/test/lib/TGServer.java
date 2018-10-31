@@ -142,6 +142,9 @@ public class TGServer {
 	 *            TG server home
 	 * @param tgConfig
 	 *            TG server start-up config file
+	 * @param tgLog
+	 *            TG server log filename (just filename - no path, no file extension). 
+	 *            Log will be located in tgdb_home/bin/log folder
 	 * @return 
 	 * @throws TGGeneralException
 	 *             File path not found or mis-formatted file
