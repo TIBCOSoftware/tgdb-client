@@ -1,0 +1,17 @@
+drop index index1
+drop index index2
+drop index index3
+drop index index4
+drop index index5
+drop index index6
+drop index index7
+drop index index8
+drop index index9
+drop index index10
+drop index index11
+drop index index12
+drop index index13
+drop index index14
+drop index index15
+disconnect
+exit

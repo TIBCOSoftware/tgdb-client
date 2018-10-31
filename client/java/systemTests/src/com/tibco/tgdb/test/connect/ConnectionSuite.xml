@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Connection">
+	<test name="IPv4">
+		<classes>
+			<class name="com.tibco.tgdb.test.connect.ConnectionTests">
+				<methods>
+					<include name="testIPv4Connect"></include>
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="IPv6">
+		<classes>
+			<class name="com.tibco.tgdb.test.connect.ConnectionTests">
+				<methods>
+					<include name="testIPv6Connect"></include>
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="Auth">
+		<classes>
+			<class name="com.tibco.tgdb.test.connect.ConnectionTests">
+				<methods>
+					<include name="testAuthConnect"></include>
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="MaxConnections">
+		<classes>
+			<class name="com.tibco.tgdb.test.connect.ConnectionTests">
+				<methods>
+					<include name="testMaxConnectWithNoPool"></include>
+					<include name="testMaxConnectWithPool"></include>
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="MassConnections">
+		<classes>
+			<class name="com.tibco.tgdb.test.connect.ConnectionTests">
+				<methods>
+					<include name="testMassConnectWithNoPool"></include>
+					<include name="testMassConnectWithPool"></include>
+					<include name="testMassConnectWithPool2"></include>
+					<include name="testMassConnectWithPool3"></include>
+				</methods>
+			</class>
+		</classes>
+	</test>
+	<test name="ConnectionPool">
+		<classes>
+			<class name="com.tibco.tgdb.test.connect.ConnectionTests">
+				<methods>
+					<include name="testConnectionPool"></include>
+					<include name="testConnectionPool2"></include>
+				</methods>
+			</class>
+		</classes>
+	</test>
+</suite>

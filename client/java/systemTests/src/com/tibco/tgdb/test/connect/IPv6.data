@@ -1,0 +1,5 @@
+[host|port]
+{{import java.net.*;return Inet6Address.getLocalHost().getHostAddress();}}|8223
+{{import java.net.*;return Inet6Address.getLoopbackAddress().getHostAddress();}}|8223
+{{import java.net.*;return Inet6Address.getLocalHost().getHostName();}}|8223
+{{import java.net.*;return Inet6Address.getLocalHost().getCanonicalHostName();}}|8223

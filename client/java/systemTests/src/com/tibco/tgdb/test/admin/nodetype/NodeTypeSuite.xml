@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="AdminNodeType" parallel="false">
+  <test name="AdminNodeType">
+    <classes>
+      <class name="com.tibco.tgdb.test.admin.nodetype.NodeTypeTests"/>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->

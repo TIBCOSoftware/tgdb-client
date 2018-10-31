@@ -1,0 +1,17 @@
+connect tcp://localhost:8222 admin admin
+describe edgetype edge1
+describe edgetype edge2
+describe edgetype edge3
+describe edgetype edge4
+describe edgetype edge5
+describe edgetype edge6
+describe edgetype edge7
+describe edgetype edge11
+describe edgetype edge12
+describe edgetype edge13
+describe edgetype edge14
+describe edgetype edge15
+describe edgetype edge16
+describe edgetype edge17
+describe edgetype edge18
+exit

@@ -1,0 +1,100 @@
+create attrdesc attr1a as string
+create attrdesc attr1b as int
+create attrdesc attr1c as long
+create attrdesc attr1d as double
+create attrdesc attr1e as float
+create attrdesc attr1f as boolean
+create attrdesc attr1g as short
+create attrdesc attr1h as timestamp
+create attrdesc attr1i as date
+create attrdesc attr1j as number(12,2)
+create attrdesc attr1k as byte
+create attrdesc attr1l as char
+create attrdesc attr1m as time
+create attrdesc attr1n as number
+
+#create array attrdesc attr2a as string
+#create array attrdesc attr2b as int
+#create array attrdesc attr2c as long
+#create array attrdesc attr2d as double
+#create array attrdesc attr2e as float
+#create array attrdesc attr2f as boolean
+#create array attrdesc attr2g as short
+#create array attrdesc attr2h as timestamp
+#create array attrdesc attr2i as date
+#create array attrdesc attr2j as number(12,2)
+#create array attrdesc attr3k as byte
+#create array attrdesc attr3l as char
+#create array attrdesc attr2m as time
+#create array attrdesc attr2n as number
+
+create nodetype node1a attributes (attr1a)
+create nodetype node1b attributes (attr1b) 
+create nodetype node1c attributes (attr1c)
+create nodetype node1d attributes (attr1d) 
+create nodetype node1e attributes (attr1e)
+create nodetype node1f attributes (attr1f) 
+create nodetype node1g attributes (attr1g)
+create nodetype node1h attributes (attr1h) 
+create nodetype node1i attributes (attr1i)
+create nodetype node1j attributes (attr1j)
+create nodetype node1k attributes (attr1k)
+create nodetype node1l attributes (attr1l)
+create nodetype node1m attributes (attr1m)
+create nodetype node1n attributes (attr1n)
+
+#create nodetype node2a attributes (attr2a)
+#create nodetype node2b attributes (attr2b) 
+#create nodetype node2c attributes (attr2c)
+#create nodetype node2d attributes (attr2d) 
+#create nodetype node2e attributes (attr2e)
+#create nodetype node2f attributes (attr2f)
+#create nodetype node2g attributes (attr2g)
+#create nodetype node2h attributes (attr2h)
+#create nodetype node2i attributes (attr2i)
+#create nodetype node2j attributes (attr2j)
+#create nodetype node2k attributes (attr2k)
+#create nodetype node2l attributes (attr2l)
+#create nodetype node2m attributes (attr2m)
+#create nodetype node2n attributes (attr2n)
+
+create nodetype node3a attributes (attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n)
+#create nodetype node3b attributes (attr2a,attr2b,attr2c,attr2d,attr2e,attr2f,attr2g,attr2h,attr2i,attr2j,attr2k, attr2l, attr2m, attr2n)
+create nodetype node3c attributes (attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n) pkeys (attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n)
+
+create index index1a attributes(attr1a) on node1a
+create index index1b attributes(attr1b) on node1b
+create index index1c attributes(attr1c) on node1c
+create index index1d attributes(attr1d) on node1d
+create index index1e attributes(attr1e) on node1e
+create index index1f attributes(attr1f) on node1f
+create index index1g attributes(attr1g) on node1g
+create index index1h attributes(attr1h) on node1h
+create index index1i attributes(attr1i) on node1i
+create index index1j attributes(attr1j) on node1j
+create index index1k attributes(attr1k) on node1k
+create index index1l attributes(attr1l) on node1l
+create index index1m attributes(attr1m) on node1m
+create index index1n attributes(attr1n) on node1n
+
+#create index index2a attributes(attr2a) on node2a
+#create index index2b attributes(attr2b) on node2b
+#create index index2c attributes(attr2c) on node2c
+#create index index2d attributes(attr2d) on node2d
+#create index index2e attributes(attr2e) on node2e
+#create index index2f attributes(attr2f) on node2f
+#create index index2g attributes(attr2g) on node2g
+#create index index2h attributes(attr2h) on node2h
+#create index index2i attributes(attr2i) on node2i
+#create index index2j attributes(attr2j) on node2j
+#create index index2k attributes(attr2k) on node2k
+#create index index2l attributes(attr2l) on node2l
+#create index index2m attributes(attr2m) on node2m
+#create index index2n attributes(attr2n) on node2n
+
+create index index3a attributes(attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n) on node3a
+#create index index3b attributes(attr2a,attr2b,attr2c,attr2d,attr2e,attr2f,attr2g,attr2h,attr2i,attr2j,attr2k,attr2l,attr2m,attr2n) on node3b
+create unique index index3c attributes(attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n) on node3c
+
+disconnect
+exit

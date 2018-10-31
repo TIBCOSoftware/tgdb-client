@@ -1,0 +1,17 @@
+[charAttr]|[updatedCharAttr]
+# test char primitive
+#{{return (char)Character.MIN_VALUE;}}|{{return new Character(Character.MAX_VALUE);}}
+#{{return (char)Character.MAX_VALUE;}}|{{return new Character(Character.MIN_VALUE);}}
+{{return 'a';}}|{{return '1';}}
+#{{return 'ï';}}|{{return 'Ê';}}
+#{{return '\u0000';}}|{{return '\r';}}
+#{{return '\uFFFF';}}|{{return '\n';}}
+# double-byte data : Yen symbol|double parenthesis ((
+#{{return '\uFFE5';}}|{{return '\uFF5F';}}
+#{{return '⌚';}}|{{return '☠';}}
+# test Character Object
+#{{return new Character(Character.MIN_VALUE);}}|{{return (char)Character.MAX_VALUE;}}
+#{{return new Character(Character.MAX_VALUE);}}|{{return (char)Character.MIN_VALUE;}}
+# test null
+#{{return null;}}|{{return new Character(Character.MAX_VALUE);}}
+#{{return new Character(Character.MAX_VALUE);}}|{{return null;}}

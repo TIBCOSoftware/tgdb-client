@@ -1,0 +1,11 @@
+[intAttr]|[updatedIntAttr]
+# test int primitive
+{{return (int)Integer.MIN_VALUE;}}|{{return new Integer(Integer.MAX_VALUE);}}
+{{return (int)Integer.MAX_VALUE;}}|{{return new Integer(Integer.MIN_VALUE);}}
+{{return 0;}}|{{return 1;}}
+# test Integer Object
+#{{return new Integer(Integer.MIN_VALUE);}}|{{return (int)Integer.MAX_VALUE;}}
+#{{return new Integer(Integer.MAX_VALUE);}}|{{return (int)Integer.MIN_VALUE;}}
+# test null
+#{{return null;}}|{{return new Integer(Integer.MAX_VALUE);}}
+#{{return new Integer(Integer.MAX_VALUE);}}|{{return null;}}

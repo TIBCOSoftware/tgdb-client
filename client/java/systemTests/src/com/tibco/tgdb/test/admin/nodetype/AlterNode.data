@@ -1,0 +1,23 @@
+connect tcp://localhost:8222 admin admin
+alter nodetype node1 add attribute attr2
+alter nodetype node2 add attribute attr3
+alter nodetype node3 add attribute attr4
+alter nodetype node4 add attribute attr5
+alter nodetype node5 add attribute attr6
+alter nodetype node6 add attribute attr7
+alter nodetype node7 add attribute attr8
+alter nodetype node8 add attribute attr9
+alter nodetype node9 add attribute attr10
+alter nodetype node11 add attribute attr12
+alter nodetype node12 add attribute attr13
+alter nodetype node13 add attribute attr14
+alter nodetype node14 add attribute attr15
+alter nodetype node15 add attribute attr16
+alter nodetype node16 add attribute attr17
+alter nodetype node17 add attribute attr19
+alter nodetype node18 add attribute attr17
+alter nodetype node20 drop attribute attr1
+alter nodetype node21 drop attribute attr11
+alter nodetype node22 drop attribute attr9
+alter nodetype node23 drop attribute attr19
+exit

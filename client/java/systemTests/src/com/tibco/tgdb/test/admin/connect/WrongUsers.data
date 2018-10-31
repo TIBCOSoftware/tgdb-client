@@ -1,0 +1,10 @@
+[user|pwd]
+# fyi correct user/pwd = root/pass
+# wrong user - wrong pwd
+admin|admin
+# right user - wrong pwd
+root|admin
+root|pass1
+# wrong user - right pwd
+admin|pass
+root1|pass

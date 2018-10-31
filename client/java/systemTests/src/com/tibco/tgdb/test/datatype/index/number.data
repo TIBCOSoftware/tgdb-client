@@ -1,0 +1,9 @@
+[numberAttr]|[updatedNumberAttr]
+{{return java.math.BigDecimal.ZERO;}}|{{return new java.math.BigDecimal("9");}}
+{{return new java.math.BigDecimal("0.9");}}|{{return new java.math.BigDecimal("0.0");}}
+#{{return new java.math.BigDecimal("999999999999999999999999999999999999999999999999");}}|{{return new java.math.BigDecimal("0");}}
+#{{return new java.math.BigDecimal("0.999999999999999999999999999999999999999999999999");}}|{{return new java.math.BigDecimal("0.000000000000000000000000000000000000000000000001");}}
+{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(20,5);}}|{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(10,2);}}
+# test null
+{{return null;}}|{{return java.math.BigDecimal.ONE;}}
+{{return java.math.BigDecimal.ONE;}}|{{return null;}}

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="DatatypeAttrSuite" parallel="false">
+  <test name="DatatypeBooleanAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.BooleanAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeByteAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.ByteAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeCharAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.CharAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeDateAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.DateAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeDoubleAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.DoubleAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeFloatAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.FloatAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeIntegerAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.IntegerAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeLongAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.LongAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeNumberAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.NumberAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeShortAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.ShortAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeStringAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.StringAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeTimeAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.TimeAttrTests"/>
+    </classes>
+  </test><test name="DatatypeTimestampAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.TimestampAttrTests"/>
+    </classes>
+  </test>
+</suite> <!-- Suite -->

@@ -1,0 +1,3 @@
+show users
+disconnect
+exit

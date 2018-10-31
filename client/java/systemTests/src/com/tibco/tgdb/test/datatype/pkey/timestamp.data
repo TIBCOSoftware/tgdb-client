@@ -1,0 +1,14 @@
+[timestampAttr]|[updatedTimestampAttr]
+# Supported Min Date = Dec 31 4174 BC | Max Date = Dec 31 8191 AD
+{{return new Calendar.Builder().setDate(4174, 11, 31).setTimeOfDay(23, 59, 59, 999).set(Calendar.ERA,GregorianCalendar.BC).build();}}|{{return new Calendar.Builder().setDate(8191, 11, 31).setTimeOfDay(23, 59, 59, 999).set(Calendar.ERA,GregorianCalendar.AD).build();}}
+# Supported Max Date = Dec 31 8191 AD + 1 sec | Min Date = Dec 31 4174 BC + 1 sec
+{{return new Calendar.Builder().setDate(8191, 11, 31).setTimeOfDay(0, 0, 1).set(Calendar.ERA,GregorianCalendar.AD).build();}}|{{return new Calendar.Builder().setDate(4174, 11, 31).setTimeOfDay(0, 0, 1).set(Calendar.ERA,GregorianCalendar.BC).build();}}
+# Last day of BC era | First day of AD era
+{{return new Calendar.Builder().setDate(1, 0, 1).set(Calendar.ERA,GregorianCalendar.BC).build();}}|{{return new Calendar.Builder().setDate(1, 0, 1).set(Calendar.ERA,GregorianCalendar.AD).build();}}
+# Epoch date | Epoch date (no change but no millisec)
+{{return new Calendar.Builder().setDate(1970, 0, 1).setTimeOfDay(0, 0, 0, 0).build();}}|{{return new Calendar.Builder().setDate(1970, 0, 1).setTimeOfDay(0, 0, 0).build();}}
+# Today Datetime | Tomorrow Datetime
+{{return Calendar.getInstance();}}|{{Calendar tomorrow = Calendar.getInstance();tomorrow.add(Calendar.DATE, 1);return tomorrow;}}
+# test null | non-null
+{{return null;}}|{{return new Calendar.Builder().setDate(1970, 6, 18).setTimeOfDay(0, 0, 0, 1).build();}}
+{{return new Calendar.Builder().setDate(1939, 11, 31).setTimeOfDay(23, 0, 0, 0).build();}}|{{return null;}}

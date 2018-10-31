@@ -1,0 +1,15 @@
+[user|pwd|role|expectedLogin]
+# right user/pwd
+user0|user0|user|loginSuccess
+user.1|user.123|user|loginSuccess
+admin-1|admin-123|administrator|loginSuccess
+ops_1|ops_123|operator|loginSuccess
+123.-_|!@#$%&*.:;?|user|loginSuccess
+# wrong user
+wrong-user|user.123|user|loginFailure
+wrong-admin|admin-123|administrator|loginFailure
+wrong-ops|ops:123|operator|loginFailure
+# wrong pwd
+user.1|wrong-pwd|user|loginFailure
+admin-1|wrong-pwd|administrator|loginFailure
+ops_1|wrong-pwd|operator|loginFailure

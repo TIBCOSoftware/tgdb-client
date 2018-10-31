@@ -1,0 +1,10 @@
+<suite name="Connection">
+	<test name="MaxConnect10">
+		<classes>
+			<class name="com.tibco.tgdb.test.connect.ConnectionTests">
+				<methods>
+					<include name="testConnectwithMaxConnect10"></include>
+				</methods>
+			</class>
+		</classes>
+	</test>
