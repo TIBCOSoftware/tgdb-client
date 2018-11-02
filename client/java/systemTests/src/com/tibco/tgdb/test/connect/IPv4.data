@@ -1,0 +1,6 @@
+[host|port]
+localhost|8222
+{{import java.net.*;return Inet4Address.getLocalHost().getHostAddress();}}|8222
+{{import java.net.*;return Inet4Address.getLoopbackAddress().getHostAddress();}}|8222
+{{import java.net.*;return Inet4Address.getLocalHost().getHostName();}}|8222
+{{import java.net.*;return Inet4Address.getLocalHost().getCanonicalHostName();}}|8222

@@ -1,0 +1,8 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="AdminIndex" parallel="false">
+  <test name="AdminIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.admin.index.IndexTests"/>
+    </classes>
+  </test> <!-- Test -->
+</suite> <!-- Suite -->

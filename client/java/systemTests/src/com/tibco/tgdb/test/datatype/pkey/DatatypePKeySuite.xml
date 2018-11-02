@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="DatatypePKeySuite" parallel="false">
+  <test name="DatatypeBooleanPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.BooleanPKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeBytePKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.BytePKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeCharPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.CharPKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeDatePKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.DatePKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeDoublePKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.DoublePKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeFloatPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.FloatPKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeIntegerPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.IntPKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeLongPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.LongPKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeNumberAttr">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.attribute.NumberAttrTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeShortPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.ShortPKeyTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeStringPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.StringPKeyTests"/>
+    </classes>
+  </test>
+  <!--
+  <test name="DatatypeTimePKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.TimePKeyTests"/>
+    </classes>
+  </test>
+  -->
+  <test name="DatatypeTimestampPKey">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.pkey.TimestampPKeyTests"/>
+    </classes>
+  </test>
+</suite> <!-- Suite -->

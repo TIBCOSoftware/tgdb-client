@@ -1,0 +1,12 @@
+[timeAttr]|[updatedTimeAttr]
+# Supported Min Date = Dec 31 4174 BC | Max Date = Dec 31 8191 AD
+{{return new Calendar.Builder().setDate(4174, 11, 31).setTimeOfDay(23, 59, 59, 999).set(Calendar.ERA,GregorianCalendar.BC).build();}}|{{return new Calendar.Builder().setDate(8191, 11, 31).setTimeOfDay(23, 59, 59, 999).set(Calendar.ERA,GregorianCalendar.AD).build();}}
+# Min time | Max time
+{{return new Calendar.Builder().setTimeOfDay(0, 0, 0, 0).build();}}|{{return new Calendar.Builder().setTimeOfDay(23, 59, 59, 999).build();}}
+# Just before Noon | Noon
+{{return new Calendar.Builder().setTimeOfDay(11, 59, 59, 999).build();}}|{{return new Calendar.Builder().setTimeOfDay(12, 0, 0).build();}}
+# 1 pm with millisec | 1pm no millisec 
+{{return new Calendar.Builder().setTimeOfDay(13, 0, 0, 0).build();}}|{{return new Calendar.Builder().setTimeOfDay(13, 0, 0).build();}}
+# test null | non-null
+{{return null;}}|{{return new Calendar.Builder().setTimeOfDay(0, 0, 0, 1).build();}}
+{{return new Calendar.Builder().setTimeOfDay(23, 0, 0, 0).build();}}|{{return null;}}

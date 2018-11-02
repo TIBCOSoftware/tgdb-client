@@ -1,0 +1,22 @@
+drop attrdesc attr1
+drop attrdesc attr2
+drop attrdesc attr3
+drop attrdesc attr4
+drop attrdesc attr5
+drop attrdesc attr6
+drop attrdesc attr7
+drop attrdesc attr8
+drop attrdesc attr9
+drop attrdesc attr10
+drop attrdesc attr21
+drop attrdesc attr22
+drop attrdesc attr23
+drop attrdesc attr24
+drop attrdesc attr25
+drop attrdesc attr26
+drop attrdesc attr27
+drop attrdesc attr28
+drop attrdesc attr29
+drop attrdesc attr30
+disconnect
+exit

@@ -1,0 +1,30 @@
+create attrdesc attr1a as string
+create attrdesc attr1b as int
+create attrdesc attr1c as long
+create attrdesc attr1d as double
+create attrdesc attr1e as float
+create attrdesc attr1f as boolean
+create attrdesc attr1g as short
+create attrdesc attr1h as timestamp
+create attrdesc attr1i as date
+create attrdesc attr1j as number(12,2)
+create attrdesc attr1k as byte
+create attrdesc attr2a as char
+create attrdesc attr2b as time
+create attrdesc attr2c as number
+create array attrdesc attr2d as string
+create array attrdesc attr2e as int
+create array attrdesc attr2f as long
+create array attrdesc attr2g as double
+create array attrdesc attr2h as float
+create array attrdesc attr2i as boolean
+create array attrdesc attr2j as short
+create array attrdesc attr2k as timestamp
+create array attrdesc attr3a as date
+create array attrdesc attr3b as number(12,2)
+create array attrdesc attr3c as byte
+create array attrdesc attr3d as char
+create array attrdesc attr3e as time
+create array attrdesc attr3f as number
+disconnect
+exit

@@ -1,0 +1,15 @@
+[floatAttr]|[updatedFloatAttr]
+# test float primitive | Float object
+{{return (float)Float.MIN_VALUE;}}|{{return new Float(-Float.MAX_VALUE);}}
+{{return -(float)Float.MAX_VALUE;}}|{{return new Float(Float.MIN_VALUE);}}
+# TGDB-410 : NaN issue
+#{{return (float)Float.NaN;}}|{{return new Float(Float.MIN_NORMAL);}}
+{{return (float)Float.NEGATIVE_INFINITY;}}|{{return new Float(Float.POSITIVE_INFINITY);}}
+{{return -1.0F;}}|{{return -0.0F;}}
+{{return -0.0F;}}|{{return -0.0F;}}
+# test Float Object | float primitive
+{{return new Float(-Float.MIN_VALUE);}}|{{return -(float)Float.MAX_VALUE;}}
+{{return new Float(Float.MAX_VALUE);}}|{{return (float)Float.MIN_VALUE;}}
+# test null
+#{{return null;}}|{{return new Float(Float.MAX_VALUE);}}
+#{{return new Float(Float.MAX_VALUE);}}|{{return null;}}

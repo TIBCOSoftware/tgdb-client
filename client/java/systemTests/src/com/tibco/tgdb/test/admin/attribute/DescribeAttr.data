@@ -1,0 +1,16 @@
+connect tcp://localhost:8222 root pass
+describe attrdesc attr1
+describe attrdesc attr2
+describe attrdesc attr3
+describe attrdesc attr4
+describe attrdesc attr5
+describe attrdesc attr6
+describe attrdesc attr7
+describe attrdesc attr11
+describe attrdesc attr12
+describe attrdesc attr13
+describe attrdesc attr14
+describe attrdesc attr15
+describe attrdesc attr16
+describe attrdesc attr17
+exit

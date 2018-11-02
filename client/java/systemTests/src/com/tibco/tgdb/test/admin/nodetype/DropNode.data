@@ -1,0 +1,28 @@
+drop nodetype node1a
+drop nodetype node1b
+drop nodetype node1c
+drop nodetype node1d
+drop nodetype node1e
+drop nodetype node1f
+drop nodetype node1g
+drop nodetype node1h
+drop nodetype node1i
+drop nodetype node1j
+drop nodetype node1k
+drop nodetype node2a
+drop nodetype node2b
+drop nodetype node2c
+drop nodetype node2d
+drop nodetype node2e
+drop nodetype node2f
+drop nodetype node2g
+drop nodetype node2h
+drop nodetype node2i
+drop nodetype node2j
+drop nodetype node2k
+drop nodetype node3a
+drop nodetype node3b
+drop nodetype node3c
+drop nodetype node3d
+disconnect
+exit

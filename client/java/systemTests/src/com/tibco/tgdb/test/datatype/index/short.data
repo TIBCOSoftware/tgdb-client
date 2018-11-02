@@ -1,0 +1,11 @@
+[shortAttr]|[updatedShortAttr]
+# test short primitive
+{{return (short)Short.MIN_VALUE;}}|{{return new Short(Short.MAX_VALUE);}}
+{{return (short)Short.MAX_VALUE;}}|{{return new Short(Short.MIN_VALUE);}}
+{{return (short)0;}}|{{return (short)1;}}
+# test Short Object
+#{{return new Short(Short.MIN_VALUE);}}|{{return (short)Short.MAX_VALUE;}}
+#{{return new Short(Short.MAX_VALUE);}}|{{return (short)Short.MIN_VALUE;}}
+# test null
+#{{return null;}}|{{return new Short(Short.MAX_VALUE);}}
+#{{return new Short(Short.MAX_VALUE);}}|{{return null;}}

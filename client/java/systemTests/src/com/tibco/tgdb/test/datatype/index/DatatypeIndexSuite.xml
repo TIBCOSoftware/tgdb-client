@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="DatatypeIndexSuite" parallel="false">
+  <test name="DatatypeBooleanIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.BooleanIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeByteIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.ByteIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeCharIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.CharIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeDateIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.DateIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeDoubleIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.DoubleIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeFloatIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.FloatIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeIntegerIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.IntIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeLongIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.LongIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeNumberIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.NumberIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeShortIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.ShortIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeStringIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.StringIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeTimeIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.TimeIndexTests"/>
+    </classes>
+  </test>
+  <test name="DatatypeTimestampIndex">
+    <classes>
+      <class name="com.tibco.tgdb.test.datatype.index.TimestampIndexTests"/>
+    </classes>
+  </test>
+</suite> <!-- Suite -->

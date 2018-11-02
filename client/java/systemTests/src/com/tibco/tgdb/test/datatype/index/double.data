@@ -1,0 +1,15 @@
+[doubleAttr]|[updatedDoubleAttr]
+# test double primitive | Double object
+{{return (double)Double.MIN_VALUE;}}|{{return new Double(-Double.MAX_VALUE);}}
+{{return -(double)Double.MAX_VALUE;}}|{{return new Double(Double.MIN_VALUE);}}
+# TGDB-410 : NaN issue
+#{{return (double)Double.NaN;}}|{{return new Double(Double.MIN_NORMAL);}}
+{{return (double)Double.NEGATIVE_INFINITY;}}|{{return new Double(Double.POSITIVE_INFINITY);}}
+{{return -1.0D;}}|{{return -0.0D;}}
+{{return 0.0D;}}|{{return -0.0D;}}
+# test Double Object | double primitive
+{{return new Double(-Double.MIN_VALUE);}}|{{return -(double)Double.MAX_VALUE;}}
+{{return new Double(Double.MAX_VALUE);}}|{{return (double)Double.MIN_VALUE;}}
+# test null
+#{{return null;}}|{{return new Double(Double.MAX_VALUE);}}
+#{{return new Double(Double.MAX_VALUE);}}|{{return null;}}

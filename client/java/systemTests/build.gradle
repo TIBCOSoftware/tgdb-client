@@ -1,0 +1,142 @@
+/*
+ * TIBCO Graph Database
+ * Gradle build for system tests
+ *
+ * A full installation of TGDB is expected to execute this build
+ * Pass property TGDB_HOME to Gradle (for instance /opt/tibco/tgdb/1.1)
+ */
+
+apply plugin: 'java'
+
+group='com.tibco.tgdb.test'
+version='1.1.SNAPSHOT'
+
+ext {
+	tgdbHome = project.file(new File(TGDB_HOME),PathValidation.DIRECTORY)
+    tgdbClientJar = project.file(new File("$TGDB_HOME/lib/tgdb-client.jar"),PathValidation.FILE)
+}
+
+// Method to run TestNG suite
+ext.runTestNGSuite = { suitePath, ignoreExitCode ->
+    javaexec {
+    	classpath = sourceSets.main.runtimeClasspath
+  		main = 'org.testng.TestNG'
+  		args '-testjar' 
+  		args jar.archivePath
+  		args '-xmlpathinjar'
+  		args suitePath
+  		systemProperty 'TGDB_HOME', tgdbHome
+        println "====>  Running suite : $suitePath"
+        println ' '
+        if (project.hasProperty("TGDB_WORKING")) {
+    		systemProperty 'TGDB_WORKING', TGDB_WORKING
+		}
+		ignoreExitValue ignoreExitCode
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+	compile 'org.apache.commons:commons-exec:1.3'
+	compile 'org.testng:testng:6.11'
+	compile 'org.beanshell:bsh:2.0b5'
+	compile files(tgdbClientJar)
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+        }
+    }
+}
+
+jar {
+    manifest {
+        attributes('Created-By': "Gradle $gradle.gradleVersion",
+        		   'Implementation-Title': "TGDB System Tests",
+                   'Implementation-Version': "$version",
+                   'Implementation-Vendor': "TIBCO Software, Inc.")
+    }
+}
+/*
+*   Smoke tests
+*/
+task runGettingStartedTests(dependsOn: build) {
+	description = 'Run sanity tests'
+	group = 'System Tests'
+	doLast {
+		project.runTestNGSuite('com/tibco/tgdb/test/gettingstarted/GettingStartedSuite.xml', false)
+	}
+}
+/*
+*   Admin tests
+*/
+task runAdminAttributeTests(dependsOn: build) {
+	description = 'Run admin attribute tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/admin/attribute/AttributeSuite.xml', false)
+	}
+}
+task runAdminConnectionTests(dependsOn: build) {
+	description = 'Run admin connection tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/admin/connect/ConnectionSuite.xml', true)
+	}
+}
+
+task runAdminIndexTests(dependsOn: build) {
+	description = 'Run admin index tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/admin/index/IndexSuite.xml', false)
+	}
+}
+task runAdminNodetypeTests(dependsOn: build) {
+	description = 'Run admin nodetype tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/admin/nodetype/NodeTypeSuite.xml', false)
+	}
+}
+task runAdminUserTests(dependsOn: build) {
+	description = 'Run admin user tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/admin/user/UserSuite.xml', false)
+	}
+}
+/*
+*   Runtime tests
+*/
+task runConnectionTests(dependsOn: build) {
+	description = 'Run runtime connection tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/connect/ConnectionSuite.xml', true)
+	}
+}
+task runDatatypeAttrTests(dependsOn: build) {
+	description = 'Run runtime attribute data type tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/datatype/attribute/DatatypeAttrSuite.xml', true)
+	}
+}
+task runDatatypeIndexTests(dependsOn: build) {
+	description = 'Run runtime attribute data type tests'
+	group = 'System Tests'
+	doLast{
+		project.runTestNGSuite('com/tibco/tgdb/test/datatype/attribute/DatatypeIndexSuite.xml', true)
+	}
+}
+
+

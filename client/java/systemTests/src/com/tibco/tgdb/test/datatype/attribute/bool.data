@@ -1,0 +1,10 @@
+[boolAttr]|[updatedBoolAttr]
+# test boolean primitive
+{{return (boolean)true;}}|{{return (boolean)false;}}
+{{return (boolean)false;}}|{{return (boolean)true;}}
+# test Boolean Object
+{{return Boolean.TRUE;}}|{{return Boolean.FALSE;}}
+{{return Boolean.FALSE;}}|{{return Boolean.TRUE;}}
+# test null
+{{return null;}}|{{return (boolean)true;}}
+{{return (boolean)false;}}|{{return null;}}

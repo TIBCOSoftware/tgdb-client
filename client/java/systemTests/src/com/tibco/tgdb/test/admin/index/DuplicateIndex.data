@@ -1,0 +1,36 @@
+create index index1a attributes(attr1a) on node1a
+create index index1b attributes(attr1b) on node1b
+create index index1c attributes(attr1c) on node1c
+create index index1d attributes(attr1d) on node1d
+create index index1e attributes(attr1e) on node1e
+create index index1f attributes(attr1f) on node1f
+create index index1g attributes(attr1g) on node1g
+create index index1h attributes(attr1h) on node1h
+create index index1i attributes(attr1i) on node1i
+create index index1j attributes(attr1j) on node1j
+create index index1k attributes(attr1k) on node1k
+create index index1l attributes(attr1l) on node1l
+create index index1m attributes(attr1m) on node1m
+create index index1n attributes(attr1n) on node1n
+
+#create index index2a attributes(attr2a) on node2a
+#create index index2b attributes(attr2b) on node2b
+#create index index2c attributes(attr2c) on node2c
+#create index index2d attributes(attr2d) on node2d
+#create index index2e attributes(attr2e) on node2e
+#create index index2f attributes(attr2f) on node2f
+#create index index2g attributes(attr2g) on node2g
+#create index index2h attributes(attr2h) on node2h
+#create index index2i attributes(attr2i) on node2i
+#create index index2j attributes(attr2j) on node2j
+#create index index2k attributes(attr2k) on node2k
+#create index index2l attributes(attr2l) on node2l
+#create index index2m attributes(attr2m) on node2m
+#create index index2n attributes(attr2n) on node2n
+
+create index index3a attributes(attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n) on node3a
+#create index index3b attributes(attr2a,attr2b,attr2c,attr2d,attr2e,attr2f,attr2g,attr2h,attr2i,attr2j,attr2k,attr2l,attr2m,attr2n) on node3b
+create unique index index3c attributes(attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n) on node3c
+
+disconnect
+exit

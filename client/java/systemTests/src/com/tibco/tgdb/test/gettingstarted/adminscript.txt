@@ -1,0 +1,21 @@
+# Schema creation for the House of Bonaparte
+
+# create a new user to connect to db
+create user napoleon passwd=bonaparte
+
+# create attribute descriptions
+create attrdesc memberName as string
+create attrdesc houseHead as boolean
+create attrdesc crownName as string
+create attrdesc crownTitle as string
+create attrdesc yearBorn as int
+create attrdesc yearDied as int
+create attrdesc reignStart as date
+create attrdesc reignEnd as date
+create attrdesc relType as string
+
+# create node type
+create nodetype houseMemberType attributes(memberName, houseHead, crownName, crownTitle, yearBorn, yearDied, reignStart, reignEnd) pkeys (memberName)
+
+disconnect
+exit

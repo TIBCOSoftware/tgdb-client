@@ -1,0 +1,20 @@
+drop edgetype edge1
+drop edgetype edge2
+drop edgetype edge3
+drop edgetype edge4
+drop edgetype edge5
+drop edgetype edge6
+drop edgetype edge7
+drop edgetype edge8
+drop edgetype edge9
+drop edgetype edge10
+drop edgetype edge11
+drop edgetype edge12
+drop edgetype edge13
+drop edgetype edge14
+drop edgetype edge15
+drop edgetype edge16
+drop edgetype edge17
+drop edgetype edge18
+disconnect
+exit

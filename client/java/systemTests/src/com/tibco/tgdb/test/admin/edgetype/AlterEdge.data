@@ -1,0 +1,20 @@
+connect tcp://localhost:8222 admin admin
+alter edgetype edge1 add attribute attr2
+alter edgetype edge2 add attribute attr3
+alter edgetype edge3 add attribute attr4
+alter edgetype edge4 add attribute attr5
+alter edgetype edge5 add attribute attr6
+alter edgetype edge6 add attribute attr7
+alter edgetype edge7 add attribute attr8
+alter edgetype edge8 add attribute attr9
+alter edgetype edge9 add attribute attr10
+alter edgetype edge10 add attribute attr11
+alter edgetype edge11 add attribute attr12
+alter edgetype edge12 add attribute attr13
+alter edgetype edge13 add attribute attr14
+alter edgetype edge14 add attribute attr15
+alter edgetype edge15 drop attribute attr7 
+alter edgetype edge16 drop attribute attr9
+alter edgetype edge17 drop attribute attr14
+alter edgetype edge18 drop attribute attr2
+exit

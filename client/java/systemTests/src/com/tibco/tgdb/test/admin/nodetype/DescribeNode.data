@@ -1,0 +1,24 @@
+connect tcp://localhost:8222 root pass
+describe nodetype node1
+describe nodetype node2
+describe nodetype node3
+describe nodetype node4
+describe nodetype node5
+describe nodetype node6
+describe nodetype node7
+describe nodetype node8
+describe nodetype node9
+describe nodetype node11
+describe nodetype node12
+describe nodetype node13
+describe nodetype node14
+describe nodetype node15
+describe nodetype node16
+describe nodetype node17
+describe nodetype node18
+describe nodetype node19
+describe nodetype node20
+describe nodetype node21
+describe nodetype node22
+describe nodetype node23
+exit

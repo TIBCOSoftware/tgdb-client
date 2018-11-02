@@ -1,0 +1,6 @@
+[configFile|user|pwd]
+MaxConnect0.conf|scott|scott
+MaxConnect1.conf|scott|scott
+# Community Edition has max connection hardcoded to 5 across all listeners
+MaxConnect5.conf|scott|scott
+MaxConnect6.conf|scott|scott

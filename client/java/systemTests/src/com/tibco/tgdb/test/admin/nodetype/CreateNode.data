@@ -1,0 +1,62 @@
+create attrdesc attr1a as string
+create attrdesc attr1b as int
+create attrdesc attr1c as long
+create attrdesc attr1d as double
+create attrdesc attr1e as float
+create attrdesc attr1f as boolean
+create attrdesc attr1g as short
+create attrdesc attr1h as timestamp
+create attrdesc attr1i as date
+create attrdesc attr1j as number(12,2)
+create attrdesc attr1k as byte
+create attrdesc attr1l as char
+create attrdesc attr1m as time
+create attrdesc attr1n as number
+#create array attrdesc attr2d as string
+#create array attrdesc attr2e as int
+#create array attrdesc attr2f as long
+#create array attrdesc attr2g as double
+#create array attrdesc attr2h as float
+#create array attrdesc attr2i as boolean
+#create array attrdesc attr2j as short
+#create array attrdesc attr2k as timestamp
+#create array attrdesc attr3a as date
+#create array attrdesc attr3b as number(12,2)
+#create array attrdesc attr3c as byte
+#create array attrdesc attr3d as char
+#create array attrdesc attr3e as time
+#create array attrdesc attr3f as number
+
+create nodetype node1a attributes (attr1a) pkeys (attr1a)
+create nodetype node1b attributes (attr1b) pkeys (attr1b)
+create nodetype node1c attributes (attr1c) pkeys (attr1c)
+create nodetype node1d attributes (attr1d) pkeys (attr1d)
+create nodetype node1e attributes (attr1e) pkeys (attr1e)
+create nodetype node1f attributes (attr1f) pkeys (attr1f)
+create nodetype node1g attributes (attr1g) pkeys (attr1g)
+create nodetype node1h attributes (attr1h) pkeys (attr1h)
+create nodetype node1i attributes (attr1i) pkeys (attr1i)
+create nodetype node1j attributes (attr1j) pkeys (attr1j)
+create nodetype node1k attributes (attr1k) pkeys (attr1k)
+create nodetype node1l attributes (attr1l) pkeys (attr1l)
+create nodetype node1m attributes (attr1m) pkeys (attr1m)
+create nodetype node1n attributes (attr1n) pkeys (attr1n)
+
+#create nodetype node2a attributes (attr2a)
+#create nodetype node2b attributes (attr2b) 
+#create nodetype node2c attributes (attr2c)
+#create nodetype node2d attributes (attr2d) pkeys (attr2d)
+#create nodetype node2e attributes (attr2e) pkeys (attr2e)
+#create nodetype node2f attributes (attr2f) pkeys (attr2f)
+#create nodetype node2g attributes (attr2g)
+#create nodetype node2h attributes (attr2h) pkeys (attr2h)
+#create nodetype node2i attributes (attr2i) pkeys (attr2i)
+#create nodetype node2j attributes (attr2j) pkeys (attr2j)
+#create nodetype node2k attributes (attr2k) pkeys (attr2k)
+
+create nodetype node3a attributes (attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n)
+#create nodetype node3b attributes (attr2a,attr2b,attr2c,attr2d,attr2e,attr2f,attr2g,attr2h,attr2i,attr2j,attr2k)
+#create nodetype node3c attributes (attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr2a,attr2b,attr2c,attr2d,attr2e,attr2f,attr2g,attr2h,attr2i,attr2j,attr2k,attr3a,attr3b,attr3c,attr3d,attr3e,attr3f)
+create nodetype node3d attributes (attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n) pkeys (attr1a, attr1b, attr1c, attr1d, attr1e, attr1f, attr1g, attr1h, attr1i, attr1j, attr1k, attr1l, attr1m, attr1n)
+disconnect
+exit
