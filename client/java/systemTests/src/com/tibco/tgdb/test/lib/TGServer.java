@@ -218,8 +218,8 @@ public class TGServer {
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("name")) {
-					if (line.indexOf(";") != -1)
-						tmpName = line.substring(line.indexOf("=") + 1, line.indexOf(";")).trim();
+					if (line.indexOf("//") != -1)
+						tmpName = line.substring(line.indexOf("=") + 1, line.indexOf("//")).trim();
 					else
 						tmpName = line.substring(line.indexOf("=") + 1).trim();
 					break;
@@ -269,8 +269,8 @@ public class TGServer {
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("host")) {
-					if (line.indexOf(";") != -1)
-						tmpHost = line.substring(line.indexOf("=") + 1, line.indexOf(";")).trim();
+					if (line.indexOf("//") != -1)
+						tmpHost = line.substring(line.indexOf("=") + 1, line.indexOf("//")).trim();
 					else
 						tmpHost = line.substring(line.indexOf("=") + 1).trim();
 					break;
@@ -320,8 +320,8 @@ public class TGServer {
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("port")) {
-					if (line.indexOf(";") != -1)
-						tmpPort = Integer.parseInt(line.substring(line.indexOf("=") + 1, line.indexOf(";")).trim());
+					if (line.indexOf("//") != -1)
+						tmpPort = Integer.parseInt(line.substring(line.indexOf("=") + 1, line.indexOf("//")).trim());
 					else
 						tmpPort = Integer.parseInt(line.substring(line.indexOf("=") + 1).trim());
 					break;
@@ -349,9 +349,9 @@ public class TGServer {
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				if (line.startsWith("maxconnections")) {
-					if (line.indexOf(";") != -1)
+					if (line.indexOf("//") != -1)
 						tmpConnections = Integer
-								.parseInt(line.substring(line.indexOf("=") + 1, line.indexOf(";")).trim());
+								.parseInt(line.substring(line.indexOf("=") + 1, line.indexOf("//")).trim());
 					else
 						tmpConnections = Integer.parseInt(line.substring(line.indexOf("=") + 1).trim());
 					break;
@@ -506,8 +506,8 @@ public class TGServer {
 				String subLine = null;
 				while ((subLine = br.readLine()) != null) {
 					if (subLine.startsWith("dbpath")) {
-						if (subLine.indexOf(";") != -1)
-							tmpPath = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf(";")).trim();
+						if (subLine.indexOf("//") != -1)
+							tmpPath = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf("//")).trim();
 						else
 							tmpPath = subLine.substring(subLine.indexOf("=") + 1).trim();
 						break;
@@ -542,8 +542,8 @@ public class TGServer {
 				String subLine = null;
 				while ((subLine = br.readLine()) != null) {
 					if (subLine.startsWith("name")) {
-						if (subLine.indexOf(";") != -1)
-							tmpName = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf(";")).trim();
+						if (subLine.indexOf("//") != -1)
+							tmpName = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf("//")).trim();
 						else
 							tmpName = subLine.substring(subLine.indexOf("=") + 1).trim();
 						break;
@@ -708,8 +708,8 @@ public class TGServer {
 				String subLine = null;
 				while ((subLine = br.readLine()) != null) {
 					if (subLine.startsWith("sysuser")) {
-						if (subLine.indexOf(";") != -1)
-							tmpUser = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf(";")).trim();
+						if (subLine.indexOf("//") != -1)
+							tmpUser = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf("//")).trim();
 						else
 							tmpUser = subLine.substring(subLine.indexOf("=") + 1).trim();
 						break;
@@ -743,8 +743,8 @@ public class TGServer {
 				String subLine = null;
 				while ((subLine = br.readLine()) != null) {
 					if (subLine.startsWith("syspasswd")) {
-						if (subLine.indexOf(";") != -1)
-							tmpPwd = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf(";")).trim();
+						if (subLine.indexOf("//") != -1)
+							tmpPwd = subLine.substring(subLine.indexOf("=") + 1, subLine.indexOf("//")).trim();
 						else
 							tmpPwd = subLine.substring(subLine.indexOf("=") + 1).trim();
 						break;
