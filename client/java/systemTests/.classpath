@@ -10,6 +10,7 @@
 	<classpathentry kind="con" path="org.testng.TESTNG_CONTAINER"/>
 	<classpathentry kind="var" path="JRE_LIB"/>
 	<classpathentry kind="var" path="TGDB_HOME/lib/tgdb-client.jar"/>
-	<classpathentry kind="var" path="TGDB_HOME"/>
+	<classpathentry kind="var" path="TGDB_SRC"/>
+	<classpathentry kind="var" path="TGDB_HOME/lib/tgdb-gremlin-mincore.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
