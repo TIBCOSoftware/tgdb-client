@@ -975,8 +975,13 @@ public class TGServer {
 		catch(TGGeneralException tge) {
 			throw new TGInitException(tge.getMessage());
 		}
-		System.out.println("TGServer - Initialized successfully");
-		return output;
+		
+		if (output.contains("TGSuccess")) {
+			System.out.println("TGServer - Initialized successfully");
+			return output;
+		}
+		else 
+			throw new TGInitException("TGServer - Init failed", output);
 	}
 
 	/**
