@@ -457,7 +457,7 @@ public class TGAdmin {
 		File cmdFile = null;
 		if (cmd == null)
 			throw new TGAdminException("TGAdmin - Command is required.");
-		if (cmd.matches("(?s)^(kill|show|create|stop|info|pause|resume|connect|disconnect|exit).*$")) {
+		if (cmd.matches("(?s)^(kill|show|describe|create|stop|info|checkpoint|dump|set|connect|disconnect|export|import|exit).*$")) {
 			try {
 				cmdFile = new File(tgHome + "/invokeAdminScript.txt");
 				Files.write(Paths.get(cmdFile.toURI()), cmd.getBytes(StandardCharsets.UTF_8));
