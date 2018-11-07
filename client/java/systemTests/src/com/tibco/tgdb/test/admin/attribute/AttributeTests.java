@@ -163,13 +163,13 @@ public class AttributeTests {
 		
 		// Check attr duplication 
 		Scanner scanner = new Scanner(console);
-		int attrCreation = 0;
+		int attrDuplicate = 0;
 		while(scanner.hasNextLine()) {
 			if (scanner.nextLine().contains(attrCreationDuplicateMsg))
-				attrCreation++;
+				attrDuplicate++;
 		}
 		scanner.close();
-		Assert.assertEquals(attrCreation, expectedNbAttr, "Attribute duplication does not match -");
+		Assert.assertEquals(attrDuplicate, expectedNbAttr, "Attribute duplication does not match -");
 	}
 	
 	/**

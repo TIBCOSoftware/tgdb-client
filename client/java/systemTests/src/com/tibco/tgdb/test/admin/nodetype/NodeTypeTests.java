@@ -164,13 +164,13 @@ public class NodeTypeTests {
 		
 		// Check nodetype duplication 
 		Scanner scanner = new Scanner(console);
-		int nodeCreation = 0;
+		int nodeDuplicate = 0;
 		while(scanner.hasNextLine()) {
 			if (scanner.nextLine().contains(nodeCreationDuplicateMsg))
-				nodeCreation++;
+				nodeDuplicate++;
 		}
 		scanner.close();
-		Assert.assertEquals(nodeCreation, expectedNbNode, "Nodetype duplication does not match -");
+		Assert.assertEquals(nodeDuplicate, expectedNbNode, "Nodetype duplication does not match -");
 	}
 	
 	/**
