@@ -67,7 +67,7 @@ public class EdgeTypeTests {
 		File initFile = ClasspathResource.getResourceAsFile(this.getClass().getPackage().getName().replace('.', '/') + "/../Initdb.conf", tgWorkingDir + "/InitDB.conf");
 		tgServer = new TGServer(tgHome);
 		try {
-			tgServer.init(initFile.getAbsolutePath(), true, 10000);
+			tgServer.init(initFile.getAbsolutePath(), true, 60000);
 		}
 		catch (TGInitException ie) {
 			System.out.println(ie.getOutput());
@@ -103,7 +103,7 @@ public class EdgeTypeTests {
 	 ************************/
 	
 	/**
-	 * testCreateEdgeTypes - Create various  edgetypes via TG Admin
+	 * testCreateEdgeTypes - Create various edgetypes via TG Admin
 	 * @throws Exception
 	 */
 	@Test(description = "Create various edgetypes via TG Admin")
@@ -115,14 +115,14 @@ public class EdgeTypeTests {
 		// Create edgetypes via Admin
 		String console = TGAdmin.invoke(tgServer, tgServer.getNetListeners()[0].getName(), tgWorkingDir + "/adminCreateEdge.log", null,
 				cmdFile.getAbsolutePath(), -1, 10000);
-		System.out.println(console);
+		//System.out.println(console);
 		
 		// Get expected number of edgetype creations
 		expectedNbEdge = 0;
 		BufferedReader br = new BufferedReader(new FileReader(cmdFile));
 		String line = null;
 		while ((line = br.readLine()) != null) {
-			if (line.contains("create edgetype"))
+			if (line.matches("^create .* edgetype.*"))
 				expectedNbEdge++;
 		}
 		br.close();
@@ -155,13 +155,13 @@ public class EdgeTypeTests {
 		
 		// Check edgetype duplication 
 		Scanner scanner = new Scanner(console);
-		int edgeCreation = 0;
+		int edgeDuplicate = 0;
 		while(scanner.hasNextLine()) {
 			if (scanner.nextLine().contains(edgeCreationDuplicateMsg))
-				edgeCreation++;
+				edgeDuplicate++;
 		}
 		scanner.close();
-		Assert.assertEquals(edgeCreation, expectedNbEdge, "Edgetype duplication does not match -");
+		Assert.assertEquals(edgeDuplicate, expectedNbEdge, "Edgetype duplication does not match -");
 	}
 	
 	
@@ -180,10 +180,10 @@ public class EdgeTypeTests {
 		// Show edgetype via Admin
 		String console = TGAdmin.invoke(tgServer, tgServer.getNetListeners()[0].getName(), tgWorkingDir + "/adminShowEdge.log", null, 
 				cmdFile.getAbsolutePath(), -1, 10000);
-		// System.out.println(console);
+		//System.out.println(console);
 		
-		// Check show edgetype
-		Assert.assertTrue(console.contains(expectedNbEdge + " " + edgeShowMsg), "Expected " + expectedNbEdge + " " + edgeShowMsg + " but did not get that -");
+		// Check show edgetype. We expect expectedNbEdge (12 edgetypes we created) + 3 default edgetypes + 2 nodetypes we created for the test + 1 default nodetype => 18 types
+		Assert.assertTrue(console.contains((expectedNbEdge+3+2+1) + " " + edgeShowMsg), "Expected " + (expectedNbEdge+3+2+1) + " " + edgeShowMsg + " but did not get that -");
 	}
 	
 	/**

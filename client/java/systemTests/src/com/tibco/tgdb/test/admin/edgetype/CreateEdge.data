@@ -9,40 +9,28 @@ create attrdesc attr1h as timestamp
 create attrdesc attr1i as date
 create attrdesc attr1j as number(12,2)
 create attrdesc attr1k as byte
-create attrdesc attr2a as char
-create attrdesc attr2b as time
-create attrdesc attr2c as number
-create array attrdesc attr2d as string
-create array attrdesc attr2e as int
-create array attrdesc attr2f as long
-create array attrdesc attr2g as double
-create array attrdesc attr2h as float
-create array attrdesc attr2i as boolean
-create array attrdesc attr2j as short
-create array attrdesc attr2k as timestamp
-create array attrdesc attr3a as date
-create array attrdesc attr3b as number(12,2)
-create array attrdesc attr3c as byte
-create array attrdesc attr3d as char
-create array attrdesc attr3e as time
-create array attrdesc attr3f as number
-create edgetype edge1 attributes (attr1a)
-create edgetype edge2 attributes (attr1b)
-create edgetype edge3 attributes (attr1c) 
-create edgetype edge4 attributes (attr1d)
-create edgetype edge5 attributes (attr1e)
-create edgetype edge6 attributes (attr1f)
-create edgetype edge7 attributes (attr1g)
-create edgetype edge8 attributes (attr1h) 
-create edgetype edge9 attributes (attr1i)
-create edgetype edge10 attributes (attr1j)
-create edgetype edge11 attributes (attr1k)
-create edgetype edge12 attributes (attr2a)
-create edgetype edge13 attributes (attr2b)
-create edgetype edge14 attributes (attr2c)
-create edgetype edge15 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g)  
-create edgetype edge16 attributes (attr2a,attr2b,attr2c,attr2d,attr2e,attr2f,attr2g)
-create edgetype edge17 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr2a,attr2b,attr2c,attr3a,attr3b,attr3c,attr3d,attr3e,attr3f)
-create edgetype edge18 attributes (attr1a,attr2a,attr1b,attr2b,attr1c,attr2c,attr1d,attr2d,attr1e,attr2e,attr1f,attr2f,attr1g,attr2g) 
+create attrdesc attr1l as char
+create attrdesc attr1m as time
+create attrdesc attr1n as number
+
+create nodetype node1 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) pkeys (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n)
+create nodetype node2 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) pkeys (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n)
+
+create undirected edgetype edge1 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n)
+create directed edgetype edge2 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n)
+create directed edgetype edge3 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) 
+
+create undirected edgetype edge4 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) from node1
+create directed edgetype edge5 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) from node1
+create directed edgetype edge6 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) from node1
+
+create undirected edgetype edge7 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) to node2
+create directed edgetype edge8 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) to node2
+create directed edgetype edge9 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) to node2
+
+create undirected edgetype edge10 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) from node1 to node2
+create directed edgetype edge11 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) from node1 to node2
+create directed edgetype edge12 attributes (attr1a,attr1b,attr1c,attr1d,attr1e,attr1f,attr1g,attr1h,attr1i,attr1j,attr1k,attr1l,attr1m,attr1n) from node1 to node2
+
 disconnect
 exit
