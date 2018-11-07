@@ -188,8 +188,8 @@ public class NodeTypeTests {
 				cmdFile.getAbsolutePath(), -1, 10000);
 		//System.out.println(console);
 		
-		// Check show nodetype
-		Assert.assertTrue(console.contains(expectedNbNode + " " + nodeShowMsg), "Expected " + expectedNbNode + " " + nodeShowMsg + " but did not get that.");
+		// Check show nodetype. We expect expectedNbNode nodetypes (16 nodetypes) + 1 default nodetype + 3 default edgetypes ==> 20 types
+		Assert.assertTrue(console.contains((expectedNbNode+1+3) + " " + nodeShowMsg), "Expected " + (expectedNbNode+1+3) + " " + nodeShowMsg + " but did not get that.");
 	}
 	
 	/**
