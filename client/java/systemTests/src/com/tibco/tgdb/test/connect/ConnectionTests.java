@@ -410,7 +410,7 @@ public class ConnectionTests {
 	 * @throws Exception
 	 */
 	@Test(	groups = "massConnectGrp",
-			description = "Connect and disconnect a connection pool 10,000 times",
+			description = "Connect and disconnect a connection pool 5,000 times",
 			timeOut = 600000)
 	public void testMassConnectWithPool2() throws Exception {
 		TGConnection conn = null;
