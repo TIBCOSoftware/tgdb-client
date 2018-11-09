@@ -116,7 +116,8 @@ public class NodePKeyTests
 	 * testCreateBooleanData - Insert nodes and edge with boolean attribute
 	 * @throws Exception
 	 */
-	@Test(description = "Create nodes with all possible datatypes")
+	@Test(description = "Create nodes with all possible datatypes",
+		  enabled = false)
 	public void testCreateNodeData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -175,7 +176,8 @@ public class NodePKeyTests
 	}
 	
 	@Test(description = "Retrieve nodes with Node attribute",
-			  dependsOnMethods = { "testCreateNodeData" })
+		  dependsOnMethods = { "testCreateNodeData" },
+		  enabled = false)
 		public void testReadNodeData() throws Exception {
 			TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 			
@@ -245,7 +247,8 @@ public class NodePKeyTests
 	 */
 	
 	@Test(description = "Update node attribute",
-		  dependsOnMethods = { "testReadNodeData" })
+		  dependsOnMethods = { "testReadNodeData" },
+		  enabled = false)
 	public void testUpdateNodeData() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -294,7 +297,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with updated node attribute",
-		  dependsOnMethods = { "testUpdateNodeData" })
+		  dependsOnMethods = { "testUpdateNodeData" },
+		  enabled = false)
 	public void testReadUpdatedNodeData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -352,7 +356,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Delete node attribute",
-		  dependsOnMethods = { "testReadUpdatedNodeData" })
+		  dependsOnMethods = { "testReadUpdatedNodeData" },
+		  enabled = false)
 	public void testDeleteNodeData() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -399,7 +404,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with deleted node attribute",
-		  dependsOnMethods = { "testDeleteNodeData" })
+		  dependsOnMethods = { "testDeleteNodeData" },
+		  enabled = false)
 	public void testReadDeletedNodeData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -425,9 +431,6 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 		}
 		conn.disconnect();
 	}
-	
-	
-	
 	
 	
 	@DataProvider(name = "NodeData")

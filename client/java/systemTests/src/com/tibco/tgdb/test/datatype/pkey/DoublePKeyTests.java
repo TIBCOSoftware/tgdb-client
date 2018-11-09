@@ -139,19 +139,8 @@ public class DoublePKeyTests {
 			//node.setAttribute("doubleAttr", i);
 			nodes.add(node);
 			conn.insertEntity(node);
-			if (i>0) {
-				TGEdge edge = gof.createEdge(nodes.get(i-1), nodes.get(i), TGEdge.DirectionType.UnDirected);
-				edge.setAttribute("doubleAttr", data[i-1][0]);
-				conn.insertEntity(edge);
-			}
 		}
-		// complete the circle - FIX TGDB-176
-		//TGEdge edge = gof.createEdge(nodes.get(booleanData.length-1), nodes.get(0), TGEdge.DirectionType.UnDirected);
-		//edge.setAttribute("doubleAttr2", booleanData[booleanData.length-1][0]);
-		//conn.insertEntity(edge);
 		conn.commit();
-		//Assert.assertEquals(conn.commit().count(),2*booleanData.length,"Expected " + booleanData.length + " nodes + " + (booleanData.length-1) + " edges inserts -");
-	
 		conn.disconnect();
 	}
 	
@@ -185,12 +174,6 @@ public class DoublePKeyTests {
 			//System.out.println("READ ATTR:" + entity.getAttribute("doubleAttr").getAsString());
 			// Assert on Node attribute
 			Assert.assertEquals(entity.getAttribute("doubleAttr").getValue(), data[i][0]);
-			for (TGEdge edge : ((TGNode)entity).getEdges()) {
-				if (edge.getVertices()[0].equals(entity))  {
-					// Assert on Edge attribute
-					Assert.assertEquals(edge.getAttribute("doubleAttr").getValue(), data[i][0]);
-				}
-			}
 		}
 		conn.disconnect();
 	}
@@ -201,7 +184,8 @@ public class DoublePKeyTests {
 	 */
 	
 	@Test(description = "Update string attribute",
-		  dependsOnMethods = { "testRetrievePKey" })
+		  dependsOnMethods = { "testRetrievePKey" },
+		  enabled = false)
 	public void testUpdatePKey() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -236,7 +220,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with updated string attribute",
-		  dependsOnMethods = { "testUpdatePKey" })
+		  dependsOnMethods = { "testUpdatePKey" },
+		  enabled = false)
 	public void testRetrieveUpdatedPKey() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -269,7 +254,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Delete string attribute",
-		  dependsOnMethods = { "testRetrieveUpdatedPKey" })
+		  dependsOnMethods = { "testRetrieveUpdatedPKey" },
+		  enabled = false)
 	public void testDeletePKey() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -303,7 +289,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with deleted string attribute",
-		  dependsOnMethods = { "testDeletePKey" })
+		  dependsOnMethods = { "testDeletePKey" },
+		  enabled = false)
 	public void testRetrieveDeletedPKey() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		

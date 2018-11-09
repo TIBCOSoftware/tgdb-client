@@ -43,7 +43,7 @@
   </test>
   <test name="DatatypeNumberAttr">
     <classes>
-      <class name="com.tibco.tgdb.test.datatype.attribute.NumberAttrTests"/>
+      <class name="com.tibco.tgdb.test.datatype.pkey.NumberPKeyTests"/>
     </classes>
   </test>
   <test name="DatatypeShortPKey">

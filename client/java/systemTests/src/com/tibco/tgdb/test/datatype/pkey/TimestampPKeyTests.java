@@ -133,24 +133,12 @@ public class TimestampPKeyTests {
 			
 			TGNode node = gof.createNode(nodeAllAttrsType);
 			node.setAttribute("timestampAttr", data[i][0]);
-			System.out.println("CREATE ATTR:" + data[i][0]);
-			System.out.println("CREATE ATTR:" + data[i][1]);
+			//System.out.println("CREATE ATTR:" + data[i][0]);
 			//node.setAttribute("timestampAttr", i);
 			nodes.add(node);
 			conn.insertEntity(node);
-			if (i>0) {
-				TGEdge edge = gof.createEdge(nodes.get(i-1), nodes.get(i), TGEdge.DirectionType.UnDirected);
-				edge.setAttribute("timestampAttr", data[i-1][0]);
-				conn.insertEntity(edge);
-			}
 		}
-		// complete the circle - FIX TGDB-176
-		//TGEdge edge = gof.createEdge(nodes.get(booleanData.length-1), nodes.get(0), TGEdge.DirectionType.UnDirected);
-		//edge.setAttribute("timestampAttr2", booleanData[booleanData.length-1][0]);
-		//conn.insertEntity(edge);
 		conn.commit();
-		//Assert.assertEquals(conn.commit().count(),2*booleanData.length,"Expected " + booleanData.length + " nodes + " + (booleanData.length-1) + " edges inserts -");
-	
 		conn.disconnect();
 	}
 	
@@ -160,7 +148,8 @@ public class TimestampPKeyTests {
 	 */
 	
 	@Test(description = "Retrieve nodes and edge with string attribute",
-		  dependsOnMethods = { "testDefinePKey" })
+		  dependsOnMethods = { "testDefinePKey" },
+		  enabled = false)
 	public void testRetrievePKey() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -200,7 +189,8 @@ public class TimestampPKeyTests {
 	 */
 	
 	@Test(description = "Update timestamp attribute",
-			  dependsOnMethods = { "testRetrievePKey" })
+			  dependsOnMethods = { "testRetrievePKey" },
+			  enabled = false)
 		public void testUpdatePKey() throws Exception {
 	TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 			
@@ -237,7 +227,8 @@ public class TimestampPKeyTests {
 	 */
 	
 	@Test(description = "Retrieve nodes with updated string attribute",
-			  dependsOnMethods = { "testUpdatePKey" })
+			  dependsOnMethods = { "testUpdatePKey" },
+			  enabled = false)
 		public void testRetrieveUpdatedPKey() throws Exception {
 			TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 			
@@ -271,7 +262,8 @@ public class TimestampPKeyTests {
 	 */
 	
 	@Test(description = "Delete string attribute",
-		  dependsOnMethods = { "testRetrieveUpdatedPKey" })
+		  dependsOnMethods = { "testRetrieveUpdatedPKey" },
+		  enabled = false)
 	public void testDeletePKey() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -306,7 +298,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with deleted string attribute",
-		  dependsOnMethods = { "testDeletePKey" })
+		  dependsOnMethods = { "testDeletePKey" },
+		  enabled = false)
 	public void testRetrieveDeletedPKey() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -333,13 +326,9 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	}
 	
 	
-		@DataProvider(name = "TimestampData")
+	@DataProvider(name = "TimestampData")
 	public Object[][] getTimestampData() throws IOException, EvalError {
 		Object[][] data =  PipedData.read(this.getClass().getResourceAsStream("/"+this.getClass().getPackage().getName().replace('.', '/') + "/timestamp.data"));
 		return data;
 	}
-
-	
-
-
 }
