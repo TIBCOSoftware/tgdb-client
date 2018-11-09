@@ -53,64 +53,12 @@ import com.tibco.tgdb.model.TGNodeType;
  * CRUD tests for timestamp data type index
  */
 @Ignore
-public class TimestampIndexTests {
+public class TimestampIndexTests extends LifecycleServer {
 
-	private static TGServer tgServer;
-	private static String tgUrl;
-	private static String tgUser = "scott";
-	private static String tgPwd = "scott";
-	private static String tgHome = System.getProperty("TGDB_HOME");
-	private static String tgWorkingDir = System.getProperty("TGDB_WORKING", tgHome + "/test");	
-	
 	Object[][] data;
 	
 	public TimestampIndexTests() throws IOException, EvalError {
 		this.data = this.getTimestampData();
-	}
-	
-	/**
-	 * Init TG server before test suite
-	 * @throws Exception
-	 */
-	@BeforeClass(description = "Init TG Server")
-	public void initServer() throws Exception  {
-		TGServer.killAll(); // Clean up everything first
-		File initFile = ClasspathResource.getResourceAsFile(this.getClass().getPackage().getName().replace('.', '/') + "/initdb.conf", tgWorkingDir + "/inidb.conf");
-		File confFile = ClasspathResource.getResourceAsFile(
-				this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		tgServer = new TGServer(tgHome);
-		tgServer.setConfigFile(confFile);
-		try {
-			tgServer.init(initFile.getAbsolutePath(), true, 60000);
-			System.out.println(tgServer.getBanner());
-		}
-		catch (TGInitException ie) {
-			System.out.println(ie.getOutput());
-			throw ie;
-		}
-		tgUrl = "tcp://" + tgServer.getNetListeners()[0].getHost() + ":" + tgServer.getNetListeners()[0].getPort();
-		//File confFile = ClasspathResource.getResourceAsFile(
-		//		this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		//tgServer.setConfigFile(confFile);
-		//tgServer.start(10000);
-	}
-	
-	/**
-	 * Start TG server before each test method
-	 * @throws Exception
-	 */
-	@BeforeMethod
-	public void startServer() throws Exception {
-		tgServer.start(10000);
-	}
-
-	/**
-	 * Stop TG server after each test method
-	 * @throws Exception
-	 */
-	@AfterMethod
-	public void stopServer() throws Exception {
-		TGAdmin.stopServer(tgServer, tgServer.getNetListeners()[0].getName(), null, null, 60000);
 	}
 	
 	/************************
@@ -148,19 +96,8 @@ public class TimestampIndexTests {
 			node.setAttribute("key", i);
 			nodes.add(node);
 			conn.insertEntity(node);
-			if (i>0) {
-				TGEdge edge = gof.createEdge(nodes.get(i-1), nodes.get(i), TGEdge.DirectionType.UnDirected);
-				edge.setAttribute("timestampAttr", data[i-1][0]);
-				conn.insertEntity(edge);
-			}
 		}
-		// complete the circle - FIX TGDB-176
-		//TGEdge edge = gof.createEdge(nodes.get(booleanData.length-1), nodes.get(0), TGEdge.DirectionType.UnDirected);
-		//edge.setAttribute("timestampAttr2", booleanData[booleanData.length-1][0]);
-		//conn.insertEntity(edge);
 		conn.commit();
-		//Assert.assertEquals(conn.commit().count(),2*booleanData.length,"Expected " + booleanData.length + " nodes + " + (booleanData.length-1) + " edges inserts -");
-	
 		conn.disconnect();
 	}
 	
@@ -194,12 +131,6 @@ public class TimestampIndexTests {
 			//System.out.println("READ ATTR:" + entity.getAttribute("timestampAttr").getValue());
 			// Assert on Node attribute
 			Assert.assertEquals(entity.getAttribute("timestampAttr").getValue(), data[i][0]);
-			/*for (TGEdge edge : ((TGNode)entity).getEdges()) {
-				if (edge.getVertices()[0].equals(entity))  {
-					// Assert on Edge attribute
-					Assert.assertEquals(edge.getAttribute("timestampAttr").getValue(), data[i][0]);
-				}
-			}*/
 		}
 		conn.disconnect();
 	}
@@ -210,9 +141,10 @@ public class TimestampIndexTests {
 	 */
 	
 	@Test(description = "Update timestamp index",
-		  dependsOnMethods = { "testReadTimestampData" })
+		  dependsOnMethods = { "testReadTimestampData" },
+		  enabled = false)
 	public void testUpdateTimestampData() throws Exception {
-TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
+		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();
 		
@@ -245,7 +177,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with updated timestamp index",
-		  dependsOnMethods = { "testUpdateTimestampData" })
+		  dependsOnMethods = { "testUpdateTimestampData" },
+		  enabled = false)
 	public void testReadUpdatedTimestampData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -278,7 +211,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Delete timestamp index",
-		  dependsOnMethods = { "testReadUpdatedTimestampData" })
+		  dependsOnMethods = { "testReadUpdatedTimestampData" },
+		  enabled = false)
 	public void testDeleteTimestampData() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -312,7 +246,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with deleted timestamp index",
-		  dependsOnMethods = { "testDeleteTimestampData" })
+		  dependsOnMethods = { "testDeleteTimestampData" },
+		  enabled = false)
 	public void testReadDeletedTimestampData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		

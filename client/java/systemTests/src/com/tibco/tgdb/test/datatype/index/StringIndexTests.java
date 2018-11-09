@@ -1,22 +1,12 @@
 package com.tibco.tgdb.test.datatype.index;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.tibco.tgdb.test.lib.TGAdmin;
-import com.tibco.tgdb.test.lib.TGInitException;
-import com.tibco.tgdb.test.lib.TGServer;
-import com.tibco.tgdb.test.utils.ClasspathResource;
 import com.tibco.tgdb.test.utils.PipedData;
 
 import bsh.EvalError;
@@ -50,58 +40,8 @@ import com.tibco.tgdb.model.TGNodeType;
 /**
  * CRUD tests for string data type index
  */
-public class StringIndexTests {
+public class StringIndexTests extends LifecycleServer {
 
-	private static TGServer tgServer;
-	private static String tgUrl;
-	private static String tgUser = "scott";
-	private static String tgPwd = "scott";
-	private static String tgHome = System.getProperty("TGDB_HOME");
-	private static String tgWorkingDir = System.getProperty("TGDB_WORKING", tgHome + "/test");	
-	
-	/**
-	 * Init TG server before test suite
-	 * @throws Exception
-	 */
-	@BeforeClass(description = "Init TG Server")
-	public void initServer() throws Exception  {
-		TGServer.killAll(); // Clean up everything first
-		File initFile = ClasspathResource.getResourceAsFile(this.getClass().getPackage().getName().replace('.', '/') + "/initdb.conf", tgWorkingDir + "/inidb.conf");
-		File confFile = ClasspathResource.getResourceAsFile(
-				this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		tgServer = new TGServer(tgHome);
-		tgServer.setConfigFile(confFile);
-		try {
-			tgServer.init(initFile.getAbsolutePath(), true, 60000);
-		}
-		catch (TGInitException ie) {
-			System.out.println(ie.getOutput());
-			throw ie;
-		}
-		tgUrl = "tcp://" + tgServer.getNetListeners()[0].getHost() + ":" + tgServer.getNetListeners()[0].getPort();
-		//File confFile = ClasspathResource.getResourceAsFile(
-		//		this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		//tgServer.setConfigFile(confFile);
-		//tgServer.start(10000);
-	}
-	
-	/**
-	 * Start TG server before each test method
-	 * @throws Exception
-	 */
-	@BeforeMethod
-	public void startServer() throws Exception {
-		tgServer.start(10000);
-	}
-
-	/**
-	 * Stop TG server after each test method
-	 * @throws Exception
-	 */
-	@AfterMethod
-	public void stopServer() throws Exception {
-		TGAdmin.stopServer(tgServer, tgServer.getNetListeners()[0].getName(), null, null, 60000);
-	}
 	
 	/************************
 	 * 

@@ -1,24 +1,15 @@
 package com.tibco.tgdb.test.datatype.index;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
-import com.tibco.tgdb.test.lib.TGAdmin;
-import com.tibco.tgdb.test.lib.TGInitException;
-import com.tibco.tgdb.test.lib.TGServer;
-import com.tibco.tgdb.test.utils.ClasspathResource;
 import com.tibco.tgdb.test.utils.PipedData;
 
 import bsh.EvalError;
@@ -53,63 +44,12 @@ import com.tibco.tgdb.model.TGNodeType;
  * CRUD tests for time data type index
  */
 @Ignore
-public class TimeIndexTests {
-
-	private static TGServer tgServer;
-	private static String tgUrl;
-	private static String tgUser = "scott";
-	private static String tgPwd = "scott";
-	private static String tgHome = System.getProperty("TGDB_HOME");
-	private static String tgWorkingDir = System.getProperty("TGDB_WORKING", tgHome + "/test");	
+public class TimeIndexTests extends LifecycleServer {
 	
 	Object[][] data;
 	
 	public TimeIndexTests() throws IOException, EvalError {
 		this.data = this.getTimeData();
-	}
-	
-	/**
-	 * Init TG server before test suite
-	 * @throws Exception
-	 */
-	@BeforeClass(description = "Init TG Server")
-	public void initServer() throws Exception  {
-		TGServer.killAll(); // Clean up everything first
-		File initFile = ClasspathResource.getResourceAsFile(this.getClass().getPackage().getName().replace('.', '/') + "/initdb.conf", tgWorkingDir + "/inidb.conf");
-		File confFile = ClasspathResource.getResourceAsFile(
-				this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		tgServer = new TGServer(tgHome);
-		tgServer.setConfigFile(confFile);
-		try {
-			tgServer.init(initFile.getAbsolutePath(), true, 60000);
-		}
-		catch (TGInitException ie) {
-			System.out.println(ie.getOutput());
-			throw ie;
-		}
-		tgUrl = "tcp://" + tgServer.getNetListeners()[0].getHost() + ":" + tgServer.getNetListeners()[0].getPort();
-		//File confFile = ClasspathResource.getResourceAsFile(
-		//		this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		//tgServer.setConfigFile(confFile);
-		//tgServer.start(10000);
-	}
-	
-	/**
-	 * Start TG server before each test method
-	 * @throws Exception
-	 */
-	@BeforeMethod
-	public void startServer() throws Exception {
-		tgServer.start(10000);
-	}
-
-	/**
-	 * Stop TG server after each test method
-	 * @throws Exception
-	 */
-	@AfterMethod
-	public void stopServer() throws Exception {
-		TGAdmin.stopServer(tgServer, tgServer.getNetListeners()[0].getName(), null, null, 60000);
 	}
 	
 	/************************
@@ -147,19 +87,8 @@ public class TimeIndexTests {
 			node.setAttribute("key", i);
 			nodes.add(node);
 			conn.insertEntity(node);
-			/*if (i>0) {
-				TGEdge edge = gof.createEdge(nodes.get(i-1), nodes.get(i), TGEdge.DirectionType.UnDirected);
-				edge.setAttribute("timeAttr", data[i-1][0]);
-				conn.insertEntity(edge);
-			}*/
 		}
-		// complete the circle - FIX TGDB-176
-		//TGEdge edge = gof.createEdge(nodes.get(booleanData.length-1), nodes.get(0), TGEdge.DirectionType.UnDirected);
-		//edge.setAttribute("timeAttr2", booleanData[booleanData.length-1][0]);
-		//conn.insertEntity(edge);
 		conn.commit();
-		//Assert.assertEquals(conn.commit().count(),2*booleanData.length,"Expected " + booleanData.length + " nodes + " + (booleanData.length-1) + " edges inserts -");
-	
 		conn.disconnect();
 	}
 	
@@ -203,17 +132,6 @@ public class TimeIndexTests {
 			else { // Attribute value is Null. Make sure the original value was Null too
 				Assert.assertEquals(timeAttr, data[i][0]);
 			}
-			/*for (TGEdge edge : ((TGNode)entity).getEdges()) {
-				if (edge.getVertices()[0].equals(entity))  {
-					// Assert on Edge attribute
-					// Assert only on time (HOUR, MIN, SEC, MILLISEC) since the Date part that comes back from DB is junk
-					timeAttr = (Calendar)edge.getAttribute("timeAttr").getValue();
-					Assert.assertEquals(timeAttr.get(Calendar.HOUR_OF_DAY), ((Calendar) data[i][0]).get(Calendar.HOUR_OF_DAY));
-					Assert.assertEquals(timeAttr.get(Calendar.MINUTE), ((Calendar) data[i][0]).get(Calendar.MINUTE));
-					Assert.assertEquals(timeAttr.get(Calendar.SECOND), ((Calendar) data[i][0]).get(Calendar.SECOND));
-					Assert.assertEquals(timeAttr.get(Calendar.MILLISECOND), ((Calendar) data[i][0]).get(Calendar.MILLISECOND));
-				}
-			}*/
 		}
 		conn.disconnect();
 	}
@@ -224,9 +142,10 @@ public class TimeIndexTests {
 	 */
 	
 	@Test(description = "Update time index",
-		  dependsOnMethods = { "testReadTimeData" })
+		  dependsOnMethods = { "testReadTimeData" },
+		  enabled = false)
 	public void testUpdateTimeData() throws Exception {
-TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
+		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();
 		
@@ -259,7 +178,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with updated time index",
-		  dependsOnMethods = { "testUpdateTimeData" })
+		  dependsOnMethods = { "testUpdateTimeData" },
+		  enabled = false)
 	public void testReadUpdatedTimeData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -302,7 +222,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Delete time index",
-		  dependsOnMethods = { "testReadUpdatedTimeData" })
+		  dependsOnMethods = { "testReadUpdatedTimeData" },
+		  enabled = false)
 	public void testDeleteTimeData() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -336,7 +257,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with deleted time index",
-		  dependsOnMethods = { "testDeleteTimeData" })
+		  dependsOnMethods = { "testDeleteTimeData" },
+		  enabled = false)
 	public void testReadDeletedTimeData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		

@@ -1,24 +1,15 @@
 package com.tibco.tgdb.test.datatype.index;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeSuite;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
-import com.tibco.tgdb.test.lib.TGAdmin;
-import com.tibco.tgdb.test.lib.TGInitException;
-import com.tibco.tgdb.test.lib.TGServer;
-import com.tibco.tgdb.test.utils.ClasspathResource;
 import com.tibco.tgdb.test.utils.PipedData;
 
 import bsh.EvalError;
@@ -32,7 +23,6 @@ import com.tibco.tgdb.model.TGGraphObjectFactory;
 import com.tibco.tgdb.model.TGKey;
 import com.tibco.tgdb.model.TGNode;
 import com.tibco.tgdb.model.TGNodeType;
-import com.tibco.tgdb.query.TGResultSet;
 
 /**
  * Copyright 2018 TIBCO Software Inc. All rights reserved.
@@ -54,64 +44,12 @@ import com.tibco.tgdb.query.TGResultSet;
  * CRUD tests for number data type index
  */
 @Ignore
-public class NumberIndexTests {
+public class NumberIndexTests extends LifecycleServer {
 
-	private static TGServer tgServer;
-	private static String tgUrl;
-	private static String tgUser = "scott";
-	private static String tgPwd = "scott";
-	private static String tgHome = System.getProperty("TGDB_HOME");
-	private static String tgWorkingDir = System.getProperty("TGDB_WORKING", tgHome + "/test");	
-	
 	Object[][] data;
 	
 	public NumberIndexTests() throws IOException, EvalError {
 		this.data = this.getNumberData();
-	}
-	
-	
-	/**
-	 * Init TG server before test suite
-	 * @throws Exception
-	 */
-	@BeforeClass(description = "Init TG Server")
-	public void initServer() throws Exception  {
-		TGServer.killAll(); // Clean up everything first
-		File initFile = ClasspathResource.getResourceAsFile(this.getClass().getPackage().getName().replace('.', '/') + "/initdb.conf", tgWorkingDir + "/inidb.conf");
-		File confFile = ClasspathResource.getResourceAsFile(
-				this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		tgServer = new TGServer(tgHome);
-		tgServer.setConfigFile(confFile);
-		try {
-			tgServer.init(initFile.getAbsolutePath(), true, 60000);
-		}
-		catch (TGInitException ie) {
-			System.out.println(ie.getOutput());
-			throw ie;
-		}
-		tgUrl = "tcp://" + tgServer.getNetListeners()[0].getHost() + ":" + tgServer.getNetListeners()[0].getPort();
-		//File confFile = ClasspathResource.getResourceAsFile(
-		//		this.getClass().getPackage().getName().replace('.', '/') + "/tgdb.conf", tgWorkingDir + "/tgdb.conf");
-		//tgServer.setConfigFile(confFile);
-		//tgServer.start(10000);
-	}
-	
-	/**
-	 * Start TG server before each test method
-	 * @throws Exception
-	 */
-	@BeforeMethod
-	public void startServer() throws Exception {
-		tgServer.start(10000);
-	}
-
-	/**
-	 * Stop TG server after each test method
-	 * @throws Exception
-	 */
-	@AfterMethod
-	public void stopServer() throws Exception {
-		TGAdmin.stopServer(tgServer, tgServer.getNetListeners()[0].getName(), null, null, 60000);
 	}
 	
 	/************************
@@ -147,19 +85,8 @@ public class NumberIndexTests {
 			node.setAttribute("key", i);
 			nodes.add(node);
 			conn.insertEntity(node);
-			/*if (i>0) {
-				TGEdge edge = gof.createEdge(nodes.get(i-1), nodes.get(i), TGEdge.DirectionType.UnDirected);
-				edge.setAttribute("numberAttr", data[i-1][0]);
-				conn.insertEntity(edge);
-			}*/
 		}
-		// complete the circle - FIX TGDB-176
-		//TGEdge edge = gof.createEdge(nodes.get(booleanData.length-1), nodes.get(0), TGEdge.DirectionType.UnDirected);
-		//edge.setAttribute("numberAttr2", booleanData[booleanData.length-1][0]);
-		//conn.insertEntity(edge);
 		conn.commit();
-		//Assert.assertEquals(conn.commit().count(),2*booleanData.length,"Expected " + booleanData.length + " nodes + " + (booleanData.length-1) + " edges inserts -");
-	
 		conn.disconnect();
 	}
 	
@@ -195,12 +122,6 @@ public class NumberIndexTests {
 				Assert.assertEquals(((BigDecimal) entity.getAttribute("numberAttr").getValue()).compareTo((BigDecimal)data[i][0]), 0, "Actual and Expected BigDecimal are not the same");
 			else
 				Assert.assertEquals(entity.getAttribute("numberAttr").getValue(), data[i][0]);
-			/*for (TGEdge edge : ((TGNode)entity).getEdges()) {
-				if (edge.getVertices()[0].equals(entity))  {
-					// Assert on Edge attribute
-					Assert.assertEquals(edge.getAttribute("numberAttr").getValue(), data[i][0]);
-				}
-			}*/
 		}
 		conn.disconnect();
 	}
@@ -211,9 +132,10 @@ public class NumberIndexTests {
 	 */
 	
 	@Test(description = "Update number index",
-		  dependsOnMethods = { "testReadNumberData" })
+		  dependsOnMethods = { "testReadNumberData" },
+		  enabled = false)
 	public void testUpdateNumberData() throws Exception {
-TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
+		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();
 		
@@ -244,7 +166,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with updated number index",
-		  dependsOnMethods = { "testUpdateNumberData" })
+		  dependsOnMethods = { "testUpdateNumberData" },
+		  enabled = false)
 	public void testReadUpdatedNumberData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -277,7 +200,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Delete number index",
-		  dependsOnMethods = { "testReadUpdatedNumberData" })
+		  dependsOnMethods = { "testReadUpdatedNumberData" },
+		  enabled = false)
 	public void testDeleteNumberData() throws Exception {
 TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
@@ -310,7 +234,8 @@ TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tg
 	 */
 	
 	@Test(description = "Retrieve nodes with deleted number index",
-		  dependsOnMethods = { "testDeleteNumberData" })
+		  dependsOnMethods = { "testDeleteNumberData" },
+		  enabled = false)
 	public void testReadDeletedNumberData() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
