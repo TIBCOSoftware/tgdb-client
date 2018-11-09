@@ -10,5 +10,5 @@
 # Today Datetime | Tomorrow Datetime
 {{return Calendar.getInstance();}}|{{Calendar tomorrow = Calendar.getInstance();tomorrow.add(Calendar.DATE, 1);return tomorrow;}}
 # test null | non-null
-{{return null;}}|{{return new Calendar.Builder().setDate(1970, 6, 18).setTimeOfDay(0, 0, 0, 1).build();}}
-{{return new Calendar.Builder().setDate(1939, 11, 31).setTimeOfDay(23, 0, 0, 0).build();}}|{{return null;}}
+#{{return null;}}|{{return new Calendar.Builder().setDate(1970, 6, 18).setTimeOfDay(0, 0, 0, 1).build();}}
+#{{return new Calendar.Builder().setDate(1939, 11, 31).setTimeOfDay(23, 0, 0, 0).build();}}|{{return null;}}

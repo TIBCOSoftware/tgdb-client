@@ -9,5 +9,5 @@
 {{return new Float(-Float.MIN_VALUE);}}|{{return -(float)Float.MAX_VALUE;}}
 {{return new Float(Float.MAX_VALUE);}}|{{return (float)Float.MIN_VALUE;}}
 # test null
-{{return null;}}|{{return new Float(Float.MAX_VALUE);}}
-{{return new Float(Float.MAX_VALUE);}}|{{return null;}}
+#{{return null;}}|{{return new Float(Float.MAX_VALUE);}}
+#{{return new Float(Float.MAX_VALUE);}}|{{return null;}}

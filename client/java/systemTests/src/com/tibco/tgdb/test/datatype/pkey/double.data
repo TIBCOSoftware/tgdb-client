@@ -9,5 +9,5 @@
 {{return new Double(-Double.MIN_VALUE);}}|{{return -(double)Double.MAX_VALUE;}}
 {{return new Double(Double.MAX_VALUE);}}|{{return (double)Double.MIN_VALUE;}}
 # test null
-{{return null;}}|{{return new Double(Double.MAX_VALUE);}}
-{{return new Double(Double.MAX_VALUE);}}|{{return null;}}
+#{{return null;}}|{{return new Double(Double.MAX_VALUE);}}
+#{{return new Double(Double.MAX_VALUE);}}|{{return null;}}

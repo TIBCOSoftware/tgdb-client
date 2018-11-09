@@ -134,7 +134,6 @@ public class DatePKeyTests {
 			TGNode node = gof.createNode(nodeAllAttrsType);
 			node.setAttribute("dateAttr", data[i][0]);
 			System.out.println("CREATE ATTR:" + data[i][0]);
-			System.out.println("CREATE ATTR:" + data[i][1]);
 			//node.setAttribute("stringAttr", i);
 			nodes.add(node);
 			conn.insertEntity(node);

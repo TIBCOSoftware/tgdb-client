@@ -9,5 +9,5 @@
 # Today Date | Tomorrow date
 {{Calendar today = Calendar.getInstance();today.set(Calendar.HOUR_OF_DAY, 0);today.set(Calendar.MINUTE, 0);today.set(Calendar.SECOND, 0);today.set(Calendar.MILLISECOND, 0);return today;}}|{{Calendar tomorrow = Calendar.getInstance();tomorrow.add(Calendar.DATE, 1);tomorrow.set(Calendar.HOUR_OF_DAY, 0);tomorrow.set(Calendar.MINUTE, 0);tomorrow.set(Calendar.SECOND, 0);tomorrow.set(Calendar.MILLISECOND, 0);return tomorrow;}}
 # test null | non-null
-{{return null;}}|{{return new Calendar.Builder().setDate(1970, 6, 18).build();}}
-{{return new Calendar.Builder().setDate(1970, 6, 18).build();}}|{{return null;}}
+#{{return null;}}|{{return new Calendar.Builder().setDate(1970, 6, 18).build();}}
+#{{return new Calendar.Builder().setDate(1970, 6, 18).build();}}|{{return null;}}

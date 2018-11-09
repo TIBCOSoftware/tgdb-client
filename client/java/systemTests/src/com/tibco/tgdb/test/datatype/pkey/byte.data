@@ -7,5 +7,5 @@
 {{return new Byte(Byte.MIN_VALUE);}}|{{return new Byte((byte)-1);}}
 {{return new Byte(Byte.MAX_VALUE);}}|{{return new Byte(Byte.MIN_VALUE);}}
 # test null
-{{return null;}}|{{return new Byte(Byte.MAX_VALUE);}}
-{{return new Byte(Byte.MIN_VALUE);}}|{{return null;}}
+#{{return null;}}|{{return new Byte(Byte.MAX_VALUE);}}
+#{{return new Byte(Byte.MIN_VALUE);}}|{{return null;}}

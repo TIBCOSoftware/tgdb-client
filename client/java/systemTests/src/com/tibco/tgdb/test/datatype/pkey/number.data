@@ -12,4 +12,4 @@
 {{return new java.math.BigDecimal((double)Double.MIN_VALUE);}}|{{return new java.math.BigDecimal((double)Double.MIN_VALUE);}}
 #{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(20,10);}}|{{return new java.math.BigDecimal("98.76");}}
 # test null
-{{return null;}}|{{return java.math.BigDecimal.ONE;}}
+#{{return null;}}|{{return java.math.BigDecimal.ONE;}}
