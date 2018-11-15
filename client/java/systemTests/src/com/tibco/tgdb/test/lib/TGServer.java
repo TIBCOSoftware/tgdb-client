@@ -903,7 +903,7 @@ public class TGServer {
 		BufferedReader reader = new BufferedReader(new FileReader(this.logFile));
 		String line = reader.readLine();
 		while (line != null) {
-			if (line.contains(" Error ")) {
+			if (line.matches("^.*[0-9][0-9] Error .*$")) { // matches last 2 digits of timestamp followed by Error
 				errorStmts.add(line);
 			}
 			line = reader.readLine();
