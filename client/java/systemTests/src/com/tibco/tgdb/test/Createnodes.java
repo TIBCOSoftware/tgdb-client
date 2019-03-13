@@ -3,7 +3,10 @@ package com.tibco.tgdb.test;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
+
+import org.testng.Assert;
 
 import com.tibco.tgdb.connection.TGConnection;
 import com.tibco.tgdb.connection.TGConnectionFactory;
@@ -22,6 +25,8 @@ public class Createnodes {
 		String url = "tcp://127.0.0.1:8222";
 		String user = "scott";
 		String pwd = "scott";
+		String pkey = "Tom"+new Random().nextInt();
+		String pkey2 = "Jim"+new Random().nextInt();
 		TGConnection conn = null;
 		try {
 			conn = TGConnectionFactory.getInstance().createConnection(url, user, pwd, null);
@@ -36,28 +41,25 @@ public class Createnodes {
 			if (nodeType == null)
 				throw new Exception("Node type not found");
 			
-			Double[] arrayd = {0.0D,1.0D,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY,Double.NaN,Double.MIN_VALUE,Double.MAX_VALUE,Double.MIN_NORMAL};
 			
-			for (Double d : arrayd) {
-				TGNode node = gof.createNode(nodeType);
-				node.setAttribute("name", UUID.randomUUID().toString());
-				node.setAttribute("rate", d);
-				conn.insertEntity(node);
+			TGNode node1 = gof.createNode(nodeType);
+			node1.setAttribute("name", pkey);
+			node1.setAttribute("extra", true); // true works fine
+			conn.insertEntity(node1);
 			
-			}
 			conn.commit();
-			System.out.println("Entities created\n");
+			System.out.println("Entity created\n");
 			
-			for (Double d : arrayd) {
-				TGKey key = gof.createCompositeKey("ratenode");
-				key.setAttribute("rate", d);
-				TGEntity entity = conn.getEntity(key, null);
-				if (entity != null) {
-					System.out.println("rate = " + entity.getAttribute("rate").getValue());
-				}	
-				else 
-					System.out.println("Could not retrieve entity with rate="+d);
-			}
+			
+			TGKey key = gof.createCompositeKey("ratenode");
+			key.setAttribute("name", pkey);
+			TGEntity entity = conn.getEntity(key, null);
+			System.out.println("TYPE = " + entity.getEntityType().getName());
+			if (entity != null) {
+				System.out.println("boolean attribute on Node = " + entity.getAttribute("extra").getAsString());
+			}	
+			else 
+				System.out.println("Could not retrieve entity");
 					
 		} finally {
 			if (conn != null)

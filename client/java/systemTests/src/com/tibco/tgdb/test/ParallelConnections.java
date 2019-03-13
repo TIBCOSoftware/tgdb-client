@@ -22,7 +22,7 @@ public class ParallelConnections {
 
 		List<Thread> threadList = new ArrayList<Thread>();
 
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 50; i++) {
 			final int j = i;
 			Thread t = new Thread() {
 				public void run() {

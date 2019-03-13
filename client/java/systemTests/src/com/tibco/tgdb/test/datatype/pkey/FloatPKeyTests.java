@@ -134,7 +134,6 @@ public class FloatPKeyTests {
 			TGNode node = gof.createNode(nodeAllAttrsType);
 			node.setAttribute("floatAttr", data[i][0]);
 			System.out.println("CREATE ATTR:" + data[i][0]);
-			System.out.println("CREATE ATTR:" + data[i][1]);
 			//node.setAttribute("floatAttr", i);
 			nodes.add(node);
 			conn.insertEntity(node);

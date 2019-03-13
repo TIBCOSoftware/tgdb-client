@@ -2,6 +2,7 @@ package com.tibco.tgdb.test;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
 import com.tibco.tgdb.connection.TGConnection;
 import com.tibco.tgdb.connection.TGConnectionFactory;
@@ -11,6 +12,7 @@ import com.tibco.tgdb.model.TGGraphMetadata;
 import com.tibco.tgdb.model.TGGraphObjectFactory;
 import com.tibco.tgdb.model.TGNode;
 import com.tibco.tgdb.model.TGNodeType;
+import com.tibco.tgdb.test.lib.TGServer;
 
 public class JustTry {
 
@@ -20,23 +22,11 @@ public class JustTry {
 		String pwd = "scott";
 		TGConnection conn = null;
 
-		try {
-			conn = TGConnectionFactory.getInstance().createConnection(url, user, pwd, null);
-			conn.connect();
-
-			TGGraphObjectFactory gof = conn.getGraphObjectFactory();
-			if (gof == null) {
-				throw new Exception("Graph object not found");
-			}
-			
-			conn.getGraphMetadata(true);
-			while (true) {;}
-		}
+		TGServer tgServer = new TGServer("C:/tgdb/2.0");
+		List list = tgServer.getErrorsInLog();
+		System.out.println(list.size());
+		System.out.println(list.get(0).toString());
 		
-		finally {
-			if (conn != null)
-				conn.disconnect();
-		}
 	}	
 }
 
