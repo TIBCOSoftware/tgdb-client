@@ -18,7 +18,7 @@ package com.tibco.tgdb.pdu;
  * Created on: 12/26/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: VerbId.java 2164 2018-03-20 00:11:11Z ssubrama $
+ * SVN Id: $Id: VerbId.java 2576 2018-10-17 02:36:19Z ssubrama $
  */
 public enum VerbId {
 
@@ -72,12 +72,39 @@ public enum VerbId {
      */
     GetEntityRequest(21, com.tibco.tgdb.pdu.impl.GetEntityRequest.class),
     GetEntityResponse(22, com.tibco.tgdb.pdu.impl.GetEntityResponse.class),
-    
+
+    /**
+     * Get LargeObject
+     */
+    GetLargeObjectRequest(23, com.tibco.tgdb.pdu.impl.GetLargeObjectRequest.class),
+    GetLargeObjectResponse(24, com.tibco.tgdb.pdu.impl.GetLargeObjectResponse.class),
+
+    /**
+     * Import/Export verbs - They are admin request, and not supported by Java
+
+    BeginExportRequest = 25,
+    BeginExportResponse = 26,
+    PartialExportRequest = 27,
+    PartialExportResponse = 28,
+    CancelExportRequest = 29,
+    BeginImportRequest = 31,
+    BeginImportResponse = 32,
+    PartialImportRequest = 33,
+    PartialImportResponse = 34,
+     */
+
+    /**
+     * Dump Stacktrace request verb
+
+    DumpStacktraceRequest = 39,
+     */
+
     /**
      * Disconnect Request verbs
      */
-    DisconnectChannelRequest(23, com.tibco.tgdb.pdu.impl.DisconnectChannelRequest.class),
-    SessionForcefullyTerminated(40, com.tibco.tgdb.pdu.impl.SessionForcefullyTerminated.class),
+    DisconnectChannelRequest(40, com.tibco.tgdb.pdu.impl.DisconnectChannelRequest.class),
+
+    SessionForcefullyTerminated(41, com.tibco.tgdb.pdu.impl.SessionForcefullyTerminated.class),
 
     
     /**

@@ -15,7 +15,7 @@
  * File name : SortedProperties.java
  * Created on: 2/5/15
  * Created by: suresh 
-  * SVN Id: $Id: SortedProperties.java 622 2016-03-19 20:51:12Z ssubrama $
+  * SVN Id: $Id: SortedProperties.java 2316 2018-04-26 23:49:37Z ssubrama $
  */
 
 
@@ -59,5 +59,47 @@ public class SortedProperties<K,V> extends TreeMap<K,V> implements TGProperties<
     public V getProperty(ConfigName cn, V defaultValue) {
         V v = getProperty(cn);
         return v == null ? defaultValue : v;
+    }
+
+    @Override
+    public int getPropertyAsInt(ConfigName cn) {
+        V v = getProperty(cn);
+        if (v != null) return Integer.parseInt(v.toString());
+        return 0;
+    }
+
+    @Override
+    public int getPropertyAsInt(ConfigName cn, int defaultValue) {
+        V v = getProperty(cn);
+        if (v != null) return Integer.parseInt(v.toString());
+        return defaultValue;
+    }
+
+    @Override
+    public long getPropertyAsLong(ConfigName cn) {
+        V v = getProperty(cn);
+        if (v != null) return Long.parseLong(v.toString());
+        return 0;
+    }
+
+    @Override
+    public long getPropertyAsLong(ConfigName cn, long defaultValue) {
+        V v = getProperty(cn);
+        if (v != null) return Long.parseLong(v.toString());
+        return defaultValue;
+    }
+
+    @Override
+    public boolean getPropertyAsBoolean(ConfigName cn) {
+        V v = getProperty(cn);
+        if (v != null) return Boolean.parseBoolean(v.toString());
+        return false;
+    }
+
+    @Override
+    public boolean getPropertyAsBoolean(ConfigName cn, boolean defaultValue) {
+        V v = getProperty(cn);
+        if (v != null) return Boolean.parseBoolean(v.toString());
+        return defaultValue;
     }
 }

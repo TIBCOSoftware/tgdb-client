@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeDescriptorImpl.java 1614 2017-08-15 20:44:16Z vchung $
+ * SVN Id: $Id: AttributeDescriptorImpl.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 
 
@@ -123,7 +123,7 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
     public void writeExternal(TGOutputStream os) throws TGException, IOException
     {
         try {
-        	os.writeByte(TGSystemType.AttributeDescriptor.type());  // sysobject type attribute descriptor
+        	os.writeByte(TGSystemType.AttributeDescriptor.type());  // sysobject desc attribute descriptor
             os.writeInt(attributeId);
             os.writeUTF(name);
             os.writeByte(type.typeId());
@@ -140,7 +140,7 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
 
     @Override
     public void readExternal(TGInputStream is) throws TGException, IOException {
-    	int sysObjectType = is.readByte(); // read the sysobject type field which should be 0 for attribute descriptor
+    	int sysObjectType = is.readByte(); // read the sysobject desc field which should be 0 for attribute descriptor
     	TGSystemType stype = TGSystemType.fromValue(sysObjectType);
     	if (stype != TGSystemType.AttributeDescriptor) {
     		gLogger.log(TGLevel.Warning, "Attribute descriptor has invalid input stream value : %d", sysObjectType);

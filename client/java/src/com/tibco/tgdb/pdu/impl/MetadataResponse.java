@@ -90,7 +90,7 @@ public class MetadataResponse extends AbstractProtocolMessage {
     				edgeTypeList.add(edgeType);
     			}
     		} else {
-    			gLogger.log(TGLevel.Warning, "Invalid meta data type received %d\n", sysType);
+    			gLogger.log(TGLevel.Warning, "Invalid meta data desc received %d\n", sysType);
     			//FIXME: Need to throw exception
     		}
     		count -= typeCount;

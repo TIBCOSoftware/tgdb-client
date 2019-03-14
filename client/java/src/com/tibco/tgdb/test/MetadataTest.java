@@ -37,10 +37,10 @@ public class MetadataTest {
         gmd = conn.getGraphMetadata(true);
 
         nodeAllAttrs = gmd.getNodeType("nodeAllAttrs");
-        if (nodeAllAttrs == null) throw new TGException("Node type nodeAllAttrs not found");
+        if (nodeAllAttrs == null) throw new TGException("Node desc nodeAllAttrs not found");
 
         nodeOneAttr = gmd.getNodeType("nodeOneAttr");
-        if (nodeOneAttr == null) throw new TGException("Node type nodeOneAttr not found");
+        if (nodeOneAttr == null) throw new TGException("Node desc nodeOneAttr not found");
 
         System.out.println("Leaving connect()...");
     }

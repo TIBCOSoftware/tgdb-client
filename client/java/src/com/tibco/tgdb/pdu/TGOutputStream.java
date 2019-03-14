@@ -24,7 +24,7 @@ import java.io.UTFDataFormatException;
  * Created on: 12/17/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGOutputStream.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: TGOutputStream.java 2343 2018-06-08 18:33:46Z ssubrama $
  */
 
 public interface TGOutputStream extends  DataOutput {
@@ -111,7 +111,7 @@ public interface TGOutputStream extends  DataOutput {
     public int writeCharAt(int pos, int value) throws TGException;
 
     /**
-     * Write Int at the position.Buffer should have sufficient space to write the content.
+     * Write Integer at the position.Buffer should have sufficient space to write the content.
      * @param pos
      * @param value
      * @return

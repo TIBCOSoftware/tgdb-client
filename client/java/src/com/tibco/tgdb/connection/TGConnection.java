@@ -1,5 +1,7 @@
 package com.tibco.tgdb.connection;
 
+import java.util.Collection;
+
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.model.TGEntity;
 import com.tibco.tgdb.model.TGGraphMetadata;
@@ -30,7 +32,7 @@ import com.tibco.tgdb.utils.TGProperties;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGConnection.java 1713 2017-10-05 02:24:18Z vchung $
+ *		SVN Id: $Id: TGConnection.java 2639 2018-11-04 11:22:40Z vchung $
  *
  */
 public interface TGConnection {
@@ -119,7 +121,6 @@ public interface TGConnection {
 
     /**
      * Execute an immediate Query with  query options
-     * The query option is place holder at this time
      *
      * @param expr A subset of SQL-92 where clause. @see com.tibco.tgdb.query.TGQuery
      * @param option Query options for executing. Can be null, then it will use the default option

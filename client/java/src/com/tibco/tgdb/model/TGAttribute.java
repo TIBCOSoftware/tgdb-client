@@ -18,12 +18,20 @@ package com.tibco.tgdb.model;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGAttribute.java 1738 2017-10-10 02:11:19Z vchung $
+ *		SVN Id: $Id: TGAttribute.java 2348 2018-06-22 16:34:26Z ssubrama $
  *
  */
 
 import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.exception.TGTypeCoercionNotSupported;
 import com.tibco.tgdb.pdu.TGSerializable;
+
+import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.util.Calendar;
+
+
 
 /**
  * An attribute is simple scalar value that is associated with an TGEntity.
@@ -68,7 +76,7 @@ public interface TGAttribute extends TGSerializable {
     Object getValue();
 
     /**
-     * Set the value for this attribute. Appropriate data conversion to its attribute type will be performed
+     * Set the value for this attribute. Appropriate data conversion to its attribute desc will be performed
      * If the object is Null, then the object is explicitly set, but no value is provided.
      * @param value The value to be set
      * @throws TGException throws exception if conversion cannot be performed, or constraint violation exception occured
@@ -79,53 +87,143 @@ public interface TGAttribute extends TGSerializable {
      * Return the value as a Boolean value
      * @return boolean value
      */
-    boolean getAsBoolean();
+    default boolean getAsBoolean() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Boolean.class.getSimpleName());
+    }
 
     /**
      * Return as java primitive byte
      * @return byte value
      */
-    byte getAsByte();
+    default byte getAsByte() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Byte.class.getSimpleName());
+    }
 
     /**
      * Return as java primitive char
      * @return  char value
      */
-    char getAsChar();
+    default char getAsChar() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Character.class.getSimpleName());
+    }
 
     /**
      * Return as Short
      * @return short value
      */
-    short getAsShort();
+    default short getAsShort() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Short.class.getSimpleName());
+    }
 
     /**
      * Return as int
      * @return int value
      */
-    int getAsInt();
+    default int getAsInt() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Integer.class.getSimpleName());
+    }
 
     /**
      * Return as java long
      * @return long value
      */
-    long getAsLong();
+    default long getAsLong() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Long.class.getSimpleName());
+    }
 
     /**
      * Return as float
      * @return float
      */
-    float getAsFloat();
+    default float getAsFloat() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Float.class.getSimpleName());
+    }
 
     /**
      * Return as a double
      * @return as double
      */
-    double getAsDouble();
+
+    default double getAsDouble() {throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), Double.class.getSimpleName()); }
+
+
+    default String getAsString() {
+        Object value = this.getValue();
+        return value == null ? null : value.toString();
+    }
+
 
     /**
-     * Return the String value
-     * @return string value
+     * Get as Date Calendar
+     * @return
      */
-    String getAsString();
+    default Calendar getAsDate() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "Calendar.class");
+    };
+
+    /**
+     * Get Time as Calendar.
+     * @return
+     */
+    default Calendar getAsTime() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "Calendar.class");
+    };
+
+    /**
+     * Get Timestamp (Datetime
+     * @return
+     */
+    default Calendar getAsTimestamp() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "Calendar.class");
+    }
+
+    default BigDecimal getAsNumber() {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "BigDecimal.class");
+    }
+
+
+    /**
+     * Get as Byte Array.
+     * @return
+     */
+    default byte[] getAsBytes() throws TGException {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "byte array");
+    }
+
+    /**
+     * Get as a Char Array
+     * @return
+     */
+    default char[] getAsChars() throws TGException
+    {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "char array");
+    }
+
+    default char[] getAsChars(String encoding) throws TGException
+    {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "char array");
+    }
+
+    /**
+     * Get As Blob
+     * @return
+     */
+    default ByteBuffer getAsByteBuffer() throws TGException
+    {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "ByteBuffer.class");
+    }
+
+    /**
+     * Get as Clob
+     * @return
+     */
+    default CharBuffer getAsCharBuffer() throws TGException
+    {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "CharBuffer.class");
+    }
+
+    default CharBuffer getAsCharBuffer(String encoding) throws TGException
+    {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "CharBuffer.class");
+    }
 }

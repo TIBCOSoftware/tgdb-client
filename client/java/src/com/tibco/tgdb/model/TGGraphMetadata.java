@@ -24,7 +24,7 @@ import java.util.Collection;
  * Created by: suresh
  * Graph Metadata provides the catalogue data of the server.
 
- * SVN Id: $Id: TGGraphMetadata.java 623 2016-03-19 21:41:13Z ssubrama $
+ * SVN Id: $Id: TGGraphMetadata.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 
 public interface TGGraphMetadata extends TGSerializable {
@@ -73,7 +73,7 @@ public interface TGGraphMetadata extends TGSerializable {
     /**
      * Create Attribute Descriptor
      * @param attrName the attribute name for the descriptor
-     * @param attrType the type of the attribute from the enum
+     * @param attrType the desc of the attribute from the enum
      * @param isArray is it an array
      * @return a a newly created TGAttributeDescriptor
      * @throws TGException if the attribute descriptor already exists

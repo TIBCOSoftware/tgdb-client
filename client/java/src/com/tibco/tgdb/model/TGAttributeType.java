@@ -19,12 +19,12 @@ import java.math.BigDecimal;
  * File name :TGAttributeType
  * Created by: suresh
 
- * SVN Id: $Id: TGAttributeType.java 1102 2016-10-24 04:36:08Z ssubrama $
+ * SVN Id: $Id: TGAttributeType.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 
 /**
  * Attribute Type enumerations.
- * Do change the ID, as the server expects the attribute type as the same value.
+ * Do change the ID, as the server expects the attribute desc as the same value.
  */
 public enum TGAttributeType {
 
@@ -33,7 +33,7 @@ public enum TGAttributeType {
     Byte(2, "Byte", java.lang.Byte.class),     //8bit octet
     Char(3, "Char", java.lang.Character.class),    //Fixed 8-Bit octet of N length
     Short(4, "Short", java.lang.Short.class),    //16bit
-    Int(5, "Integer", java.lang.Integer.class),      //32bit signed integer
+    Integer(5, "Integer", java.lang.Integer.class),      //32bit signed integer
     Long(6,"Long", java.lang.Long.class),     //64bit
     Float(7, "Float", java.lang.Float.class),    //32bit float
     Double(8, "Double", java.lang.Double.class),   //64bit float
@@ -69,7 +69,7 @@ public enum TGAttributeType {
     }
 
     public static TGAttributeType fromClass(Class klazz) {
-    	// The null check is used to skip the first 'invalid' type
+    	// The null check is used to skip the first 'invalid' desc
         if (klazz.equals(java.util.Calendar.class)) return TimeStamp;  //We return the bigger container field.
         for (TGAttributeType attrType : TGAttributeType.values()) {
             if (attrType.klazz != null && attrType.klazz.equals(klazz)) return attrType;

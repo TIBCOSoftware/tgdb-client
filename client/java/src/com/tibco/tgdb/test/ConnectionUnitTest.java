@@ -21,11 +21,13 @@ import com.tibco.tgdb.model.*;
 
 public class ConnectionUnitTest {
 
-    //public String url = "tcp://scott@192.168.1.15:8222/{ftHosts=192.168.1.15:8222;ftRetryCount=5;ftRetryIntervalSeconds=30}";
-    public String url = "tcp://scott@localhost:8222/";
+    //public String url = "ssl://scott@192.168.1.15:8223/{ftHosts=192.168.1.15:8222;ftRetryCount=5;ftRetryIntervalSeconds=30;dbName=mod;verifyDBName=true}";
+    public String url = "ssl://scott@10.108.16.93:8223/{ftHosts=192.168.1.15:8222;ftRetryCount=5;ftRetryIntervalSeconds=30;dbName=mod;verifyDBName=true}";
+    //public String url = "ssl://scott@localhost:8223/{dbName=mod;verifyDBName=true}";
+    //public String url = "tcp://scott@localhost:8223/{dbName=mod;verifyDBName=true}";
     //public String url = "tcp://scott@10.98.201.111:8228/{connectTimeout=30}";
     //public String url = "tcp://scott@[fe80::1c15:49f2:b621:7ced%en0:8222]";
-    //public String url = "tcp://scott@localhost6:8228";
+    //public String url = "tcp://scott@localhost:8222";
     public String passwd = "scott";
     public TGLogger.TGLevel logLevel = TGLogger.TGLevel.Debug;
     TGGraphObjectFactory gof;
@@ -50,15 +52,25 @@ public class ConnectionUnitTest {
         conn.connect();
 
         gof = conn.getGraphObjectFactory();
+
+//        TGBlob blob = gof.createBlob();
+//        TGClob clob = gof.createClob();
+//        byte[] buf = new byte[100000];
+//        blob.setBytes(buf);
+//        char[] cbuf = new char[10000];
+//        clob.setChars(cbuf);
+
         gmd = conn.getGraphMetadata(true);
         basicNodeType = gmd.getNodeType("basicnode");
-        if (basicNodeType == null) throw new TGException("Node type basicnode not found");
+        if (basicNodeType == null) throw new TGException("Node desc basicnode not found");
 
         rateNodeType = gmd.getNodeType("ratenode");
-        if (rateNodeType == null) throw new TGException("Node type ratenode not found");
+        if (rateNodeType == null) throw new TGException("Node desc ratenode not found");
 
         testNodeType = gmd.getNodeType("testnode");
-        if (testNodeType == null) throw new TGException("Node type testnode not found");
+        if (testNodeType == null) throw new TGException("Node desc testnode not found");
+
+
     }
 
     private void parseArgs(String args[])
@@ -84,6 +96,7 @@ public class ConnectionUnitTest {
         try {
 
             cut.connect();
+
 
         }
         catch (Exception e) {

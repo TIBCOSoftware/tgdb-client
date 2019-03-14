@@ -13,6 +13,7 @@ import com.tibco.tgdb.utils.*;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,7 +35,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TcpChannel.java 2241 2018-04-11 23:31:28Z ssubrama $
+ * SVN Id: $Id: TcpChannel.java 2316 2018-04-26 23:49:37Z ssubrama $
  */
 public class TcpChannel extends AbstractChannel {
 
@@ -45,6 +46,7 @@ public class TcpChannel extends AbstractChannel {
     DataOutputStream        output         = null;
     // set while reconnect attempt is in progress
     volatile boolean        reconnecting   = false;
+    private Socket originalSocket;
 
 
     /**
@@ -54,7 +56,8 @@ public class TcpChannel extends AbstractChannel {
      * @param props
      */
 
-    protected TcpChannel(TGChannelUrl linkUrl, TGProperties<String, String> props) {
+    protected TcpChannel(TGChannelUrl linkUrl, TGProperties<String, String> props) throws TGException
+    {
         super(linkUrl, props);
     }
 
@@ -63,7 +66,7 @@ public class TcpChannel extends AbstractChannel {
      *
      * @throws TGException
      */
-    void createSocket() throws TGException {
+    protected void createSocket() throws TGException {
         String host = linkURL.getHost();
         int port = linkURL.getPort();
         String failureMessage = "Failed to connect to the server at " + linkURL.getUrlAsString();
@@ -76,18 +79,8 @@ public class TcpChannel extends AbstractChannel {
 
             AbstractSocket ts = new DefaultSocketImpl(this.properties);
             socket = ts.createSocket(host, port, TGEnvironment.getInstance().getChannelConnectTimeout());
-            socket.setTcpNoDelay(true);
-            socket.setSoLinger(false, 0);
-            input = new DataInputStream(new BufferedInputStream(socket.getInputStream(), 1024 * 32));
-            output = new DataOutputStream(socket.getOutputStream());
-            clientId = properties.get(ConfigName.ChannelClientId.getName());
-            if (clientId == null) {
-                clientId = properties.get(ConfigName.ChannelClientId.getAlias());
-                if (clientId == null) {
-                    clientId = TGEnvironment.getInstance().getChannelClientId();
-                }
-            }
-            inboxAddr = socket.getInetAddress().toString(); //SS:TODO: Is this correct
+            this.setSocket(socket);
+
 
         } catch (IOException ioex) {
             if (socket != null) closeSocket();
@@ -195,6 +188,25 @@ public class TcpChannel extends AbstractChannel {
     void intToBytes(int value, byte[] bytes, int offset) {
         for (int i=0; i<4; i++)
             bytes[offset+i] = (byte)((value>>>(8*(3-i)))&0xff);
+    }
+
+    protected void setSocket(Socket newsocket) throws IOException
+    {
+        this.originalSocket = this.socket;
+        this.socket = newsocket;
+        socket.setTcpNoDelay(true);
+        socket.setSoLinger(false, 0);
+        input = new DataInputStream(new BufferedInputStream(socket.getInputStream(), 1024 * 32));
+        output = new DataOutputStream(socket.getOutputStream());
+        clientId = properties.get(ConfigName.ChannelClientId.getName());
+        if (clientId == null) {
+            clientId = properties.get(ConfigName.ChannelClientId.getAlias());
+            if (clientId == null) {
+                clientId = TGEnvironment.getInstance().getChannelClientId();
+            }
+        }
+        inboxAddr = socket.getInetAddress().toString(); //SS:TODO: Is this correct
+
     }
 
 

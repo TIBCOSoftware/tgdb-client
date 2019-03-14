@@ -16,12 +16,13 @@
  * Created on: 1/28/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: GraphObjectFactoryImpl.java 2191 2018-03-31 00:47:05Z vchung $
+ * SVN Id: $Id: GraphObjectFactoryImpl.java 2348 2018-06-22 16:34:26Z ssubrama $
  */
 
 
 package com.tibco.tgdb.model.impl;
 
+import com.tibco.tgdb.connection.impl.ConnectionImpl;
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.model.*;
 
@@ -29,20 +30,17 @@ import com.tibco.tgdb.model.*;
 public class GraphObjectFactoryImpl implements TGGraphObjectFactory {
 
     protected TGGraphMetadata graphMetadata;
-    protected TGChangeListener lsnr;
+    protected ConnectionImpl connection;
 
-    public GraphObjectFactoryImpl(TGGraphMetadata graphMetadata, TGChangeListener lsnr) {
+    public GraphObjectFactoryImpl(ConnectionImpl connection) {
     	//FIXME: Graph meta data cannot be passed in.
     	//There will be one meta data object per object factory
     	//And one object factory per connection even though connections can share 
     	//the same channel. How do we handle update notifications from other clients?
         //this.graphMetadata = graphMetadata;
-        if (graphMetadata == null) {
-            this.graphMetadata = new GraphMetadataImpl();
-        } else {
-            this.graphMetadata = graphMetadata;
-        }
-        this.lsnr = lsnr;
+        this.connection = connection;
+        this.graphMetadata = new GraphMetadataImpl(this);
+
     }
 
     public TGGraphMetadata getGraphMetaData() { return graphMetadata;}
@@ -111,8 +109,10 @@ public class GraphObjectFactoryImpl implements TGGraphObjectFactory {
     public TGKey createCompositeKey(String nodeTypeName) throws TGException {
     	TGNodeType nodeType = graphMetadata.getNodeType(nodeTypeName);
     	if (nodeType == null) {
-            throw TGException.buildException("Node type not found", null, null);
+            throw TGException.buildException("Node desc not found", null, null);
     	}
         return new CompositeKeyImpl(graphMetadata, nodeTypeName);
     }
+
+
 }

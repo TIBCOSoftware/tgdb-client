@@ -16,12 +16,13 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: GraphMetadataImpl.java 1624 2017-08-17 17:33:42Z vchung $
+ * SVN Id: $Id: GraphMetadataImpl.java 2348 2018-06-22 16:34:26Z ssubrama $
  */
 
 
 package com.tibco.tgdb.model.impl;
 
+import com.tibco.tgdb.connection.impl.ConnectionImpl;
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.model.*;
 import com.tibco.tgdb.pdu.TGInputStream;
@@ -43,14 +44,16 @@ public class GraphMetadataImpl implements TGGraphMetadata {
 	private HashMap<Integer, TGAttributeDescriptor> descriptorMapById;
 	private HashMap<Integer, TGNodeType> nodeTypeMapById;
 	private HashMap<Integer, TGEdgeType> edgeTypeMapById;
+	private GraphObjectFactoryImpl gof;
 	
-	public GraphMetadataImpl() {
+	public GraphMetadataImpl(GraphObjectFactoryImpl gof) {
 		descriptorMap = new HashMap<String, TGAttributeDescriptor>();
 		nodeTypeMap = new HashMap<String, TGNodeType>();
 		edgeTypeMap = new HashMap<String, TGEdgeType>();
 		descriptorMapById = new HashMap<Integer, TGAttributeDescriptor>();
 		nodeTypeMapById = new HashMap<Integer, TGNodeType>();
 		edgeTypeMapById = new HashMap<Integer, TGEdgeType>();
+		this.gof = gof;
 	}
 
     @Override
@@ -170,4 +173,10 @@ public class GraphMetadataImpl implements TGGraphMetadata {
     public void readExternal(TGInputStream is) throws TGException, IOException {
 
     }
+    
+    public GraphObjectFactoryImpl getGraphObjectFactory() {
+	    return this.gof;
+    }
+
+    public ConnectionImpl getConnection() { return this.gof.connection; }
 }

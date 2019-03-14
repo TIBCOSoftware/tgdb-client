@@ -18,7 +18,7 @@ package com.tibco.tgdb.model;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGAttributeDescriptor.java 1110 2016-10-25 00:04:04Z ssubrama $
+ *		SVN Id: $Id: TGAttributeDescriptor.java 2344 2018-06-11 23:21:45Z ssubrama $
  *
  */
 
@@ -36,25 +36,25 @@ public interface TGAttributeDescriptor extends TGSystemObject {
     int getAttributeId();
 
     /**
-     * Return the type of TGAttribute
-     * @return the attribute type
+     * Return the desc of TGAttribute
+     * @return the attribute desc
      */
     TGAttributeType getType();
 
     /**
-     * Is the AttributeType an array type
-     * @return boolean indicating the multiplicativeness of the type
+     * Is the AttributeType an array desc
+     * @return boolean indicating the multiplicativeness of the desc
      */
     boolean isArray();
 
     /**
-     * For a Number type - return the precision. The default Precision is 20
+     * For a Number desc - return the precision. The default Precision is 20
      * @return
      */
     short getPrecision();
 
     /**
-     * For a Number type - return the scale. The default Scale is 5
+     * For a Number desc - return the scale. The default Scale is 5
      * @return
      */
     short getScale();

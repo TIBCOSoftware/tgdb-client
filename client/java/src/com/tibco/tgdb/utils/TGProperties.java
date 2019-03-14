@@ -2,6 +2,7 @@ package com.tibco.tgdb.utils;
 
 import com.tibco.tgdb.exception.TGException;
 
+import java.util.Properties;
 import java.util.SortedMap;
 
 /**
@@ -21,7 +22,7 @@ import java.util.SortedMap;
  * File name : TGProperties.java
  * Created on: 2/5/15
  * Created by: suresh
-  * SVN Id: $Id: TGProperties.java 2179 2018-03-29 21:49:54Z ssubrama $
+  * SVN Id: $Id: TGProperties.java 2316 2018-04-26 23:49:37Z ssubrama $
  */
 
 public interface TGProperties<K,V> extends SortedMap<K,V> {
@@ -45,5 +46,33 @@ public interface TGProperties<K,V> extends SortedMap<K,V> {
         if ((password != null) || (password.length() != 0)) {
             properties.put(ConfigName.ChannelPassword.getName(), password);
         }
+
     }
+
+    /**
+     * Get the Property As a int value
+     * @param cn
+     * @return
+     */
+    int getPropertyAsInt(ConfigName cn);
+
+    int getPropertyAsInt(ConfigName cn, int defaultValue);
+
+    /**
+     * Get the Property as a Long value
+     * @param cn
+     * @return
+     */
+    long getPropertyAsLong(ConfigName cn);
+
+    long getPropertyAsLong(ConfigName cn, long defaultValue);
+
+    /**
+     * Get the Property as a Boolean
+     * @param cn
+     * @return
+     */
+    boolean getPropertyAsBoolean(ConfigName cn);
+
+    boolean getPropertyAsBoolean(ConfigName cn, boolean defaultValue);
 }

@@ -21,7 +21,7 @@ import java.io.IOException;
  * File name :TGException
  * Created by: suresh
  *
- * SVN Id: $Id: TGException.java 2164 2018-03-20 00:11:11Z ssubrama $
+ * SVN Id: $Id: TGException.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 public class TGException extends Exception {
 
@@ -84,7 +84,7 @@ public class TGException extends Exception {
     public Exception getLinkedException() { return linkedException; }
 
     /**
-     * @return A Exception type from the the Exception.
+     * @return A Exception desc from the the Exception.
      */
     public ExceptionType getExceptionType() {
         if (linkedException != null) {

@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeImpl.java 1974 2017-12-14 22:42:17Z kattaylo $
+ * SVN Id: $Id: AttributeImpl.java 2348 2018-06-22 16:34:26Z ssubrama $
  */
 
 
@@ -26,10 +26,7 @@ import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.log.TGLogger.TGLevel;
-import com.tibco.tgdb.model.TGAttribute;
-import com.tibco.tgdb.model.TGAttributeDescriptor;
-import com.tibco.tgdb.model.TGAttributeType;
-import com.tibco.tgdb.model.TGEntity;
+import com.tibco.tgdb.model.*;
 import com.tibco.tgdb.pdu.TGInputStream;
 import com.tibco.tgdb.pdu.TGOutputStream;
 
@@ -37,6 +34,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
@@ -96,7 +95,7 @@ public class AttributeImpl implements TGAttribute {
 
     @Override
     public void setValue(Object value) throws TGException {
-    	//FIXME: Need to match the type of the attribute descriptor
+    	//FIXME: Need to match the desc of the attribute descriptor
         this.value = value;
         isModified = true;
         if (value == null) return;
@@ -175,7 +174,7 @@ public class AttributeImpl implements TGAttribute {
     		case Short:
     			os.writeShort(Short.class.cast(value));
     			break;
-    		case Int:
+    		case Integer:
     			os.writeInt(Integer.class.cast(value));
     			break;
     		case Long:
@@ -213,7 +212,7 @@ public class AttributeImpl implements TGAttribute {
         TGAttributeDescriptor at = ((GraphMetadataImpl) owner.graphMetadata).getAttributeDescriptor(aid);
         this.type = at;
         if (at == null) {
-        	//FIXME: retrieve entity type together with the entity?
+        	//FIXME: retrieve entity desc together with the entity?
         	gLogger.log(TGLevel.Warning, "cannot lookup attribute descriptor %d from graph meta data cache", aid);
         }
         if (is.readByte() == 1) {
@@ -234,7 +233,7 @@ public class AttributeImpl implements TGAttribute {
     		case Short:
     			value = is.readShort();
     			break;
-    		case Int:
+    		case Integer:
     			value = is.readInt();
     			break;
     		case Long:
@@ -415,4 +414,6 @@ public class AttributeImpl implements TGAttribute {
         this.value = newbd.setScale(scale, BigDecimal.ROUND_HALF_UP);
 
     }
+
+
 }

@@ -18,7 +18,7 @@ package com.tibco.tgdb.channel.impl;
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AbstractChannel.java 2219 2018-04-06 21:31:13Z ssubrama $
+ * SVN Id: $Id: AbstractChannel.java 2742 2018-11-15 22:17:42Z nimish $
  */
 
 import com.tibco.tgdb.TGProtocolVersion;
@@ -109,7 +109,7 @@ public abstract class AbstractChannel implements TGChannel {
 
 
 
-    protected AbstractChannel(TGChannelUrl linkUrl, TGProperties<String, String> props) {
+    protected AbstractChannel(TGChannelUrl linkUrl, TGProperties<String, String> props) throws TGException {
         this.linkURL = linkUrl;
         this.primaryURL = linkUrl;
         this.properties = props;
@@ -184,6 +184,14 @@ public abstract class AbstractChannel implements TGChannel {
         return s == null ? TGConstants.EmptyByteArray : s.getBytes();
     }
 
+    protected String getHost() {
+        return linkURL.getHost();
+    }
+
+    protected int getPort() {
+        return linkURL.getPort();
+    }
+
     private void _connect(boolean sleepOnFirstInvocation) throws TGException
     {
         int connectInterval =  Integer.parseInt(properties.getProperty(ConfigName.ChannelFTRetryIntervalSeconds));
@@ -207,6 +215,17 @@ public abstract class AbstractChannel implements TGChannel {
                     return;
                 } catch (TGAuthenticationException | TGChannelDisconnectedException te) {
                     throw te;
+                } catch (TGException tge) {
+                    if (null == properties.getProperty(ConfigName.ChannelFTHosts))
+                    {
+                    	gLogger.logException(String.format("Failed connecting to urlstr:%s", this.linkURL), tge);
+                    	closeSocket();
+                    	throw tge;
+                    }
+                    else {
+                        gLogger.logException(String.format("Failed connecting to urlstr:%s, reattempting", this.linkURL), tge);
+                        closeSocket();
+                    }
                 } catch (Exception e) {
                     gLogger.logException(String.format("Failed connecting to urlstr:%s, reattempting", this.linkURL), e);
                     closeSocket();
@@ -296,6 +315,11 @@ public abstract class AbstractChannel implements TGChannel {
      boolean reconnect() {
         // This is needed here to avoid a FD leak
         closeSocket();
+        
+        if (null == properties.getProperty(ConfigName.ChannelFTHosts))
+        {
+        	return false;
+        }
 
         TGChannelUrl oldurl    = this.linkURL;
         int connectInterval =  Integer.parseInt(properties.getProperty(ConfigName.ChannelFTRetryIntervalSeconds));

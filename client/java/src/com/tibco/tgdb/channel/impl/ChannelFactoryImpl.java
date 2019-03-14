@@ -4,9 +4,7 @@ import com.tibco.tgdb.channel.TGChannel;
 import com.tibco.tgdb.channel.TGChannelFactory;
 import com.tibco.tgdb.channel.TGChannelUrl;
 import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.utils.ConfigName;
 import com.tibco.tgdb.utils.SortedProperties;
-import com.tibco.tgdb.utils.TGEnvironment;
 import com.tibco.tgdb.utils.TGProperties;
 
 import java.util.Collections;
@@ -30,7 +28,7 @@ import java.util.Map;
  * Created on: 12/26/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: ChannelFactoryImpl.java 2179 2018-03-29 21:49:54Z ssubrama $
+ * SVN Id: $Id: ChannelFactoryImpl.java 2214 2018-04-05 18:21:28Z ssubrama $
  */
 public class ChannelFactoryImpl extends TGChannelFactory {
 
@@ -67,7 +65,7 @@ public class ChannelFactoryImpl extends TGChannelFactory {
 
         switch(protocol) {
             case SSL:
-                return new SslChannel(url, properties);
+                return new SSLChannel(url, properties);
 
             case TCP:
                 return new TcpChannel(url, properties);

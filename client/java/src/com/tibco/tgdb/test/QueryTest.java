@@ -310,7 +310,7 @@ public class QueryTest {
     }
 
     public void testNodeTypeOnly() throws Exception {
-        System.out.println("Start node type only query");
+        System.out.println("Start node desc only query");
         TGResultSet resultSet = conn.executeQuery("@nodetype = 'testnode';", TGQueryOption.DEFAULT_QUERY_OPTION);
         if (resultSet != null) {
             int i=1;
@@ -320,7 +320,7 @@ public class QueryTest {
                 printEntitiesBreadth(node, 5);
             }
         }
-        System.out.println("End node type only query");
+        System.out.println("End node desc only query");
     }
 
     public void connect() throws Exception {

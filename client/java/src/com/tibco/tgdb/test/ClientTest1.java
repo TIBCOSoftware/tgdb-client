@@ -114,7 +114,7 @@ public class ClientTest1 {
 
        	boolean exceptionThrown = false;
        	try {
-       		//TGKey key = gof.createCompositeKey("No good type");
+       		//TGKey key = gof.createCompositeKey("No good desc");
        		TGKey key = gof.createCompositeKey("testnode");
        	} catch (TGException e) {
        		exceptionThrown = true;
@@ -239,9 +239,9 @@ public class ClientTest1 {
       	System.out.println("Create edge1");
       	TGEdgeType edgeType = gmd.getEdgeType("basicedge");
       	if (edgeType != null) {
-      		System.out.println("Edge type 'basicedge' found");
+      		System.out.println("Edge desc 'basicedge' found");
       	} else {
-      		System.out.println("Edge type 'basicedge' not found - bad");
+      		System.out.println("Edge desc 'basicedge' not found - bad");
       	}
       	TGEdge edge1 = gof.createEdge(node1, node2, edgeType);
         edge1.setAttribute("name", "spouse");
@@ -298,7 +298,7 @@ public class ClientTest1 {
     	   return;
        }
        Collection<TGEdge> edges = node.getEdges(edgeType, direction);
-       System.out.printf("Get edge type : '%s' with direction : '%s'\n", edgeType == null ? "All edge types" : edgeType.getName(), direction.name());
+       System.out.printf("Get edge desc : '%s' with direction : '%s'\n", edgeType == null ? "All edge types" : edgeType.getName(), direction.name());
        for (TGEdge edge : edges) {
     	   System.out.printf("Edge name : %s\n", edge.getAttribute("name").getAsString());
        }

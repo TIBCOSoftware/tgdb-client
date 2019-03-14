@@ -89,16 +89,16 @@ public abstract class EntityTypeImpl implements TGEntityType {
 
     @Override
     public void writeExternal(TGOutputStream os) throws TGException, IOException {
-    	gLogger.log(TGLevel.Warning, "writeExternal for entity type is not implemented");
+    	gLogger.log(TGLevel.Warning, "writeExternal for entity desc is not implemented");
     }
 
     @Override
     public void readExternal(TGInputStream is) throws TGException, IOException {
-    	//FIXME: Do we save the type value??
+    	//FIXME: Do we save the desc value??
     	int typeValue = is.readByte();
     	TGSystemType type = TGSystemType.fromValue(typeValue);
     	if (type == TGSystemType.InvalidType) {
-    		gLogger.log(TGLevel.Warning, "Entity type input stream has invalid type value : %d", typeValue);
+    		gLogger.log(TGLevel.Warning, "Entity desc input stream has invalid desc value : %d", typeValue);
     		//FIXME: Need to throw Exception
     	}
 

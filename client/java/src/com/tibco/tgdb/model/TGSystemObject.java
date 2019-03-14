@@ -53,13 +53,13 @@ public interface TGSystemObject extends TGSerializable{
     }
 
     /**
-     * Get the system type enum
-     * @return the system type of the object
+     * Get the system desc enum
+     * @return the system desc of the object
      */
     TGSystemType getSystemType();
     
     /**
-     * Get the type name.
+     * Get the desc name.
      * @return the name of the object
      */
     String getName();

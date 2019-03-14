@@ -17,7 +17,7 @@ package com.tibco.tgdb.model;
  *  File name :TGEdge.java
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGEdge.java 2175 2018-03-27 08:28:32Z vchung $
+ *		SVN Id: $Id: TGEdge.java 2344 2018-06-11 23:21:45Z ssubrama $
  *
  */
 
@@ -45,7 +45,7 @@ public interface TGEdge extends TGEntity {
     TGNode[] getVertices();
 
     /**
-     * Get the direction type of this edge.
+     * Get the direction desc of this edge.
      * @return the DirectionTyoe of this edge
      */
     DirectionType getDirectionType();

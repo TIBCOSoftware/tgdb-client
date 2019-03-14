@@ -16,7 +16,7 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: CommitTransactionRequest.java 955 2016-09-02 16:32:55Z vchung $
+ * SVN Id: $Id: CommitTransactionRequest.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 
 
@@ -73,7 +73,7 @@ public class CommitTransactionRequest extends AbstractProtocolMessage {
     	os.writeInt(0); // This is for the commit buffer length
     	os.writeInt(0); // This is for the checksum for the commit buffer to be added later.  Currently not used
     	gLogger.log(TGLevel.Debug, "Entering commit transaction request writePayload at output buffer position at : %d", startPos);
-    	//<A> for attribute descriptor, <N> for node type definitions, <E> for edge type definitions
+    	//<A> for attribute descriptor, <N> for node desc definitions, <E> for edge desc definitions
     	//meta should be sent before the instance data
     	if (!attrDescSet.isEmpty()) {
     		os.writeShort(0x1010); // for attribute descriptor

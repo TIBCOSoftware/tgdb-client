@@ -22,7 +22,7 @@ import java.util.Collection;
  *  File name :TGEntity.java
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGEntity.java 748 2016-04-25 17:10:38Z vchung $
+ *		SVN Id: $Id: TGEntity.java 2473 2018-09-26 23:29:53Z vchung $
  *
  */
 public interface TGEntity extends TGSerializable {
@@ -85,7 +85,7 @@ public interface TGEntity extends TGSerializable {
 
     /**
      * Get the attribute for the name specified
-     * @param attrName the attribute name whose value and type is sought after.
+     * @param attrName the attribute name whose value and desc is sought after.
      * @return TGAttribute for the entity instance. Can be NULL.
      */
     TGAttribute getAttribute(String attrName);
@@ -111,5 +111,11 @@ public interface TGEntity extends TGSerializable {
      * @throws com.tibco.tgdb.exception.TGException if can't set the value.
      */
     void setAttribute(String name, Object value) throws TGException;
+
+    /**
+     * Return the EntityType
+     * @return the kind of entity
+     */
+    TGEntityType getEntityType();
 
 }

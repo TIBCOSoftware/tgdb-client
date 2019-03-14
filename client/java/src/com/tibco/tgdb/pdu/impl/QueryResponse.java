@@ -16,7 +16,7 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: QueryResponse.java 1238 2016-11-17 21:20:33Z vchung $
+ * SVN Id: $Id: QueryResponse.java 2659 2018-11-07 16:04:58Z vchung $
  */
 
 
@@ -58,13 +58,17 @@ public class QueryResponse extends AbstractProtocolMessage {
         is.readInt(); // checksum
         this.result = is.readInt(); // query result
         this.queryHashId = is.readLong();  // query hash Id
-
-    	resultCount = is.readInt();
-    	totalCount = is.readInt();
-    	if (resultCount > 0) {
-    		hasResult = true;
-    	}
-    	gLogger.log(TGLevel.Debug, "Query has %d result entities and %d total entities", resultCount, totalCount);
+        int syntax = is.readByte();
+        resultCount = is.readInt();
+        if (resultCount > 0) {
+        	hasResult = true;
+        }
+        if (syntax == 1) {
+    	   	totalCount = is.readInt();
+    	   	gLogger.log(TGLevel.Debug, "Query has %d result entities and %d total entities", resultCount, totalCount);
+        } else {
+    	   	gLogger.log(TGLevel.Debug, "Query has %d result count", resultCount);
+        }
     }
 
     @Override

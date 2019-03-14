@@ -16,7 +16,7 @@
  * Created on: 1/13/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionTest1.java 1775 2017-10-20 19:00:42Z vchung $
+ * SVN Id: $Id: ConnectionTest1.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 
 
@@ -47,7 +47,7 @@ import com.tibco.tgdb.utils.TGProperties;
 import com.tibco.tgdb.query.TGQueryOption;
 
 public class ConnectionTest1 {
-	public String url = "tcp://scott@localhost:8228";
+	public String url = "tcp://scott@localhost:8222";
     public String passwd = "scott";
     public TGLogger.TGLevel logLevel = TGLogger.TGLevel.Debug;
     public boolean waitForExit = false;
@@ -261,13 +261,13 @@ public class ConnectionTest1 {
         	TGGraphMetadata gmd = conn.getGraphMetadata(true);
         	TGAttributeDescriptor attrDesc = gmd.getAttributeDescriptor("factor");
         	if (attrDesc != null) {
-        		System.out.printf("'factor' has id %d and data type : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
+        		System.out.printf("'factor' has id %d and data desc : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
         	} else {
         		System.out.println("'factor' is not found from meta data fetch");
         	}
         	attrDesc = gmd.getAttributeDescriptor("level");
         	if (attrDesc != null) {
-        		System.out.printf("'level' has id %d and data type : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
+        		System.out.printf("'level' has id %d and data desc : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
         	} else {
         		System.out.println("'level' is not found from meta data fetch");
         	}
@@ -440,13 +440,13 @@ public class ConnectionTest1 {
         	TGGraphMetadata gmd = conn.getGraphMetadata(true);
         	TGAttributeDescriptor attrDesc = gmd.getAttributeDescriptor("factor");
         	if (attrDesc != null) {
-        		System.out.printf("'factor' has id %d and data type : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
+        		System.out.printf("'factor' has id %d and data desc : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
         	} else {
         		System.out.println("'factor' is not found from meta data fetch");
         	}
         	attrDesc = gmd.getAttributeDescriptor("level");
         	if (attrDesc != null) {
-        		System.out.printf("'level' has id %d and data type : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
+        		System.out.printf("'level' has id %d and data desc : %d\n", attrDesc.getAttributeId(), attrDesc.getType().typeId());
         	} else {
         		System.out.println("'level' is not found from meta data fetch");
         	}
@@ -458,7 +458,7 @@ public class ConnectionTest1 {
         	}
         }
 
-        System.out.println("Test Transaction : Insert Simple Node(John) of testnode type with a few properties");
+        System.out.println("Test Transaction : Insert Simple Node(John) of testnode desc with a few properties");
       	System.out.println("Create node");
         TGNode node1 = createNode(gof, testNodeType);
         node1.setAttribute("name", "Bruce Wayne");
@@ -745,7 +745,7 @@ public class ConnectionTest1 {
 
     public void interactiveGet() throws Exception {
     	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
-        System.out.printf("Depth : %d, Fetch : %d, Edge : %d, type : %s, key : %s\n", depth, resultCount, 
+        System.out.printf("Depth : %d, Fetch : %d, Edge : %d, desc : %s, key : %s\n", depth, resultCount,
             edgeLimit, typeName, keyName);
     	TGLogger logger = TGLogManager.getInstance().getLogger();
     	logger.setLevel(logLevel);

@@ -21,7 +21,7 @@ import java.util.Map;
  * Created on: 12/16/14
  * Created by: suresh
 
- * SVN Id: $Id: TGEnvironment.java 2135 2018-03-07 23:42:34Z ssubrama $
+ * SVN Id: $Id: TGEnvironment.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 public class TGEnvironment {
 
@@ -161,5 +161,11 @@ public class TGEnvironment {
             sp.put(name.getName(), value);
         }
         return sp;
+    }
+
+    public String getDefaultDateTimeFormat()
+    {
+        //SS:TODO
+        return "mm-dd-yyyy hh:mm:ss";
     }
 }

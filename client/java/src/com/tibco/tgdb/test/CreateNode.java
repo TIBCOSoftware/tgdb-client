@@ -36,7 +36,7 @@ public class CreateNode {
             TGGraphMetadata gmd = conn.getGraphMetadata(true);
             TGNodeType basicnode = gmd.getNodeType("basicnode");
             if (basicnode == null)
-                throw new Exception("Node type not found");
+                throw new Exception("Node desc not found");
 
             TGNode basic1 = gof.createNode(basicnode);
 
@@ -90,7 +90,7 @@ public class CreateNode {
             TGGraphMetadata gmd = conn.getGraphMetadata(true);
             TGNodeType basicnode = gmd.getNodeType("basicnode");
             if (basicnode == null)
-                throw new Exception("Node type not found");
+                throw new Exception("Node desc not found");
 
             TGNode basic1 = gof.createNode(basicnode);
 
@@ -155,7 +155,7 @@ public class CreateNode {
             TGGraphMetadata gmd = conn.getGraphMetadata(true);
             TGNodeType basicnode = gmd.getNodeType("basicnode");
             if (basicnode == null)
-                throw new Exception("Node type not found");
+                throw new Exception("Node desc not found");
 
             TGNode basic1 = gof.createNode(basicnode);
             String pkey = "Mike1";

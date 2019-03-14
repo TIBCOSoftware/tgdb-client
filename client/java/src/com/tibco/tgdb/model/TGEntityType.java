@@ -20,21 +20,21 @@ import com.tibco.tgdb.pdu.TGSerializable;
  *
  * File name : TGEntityType.java
  * Created by: suresh
- * SVN Id: $Id: TGEntityType.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: TGEntityType.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 
 public interface TGEntityType extends TGSystemObject {
 
     /**
-     * List of all the attribute descriptors defined for this entity type.
-     * @return a collection of attribute descriptors for this entity type
+     * List of all the attribute descriptors defined for this entity desc.
+     * @return a collection of attribute descriptors for this entity desc
      */
     Collection<TGAttributeDescriptor> getAttributeDescriptors();
 
     /**
      * Get the attribute descriptor for the name specified
      * @param attrName the attribute name whose attribute descriptor is sought after.
-     * @return TGAttributeDescriptor for the entity type. Can be NULL.
+     * @return TGAttributeDescriptor for the entity desc. Can be NULL.
      */
     TGAttributeDescriptor getAttributeDescriptor(String attrName);
 

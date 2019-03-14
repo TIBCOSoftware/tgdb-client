@@ -69,10 +69,10 @@ public class BuildGraph {
 
 	// Relation among the members of the House to be inserted in the database
 	final static Object houseRelationData[][] = {
-			// From memberName, To memberName, relation type - spouse, marriage year, city where marriage took place
+			// From memberName, To memberName, relation desc - spouse, marriage year, city where marriage took place
             // or
             //
-			// From memberName, To memberName, relation type - child, order of birth
+			// From memberName, To memberName, relation desc - child, order of birth
 			{ "Carlo Bonaparte", "Letizia Ramolino", "spouse", 1529, "Paris" }, 
 			{ "Carlo Bonaparte", "Joseph Bonaparte", "child", 1 },
 			{ "Letizia Ramolino", "Joseph Bonaparte", "child", 1 }, 
@@ -145,7 +145,7 @@ public class BuildGraph {
 			TGGraphMetadata gmd = conn.getGraphMetadata(true);
 			TGNodeType houseMemberType = gmd.getNodeType("houseMemberType");
 			if (houseMemberType == null)
-				throw new Exception("Node type not found");
+				throw new Exception("Node desc not found");
 			TGNode houseMember;
 			Hashtable<String, TGNode> houseMemberTable = new Hashtable<String, TGNode>();
 			
@@ -188,15 +188,15 @@ public class BuildGraph {
 			// 
 			// Insert edge data into database
 			// Two edge types defined in inithousedb.conf.
-			// Added year of marriage and place of marriage edge attributes for spouseEdge type
-			// Added Birth order edge attribute for offspringEdge type
+			// Added year of marriage and place of marriage edge attributes for spouseEdge desc
+			// Added Birth order edge attribute for offspringEdge desc
 			// 
 			TGEdgeType spouseEdgeType = gmd.getEdgeType("spouseEdge");
 			if (spouseEdgeType == null)
-				throw new Exception("Spouse edge type not found");
+				throw new Exception("Spouse edge desc not found");
 			TGEdgeType offspringEdgeType = gmd.getEdgeType("offspringEdge");
 			if (offspringEdgeType == null)
-				throw new Exception("Offspring edge type not found");
+				throw new Exception("Offspring edge desc not found");
 			TGNode houseMemberFrom;
 			TGNode houseMemberTo;
 			TGEdge houseRelation;

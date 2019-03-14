@@ -29,13 +29,13 @@ import com.tibco.tgdb.utils.EntityUtils;
  * fulfilled all the conditions.
  *
  * The following reserved keyword are introduced for traversal filtering
- * @fromnodetype - string - the node type name of the node we are getting the edge from 
- * @tonodetype - string - the node type name of the other end of the edge
+ * @fromnodetype - string - the node desc name of the node we are getting the edge from
+ * @tonodetype - string - the node desc name of the other end of the edge
  * @isfromedge - is the node where the edge is retrieve from on the from side of the edge. 1 - true, 0 - false
  * @fromnode.<attr name> - retrieve the from node attribute value
  * @tonode.<attr name> - retrieve the to node attribute value
  * @edge.<attr name> - retrieve the edge attribute value
- * @edgetype - string - edge type name
+ * @edgetype - string - edge desc name
  * @degree/depth - int - degree of separation or what we call the depth
  *                       both degree and depth are valid keywords
  *
@@ -71,7 +71,7 @@ public class QueryGraph {
     static int endYear = 1770;
 
     static boolean runTest1 = false;
-    static boolean runTest2 = false;
+    static boolean runTest2 = true;
     static boolean runTest3 = false;
     static boolean runTest4 = false;
     static boolean runTest5 = false;
@@ -145,7 +145,7 @@ public class QueryGraph {
                 option.setTraversalDepth(10);
                 resultSet = conn.executeQuery(queryString, null, null, endString, option);
             } else if (runTest4 == true) {
-            	//Identify all paths from Napoleon Bonaparte  to Napoleon IV Eugene using only offspringEdge type and within 10 level deep
+            	//Identify all paths from Napoleon Bonaparte  to Napoleon IV Eugene using only offspringEdge desc and within 10 level deep
                 dumpDepth = 10;
                 queryString = "@nodetype = 'houseMemberType' and memberName = 'Napoleon Bonaparte';";
                 traverseString = "@edgetype = 'offspringEdge' and @degree <= 10" + ";";

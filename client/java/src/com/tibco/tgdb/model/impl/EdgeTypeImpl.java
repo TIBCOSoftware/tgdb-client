@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: EdgeTypeImpl.java 2137 2018-03-08 03:12:23Z vchung $
+ * SVN Id: $Id: EdgeTypeImpl.java 2344 2018-06-11 23:21:45Z ssubrama $
  */
 
 
@@ -39,7 +39,7 @@ public class EdgeTypeImpl extends EntityTypeImpl implements TGEdgeType {
     private TGNodeType toNodeType;
     private long numEntries;
 
-    //FIXME: Can directionType different from parent direction type?
+    //FIXME: Can directionType different from parent direction desc?
     public EdgeTypeImpl(String name, TGEdge.DirectionType directionType, TGEdgeType parent) {
     	super();
     	this.directionType = directionType;

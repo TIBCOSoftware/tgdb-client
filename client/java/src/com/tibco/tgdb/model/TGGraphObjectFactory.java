@@ -16,7 +16,7 @@
  * Created on: 1/28/15
  * Created by: suresh 
 
- * SVN Id: $Id: TGGraphObjectFactory.java 623 2016-03-19 21:41:13Z ssubrama $
+ * SVN Id: $Id: TGGraphObjectFactory.java 2348 2018-06-22 16:34:26Z ssubrama $
  */
 
 
@@ -33,14 +33,14 @@ public interface TGGraphObjectFactory {
      * Create a Node
      * @return a node created
      */
-    public abstract TGNode createNode() ;
+     TGNode createNode() ;
 
     /**
      * Create Node within this Graph. There is a default Root Graph
      * @param nodeType - The typenode that this node is instanceof
      * @return the node created from this nodeType
      */
-    public abstract TGNode createNode(TGNodeType nodeType);
+     TGNode createNode(TGNodeType nodeType);
 
 
     /**
@@ -50,7 +50,7 @@ public interface TGGraphObjectFactory {
      * @param directionType - BiDirection/UniDirection or None
      * @return a TGEdge
      */
-    public abstract TGEdge createEdge(TGNode fromNode, TGNode toNode, TGEdge.DirectionType directionType);
+     TGEdge createEdge(TGNode fromNode, TGNode toNode, TGEdge.DirectionType directionType);
 
 
     /**
@@ -60,7 +60,7 @@ public interface TGGraphObjectFactory {
      * @param edgeType the edgeType associated to this edge
      * @return a TGEdge
      */
-    public abstract TGEdge createEdge(TGNode fromNode, TGNode toNode, TGEdgeType edgeType);
+     TGEdge createEdge(TGNode fromNode, TGNode toNode, TGEdgeType edgeType);
 
 
     /**
@@ -69,8 +69,7 @@ public interface TGGraphObjectFactory {
      * @return returns a TGKey that can be used to query the Database.
      * @throws TGException if a NodeType is not found.
      */
-    public abstract TGKey createCompositeKey(String nodeTypeName) throws TGException;
-
+     TGKey createCompositeKey(String nodeTypeName) throws TGException;
 
 
 }

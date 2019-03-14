@@ -21,9 +21,11 @@ JFLAGS = -g
 JCLASSPATH =
 JAR	= jar
 JAVA_SRC_DIR := src
-CLASSES_DIR  := $(BUILDPATH)/classes
-JAVA_SOURCES := $(shell find $(JAVA_SRC_DIR) -name '*.java')
-JAVA_CLASSES := $(patsubst %.java, %.class, $(JAVA_SOURCES))
+CLASSES_DIR  := $(BUILDPATH)/tgdb-client/classes
+
+JAVA_SRCLIST := $(BUILDPATH)/javasrc.list
+shellstatus  := $(shell find $(JAVA_SRC_DIR) -name '*.java' | tee $(JAVA_SRCLIST))
+JAVA_CLASSES := $(patsubst %.java, %.class, $(JAVA_SRCLIST))
 JAVA_RESOURCES := 
 LIBDIR	 := $(BUILDPATH)/lib
 JAVADOC = javadoc
@@ -44,7 +46,9 @@ createdir:
 	
 tgdb-client.jar : createdir
 	@echo building java classes
-	@$(JAVAC) $(JFLAGS) -source $(JAVA_VERSION) -d $(CLASSES_DIR) $(JAVA_SOURCES)
+	@echo $(JAVA_SRCLIST)
+	$(JAVAC) $(JFLAGS) -source $(JAVA_VERSION) -target $(JAVA_VERSION) -d $(CLASSES_DIR) -cp $(LIBDIR)/tgdb-gremlin-mincore.jar @$(JAVA_SRCLIST)
+	rm $(JAVA_SRCLIST)
 	@echo building Jar
 	cd $(CLASSES_DIR) ; $(JAR) cf $(LIBDIR)/$@ .
 	@echo building Javadoc

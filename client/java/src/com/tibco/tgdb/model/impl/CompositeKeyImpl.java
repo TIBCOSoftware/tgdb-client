@@ -14,6 +14,7 @@ package com.tibco.tgdb.model.impl;
 
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.model.*;
+import com.tibco.tgdb.model.impl.attribute.AbstractAttribute;
 import com.tibco.tgdb.pdu.TGInputStream;
 import com.tibco.tgdb.pdu.TGOutputStream;
 
@@ -27,12 +28,12 @@ public class CompositeKeyImpl implements TGKey {
     private String typeName;
     Map<String, TGAttribute> attributes = new LinkedHashMap<String, TGAttribute>();
 
-    //FIXME: Not sure type name is needed or not
+    //FIXME: Not sure desc name is needed or not
     public CompositeKeyImpl(TGGraphMetadata graphMetadata, String typeName) throws TGException {
         this.graphMetadata = graphMetadata;
         this.typeName = typeName;
 
-        /* Not require to have a type name
+        /* Not require to have a desc name
         if (typeName != null) return;
 
         if (graphMetadata.getNodeType(typeName) == null)
@@ -54,7 +55,7 @@ public class CompositeKeyImpl implements TGKey {
             if (attrDesc == null) {
                 attrDesc = ((GraphMetadataImpl)graphMetadata).createAttributeDescriptor(name, value.getClass());
             }
-            attr = new AttributeImpl(null, attrDesc, value);
+            attr = AbstractAttribute.createAttribute(null, attrDesc, value);
         }
         try {
             attr.setValue(value);

@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AbstractEntity.java 2175 2018-03-27 08:28:32Z vchung $
+ * SVN Id: $Id: AbstractEntity.java 2661 2018-11-07 20:18:38Z nimish $
  */
 
 
@@ -27,6 +27,7 @@ import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.log.TGLogger.TGLevel;
 import com.tibco.tgdb.model.*;
+import com.tibco.tgdb.model.impl.attribute.AbstractAttribute;
 import com.tibco.tgdb.pdu.TGInputStream;
 import com.tibco.tgdb.pdu.TGOutputStream;
 
@@ -76,6 +77,8 @@ public abstract class AbstractEntity implements TGEntity {
         return attributes.get(attrName);
     }
 
+    public TGGraphMetadata getGraphMetadata() { return this.graphMetadata;};
+
     @Override
     public boolean isAttributeSet(String attrName) {
         TGAttribute attr = attributes.get(attrName);
@@ -103,7 +106,7 @@ public abstract class AbstractEntity implements TGEntity {
     	}
         TGAttribute attr = attributes.get(name);
         //Do not do anything. We are not setting anything that
-        //we don't know the type
+        //we don't know the desc
         //FIXME: Need to throw an exception
         if (attr == null) {
             TGAttributeDescriptor attrDesc = null;
@@ -111,20 +114,23 @@ public abstract class AbstractEntity implements TGEntity {
             if (attrDesc == null) {
             	if (value == null) {
             		//If the attribute has not been set and has no descriptor, it cannot have a null value
-            		//because we cannot figure out the data type
+            		//because we cannot figure out the data desc
             		throw new TGException(String.format("Null value specified for an undefined attribuyte"));
             	} else {
-            		gLogger.log(TGLevel.Debug, "%s is a new attribute type", name);
+            		gLogger.log(TGLevel.Debug, "%s is a new attribute desc", name);
                     attrDesc = ((GraphMetadataImpl)graphMetadata).createAttributeDescriptor(name, value.getClass());
             	}
             }
-            attr = new AttributeImpl(this, attrDesc, value);
+            //attr = new AttributeImpl(this, attrDesc, value);
+            attr = AbstractAttribute.createAttribute(this, attrDesc, null);
+
         }
         //value can be null here
         if (!attr.isModified()) {
         	modifiedAttributes.add(attr);
         }
-      	attr.setValue(value);
+
+        attr.setValue(value);
         this.setAttribute(attr);
     }
 
@@ -208,7 +214,10 @@ public abstract class AbstractEntity implements TGEntity {
 
         this.isNew = is.readBoolean();  //Should always be False.
         if (isNew == true) {
-        	gLogger.log(TGLevel.Warning, "Deserializing a new entity is not expected");
+        	
+        	//TGDB-504
+        	//gLogger.log(TGLevel.Warning, "Deserializing a new entity is not expected");
+        	
         	this.isNew = false;
         }
         byte kind = is.readByte();
@@ -222,15 +231,16 @@ public abstract class AbstractEntity implements TGEntity {
                 et = ((GraphMetadataImpl) graphMetadata).getEdgeType(entityTypeId);
             this.entityType = et;
             if (et == null) {
-                //FIXME: retrieve entity type together with the entity?
-                gLogger.log(TGLevel.Warning, "Cannot lookup entity type %d from graph meta data cache", entityTypeId);
+                //FIXME: retrieve entity desc together with the entity?
+                gLogger.log(TGLevel.Warning, "Cannot lookup entity desc %d from graph meta data cache", entityTypeId);
             }
         }
 
         int count = is.readInt();
         for (int i=0; i<count; i++) {
-            TGAttribute attr = new AttributeImpl(this);
-            attr.readExternal(is);
+            //TGAttribute attr = new AttributeImpl(this);
+            AbstractAttribute attr = AbstractAttribute.readExternal(this, is);
+            //attr.readExternal(is);
             this.setAttribute(attr);
         }
     }
@@ -247,7 +257,7 @@ public abstract class AbstractEntity implements TGEntity {
 
                 TGAttributeType attrType = TGAttributeType.fromClass(klazz);
 
-                if (attrType == TGAttributeType.Invalid) throw new TGException("Unsupported type :" + klazz.getName());
+                if (attrType == TGAttributeType.Invalid) throw new TGException("Unsupported desc :" + klazz.getName());
 
                 attrDesc = graphMetadata.createAttributeDescriptor(name,attrType, klazz.isArray() );
             }
@@ -261,7 +271,7 @@ public abstract class AbstractEntity implements TGEntity {
     //To be called after transaction to reset to modified attribute flags
     public void resetModifiedAttributes() {
     	for (TGAttribute attr : modifiedAttributes) {
-    		((AttributeImpl) attr).resetIsModified();
+    		((AbstractAttribute) attr).resetIsModified();
     	}
     	modifiedAttributes.clear();
     }
@@ -272,6 +282,10 @@ public abstract class AbstractEntity implements TGEntity {
     
     boolean isInitialized() {
     	return isInitialized;
+    }
+
+    public TGEntityType getEntityType() {
+    	return entityType;
     }
 }
 

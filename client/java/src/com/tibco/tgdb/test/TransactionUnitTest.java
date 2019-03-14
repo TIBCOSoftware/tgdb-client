@@ -59,13 +59,13 @@ public class TransactionUnitTest {
         gof = conn.getGraphObjectFactory();
         gmd = conn.getGraphMetadata(true);
         basicNodeType = gmd.getNodeType("basicnode");
-        if (basicNodeType == null) throw new TGException("Node type basicnode not found");
+        if (basicNodeType == null) throw new TGException("Node desc basicnode not found");
 
         rateNodeType = gmd.getNodeType("ratenode");
-        if (rateNodeType == null) throw new TGException("Node type ratenode not found");
+        if (rateNodeType == null) throw new TGException("Node desc ratenode not found");
 
         testNodeType = gmd.getNodeType("testnode");
-        if (testNodeType == null) throw new TGException("Node type testnode not found");
+        if (testNodeType == null) throw new TGException("Node desc testnode not found");
     }
 
     void disconnect() {
@@ -112,7 +112,7 @@ public class TransactionUnitTest {
 
         System.out.println("Begin test2");
         nodeAllAttrs = gmd.getNodeType("nodeAllAttrs");
-        if (nodeAllAttrs == null) throw new TGException("Node type nodeAllAttrs not found");
+        if (nodeAllAttrs == null) throw new TGException("Node desc nodeAllAttrs not found");
 
         TGNode node = gof.createNode(nodeAllAttrs);
 
