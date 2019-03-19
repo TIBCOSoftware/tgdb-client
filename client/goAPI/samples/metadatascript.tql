@@ -1,0 +1,35 @@
+# helper script for MetadataTest.go
+
+connect tcp://localhost:8222 admin admin
+
+create attrdesc boolAttr as boolean
+create attrdesc byteAttr as byte
+create attrdesc charAttr as char
+create attrdesc shortAttr as short
+create attrdesc intAttr as int
+create attrdesc longAttr as long
+create attrdesc floatAttr as float
+create attrdesc doubleAttr as double 
+create attrdesc numberAttr as number(50,20)
+create attrdesc stringAttr as string
+create attrdesc dateAttr as date
+create attrdesc timeAttr as time
+create attrdesc timestampAttr as timestamp
+
+create nodetype nodeAllAttrs attributes (boolAttr, byteAttr, charAttr, shortAttr, intAttr, longAttr, floatAttr, doubleAttr, numberAttr, stringAttr, dateAttr, timeAttr, timestampAttr) pkeys (stringAttr)
+create nodetype nodeTenAttrs attributes (boolAttr, byteAttr, charAttr, shortAttr, intAttr, longAttr, floatAttr, doubleAttr, numberAttr, stringAttr) pkeys (stringAttr)
+create nodetype nodeOneAttr attributes (stringAttr) pkeys (stringAttr)
+
+# create index boolIndex attributes (boolAttr) on nodeAllAttrs
+# create index byteIndex attributes (byteAttr) on nodeAllAttrs
+# create index charIndex attributes (charAttr) on nodeAllAttrs
+# create index shortIndex attributes (shortAttr) on nodeAllAttrs
+# create index intIndex attributes (intAttr) on nodeAllAttrs
+# create index longIndex attributes (longAttr) on nodeAllAttrs
+# create index floatIndex attributes (floatAttr) on nodeAllAttrs
+# create index doubleIndex attributes (doubleAttr) on nodeAllAttrs
+# create index numberIndex attributes (numberAttr) on nodeAllAttrs
+# create index stringIndex attributes (stringAttr) on nodeAllAttrs
+# create index dateIndex attributes (dateAttr) on nodeAllAttrs
+# create index timeIndex attributes (timeAttr) on nodeAllAttrs
+# create index timestampIndex attributes (timestampAttr) on nodeAllAttrs

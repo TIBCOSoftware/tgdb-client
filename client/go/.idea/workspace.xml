@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="fcf1a98e-078c-4702-98e2-85d79c3406cd" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../goAPI/Test.txt.txt" beforeDir="false" />
+    </list>
+    <ignored path="$PROJECT_DIR$/out/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Go Application" />
+        <option value="Go File" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>CreateEdgeWithDirection</find>
+      <find>Inside NumberAttribute::WriteValue newStr</find>
+      <find>GetEnt</find>
+      <find>2147483731</find>
+      <find>9254</find>
+      <find>AbstractAttribute::ReadExternalForEntity - read attrId</find>
+      <find>ERROR: Returning AbstractEntity:AbstractEntityReadExte</find>
+      <find>TimestampAttribute::ReadValue - attribute type:</find>
+      <find>FIXME</find>
+      <find>ChannelUrl</find>
+      <find>Inside ConnectionPoolImpl:NewTGConnectionPool</find>
+      <find>trustedCerts</find>
+      <find>os.Getenv</find>
+      <find>Path</find>
+      <find>Cmp(</find>
+      <find>DivRound</find>
+      <find>floatInfo</find>
+      <find>bias</find>
+      <find>MarshalJSONWithoutQuotes</find>
+      <find>Zero</find>
+      <find>leftcheats</find>
+      <find>shiftPos</find>
+      <find>Returning TCPChannel:Send w/ error</find>
+      <find>Inside the loop within tradingDataTest - stock transact</find>
+      <find>prepareDataStackForProcessing</find>
+      <find>Inside tradingDataTest: Gathered trading data as:</find>
+      <find>Entering into the loop to process priceDataStack</find>
+      <find>Entering importStockValues</find>
+      <find>BEGIN CERTIFICATE</find>
+      <find>loadSystemRoots</find>
+    </findStrings>
+    <dirStrings>
+      <dir>$PROJECT_DIR$/exception</dir>
+      <dir>$PROJECT_DIR$/iostream</dir>
+      <dir>$PROJECT_DIR$/logging</dir>
+      <dir>$PROJECT_DIR$/pdu</dir>
+      <dir>$PROJECT_DIR$/query</dir>
+      <dir>$PROJECT_DIR$/types</dir>
+      <dir>$PROJECT_DIR$/connection</dir>
+      <dir>$PROJECT_DIR$/utils</dir>
+      <dir>$PROJECT_DIR$/channel</dir>
+      <dir>$PROJECT_DIR$/samples</dir>
+      <dir>$PROJECT_DIR$/model</dir>
+      <dir>/usr/local/go/src</dir>
+      <dir>$PROJECT_DIR$</dir>
+      <dir>/usr/local/go/src/crypto/x509</dir>
+    </dirStrings>
+  </component>
+  <component name="GOROOT" path="/usr/local/go" />
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/model/AttributeDescriptorImpl.go" />
+        <option value="$PROJECT_DIR$/model/AttributeFactory.go" />
+        <option value="$PROJECT_DIR$/model/AttributeFactory_test.go" />
+        <option value="$PROJECT_DIR$/model/BlobAttribute.go" />
+        <option value="$PROJECT_DIR$/model/BooleanAttribute.go" />
+        <option value="$PROJECT_DIR$/model/ByteArrayEntity.go" />
+        <option value="$PROJECT_DIR$/model/ByteAttribute.go" />
+        <option value="$PROJECT_DIR$/model/CharAttribute.go" />
+        <option value="$PROJECT_DIR$/model/ClobAttribute.go" />
+        <option value="$PROJECT_DIR$/model/CompositeKeyImpl.go" />
+        <option value="$PROJECT_DIR$/model/CompositeKeyImpl_test.go" />
+        <option value="$PROJECT_DIR$/model/DoubleAttribute.go" />
+        <option value="$PROJECT_DIR$/model/EdgeImpl.go" />
+        <option value="$PROJECT_DIR$/model/EdgeTypeImpl_test.go" />
+        <option value="$PROJECT_DIR$/model/EntityTypeImpl.go" />
+        <option value="$PROJECT_DIR$/model/EntityTypeImpl_test.go" />
+        <option value="$PROJECT_DIR$/model/FloatAttribute.go" />
+        <option value="$PROJECT_DIR$/model/GraphImpl.go" />
+        <option value="$PROJECT_DIR$/model/GraphImpl_test.go" />
+        <option value="$PROJECT_DIR$/model/GraphMetadataImpl.go" />
+        <option value="$PROJECT_DIR$/model/GraphMetadataImpl_test.go" />
+        <option value="$PROJECT_DIR$/model/GraphObjectFactoryImpl.go" />
+        <option value="$PROJECT_DIR$/model/IntegerAttribute.go" />
+        <option value="$PROJECT_DIR$/model/LongAttribute.go" />
+        <option value="$PROJECT_DIR$/model/NodeImpl.go" />
+        <option value="$PROJECT_DIR$/model/NodeImpl_test.go" />
+        <option value="$PROJECT_DIR$/model/NodeTypeImpl.go" />
+        <option value="$PROJECT_DIR$/model/NodeTypeImpl_test.go" />
+        <option value="$PROJECT_DIR$/model/ShortAttribute.go" />
+        <option value="$PROJECT_DIR$/model/StringAttribute.go" />
+        <option value="$PROJECT_DIR$/model/TimestampAttribute.go" />
+        <option value="$PROJECT_DIR$/README.md" />
+        <option value="$PROJECT_DIR$/model/MyDecimal.go" />
+        <option value="$PROJECT_DIR$/utils/MyDecimal.go" />
+        <option value="$PROJECT_DIR$/model/NumberAttribute.go" />
+        <option value="$PROJECT_DIR$/samples/MetadataTransactions.go" />
+        <option value="$PROJECT_DIR$/utils/TGDecimal.go" />
+        <option value="$PROJECT_DIR$/connection/DefaultConnectionFactory.go" />
+        <option value="$PROJECT_DIR$/connection/ConnectionPoolImpl.go" />
+        <option value="$PROJECT_DIR$/connection/ConnectionImpl.go" />
+        <option value="$PROJECT_DIR$/channel/TGChannelFactory.go" />
+        <option value="$PROJECT_DIR$/channel/LinkUrl.go" />
+        <option value="$PROJECT_DIR$/channel/ChannelReader.go" />
+        <option value="$PROJECT_DIR$/channel/AbstractChannel.go" />
+        <option value="$PROJECT_DIR$/channel/TcpChannel.go" />
+        <option value="$PROJECT_DIR$/samples/stock-initdb.conf" />
+        <option value="$PROJECT_DIR$/samples/TradingData.go" />
+        <option value="$PROJECT_DIR$/main.go" />
+        <option value="$PROJECT_DIR$/channel/SslChannel.go" />
+        <option value="$PROJECT_DIR$/samples/SimpleConnections.go" />
+        <option value="$PROJECT_DIR$/types/TGChannelUrl.go" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="y" value="23" />
+    <option name="width" value="1440" />
+    <option name="height" value="835" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane" />
+      <pane id="PackagesPane" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1552677688971" />
+    <property name="configurable.Global.libraries.is.expanded" value="true" />
+    <property name="go.gopath.indexing.explicitly.defined" value="true" />
+    <property name="go.vendoring.notification.had.been.shown" value="true" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="/usr/local/bin/node" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="project.structure.last.edited" value="Project" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.language" />
+    <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../go-tbr/types/TGChannel.go" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/utils" />
+      <recent name="$PROJECT_DIR$/model" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/types" />
+      <recent name="$PROJECT_DIR$/samples" />
+      <recent name="$PROJECT_DIR$/channel" />
+      <recent name="$PROJECT_DIR$/logging" />
+      <recent name="$PROJECT_DIR$/connection" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Go Build.go build main.go">
+    <configuration default="true" type="Applet">
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="Application" factoryName="Application">
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="go build AncestryGraph.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="tgdb20-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-i" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/samples/AncestryGraph.go" />
+      <package value="github.com/TIBCOSoftware/tgdb-client/client/go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build SimpleConnections.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="tgdb20-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-i" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/samples/SimpleConnections.go" />
+      <package value="github.com/TIBCOSoftware/tgdb-client/client/go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration name="go build main.go" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true" nameIsGenerated="true">
+      <module name="tgdb20-go" />
+      <working_directory value="$PROJECT_DIR$" />
+      <go_parameters value="-i" />
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <package value="github.com/TIBCOSoftware/tgdb-client/client/go" />
+      <directory value="$PROJECT_DIR$" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit">
+      <option name="TEST_OBJECT" value="class" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="TestNG">
+      <option name="TEST_OBJECT" value="CLASS" />
+      <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
+      <properties />
+      <listeners />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType">
+      <module name="" />
+      <option name="VM_PARAMETERS" value="-Xmx512m -Xms256m -XX:MaxPermSize=250m -ea" />
+      <option name="PROGRAM_PARAMETERS" />
+      <predefined_log_file enabled="true" id="idea.log" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Go Build.go build main.go" />
+        <item itemvalue="Go Build.go build SimpleConnections.go" />
+        <item itemvalue="Go Build.go build AncestryGraph.go" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration>$USER_HOME$/.subversion</configuration>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fcf1a98e-078c-4702-98e2-85d79c3406cd" name="Default Changelist" comment="" />
+      <created>1546545354625</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1546545354625</updated>
+      <workItem from="1546545358898" duration="629000" />
+      <workItem from="1546554954550" duration="4026000" />
+      <workItem from="1546613677986" duration="38741000" />
+      <workItem from="1546871972836" duration="40741000" />
+      <workItem from="1547071944731" duration="20841000" />
+      <workItem from="1547243760995" duration="10362000" />
+      <workItem from="1547496893317" duration="1914000" />
+      <workItem from="1547509943257" duration="1976000" />
+      <workItem from="1547573555759" duration="7059000" />
+      <workItem from="1547655178770" duration="31000" />
+      <workItem from="1547655280117" duration="23624000" />
+      <workItem from="1547825798169" duration="1023000" />
+      <workItem from="1547857442083" duration="6702000" />
+      <workItem from="1548087091321" duration="32415000" />
+      <workItem from="1548266881966" duration="110000" />
+      <workItem from="1548281188546" duration="611000" />
+      <workItem from="1548462329248" duration="8650000" />
+      <workItem from="1548533662141" duration="29734000" />
+      <workItem from="1548778462862" duration="15038000" />
+      <workItem from="1549136171369" duration="10552000" />
+      <workItem from="1549217003064" duration="71000" />
+      <workItem from="1549227376119" duration="9636000" />
+      <workItem from="1549321112225" duration="1253000" />
+      <workItem from="1549325188201" duration="5604000" />
+      <workItem from="1549390149542" duration="7828000" />
+      <workItem from="1549406716915" duration="7647000" />
+      <workItem from="1549488867438" duration="1575000" />
+      <workItem from="1549588222785" duration="982000" />
+      <workItem from="1549662988450" duration="14161000" />
+      <workItem from="1549747795094" duration="799000" />
+      <workItem from="1549748627339" duration="21053000" />
+      <workItem from="1550002785288" duration="4166000" />
+      <workItem from="1550276614845" duration="786000" />
+      <workItem from="1550611303688" duration="365000" />
+      <workItem from="1550611768175" duration="4265000" />
+      <workItem from="1550621697892" duration="1910000" />
+      <workItem from="1550701931644" duration="19320000" />
+      <workItem from="1550790046413" duration="12967000" />
+      <workItem from="1550852811811" duration="39231000" />
+      <workItem from="1551055951736" duration="502000" />
+      <workItem from="1551123838142" duration="10507000" />
+      <workItem from="1551192613843" duration="54444000" />
+      <workItem from="1551479489242" duration="20440000" />
+      <workItem from="1551720216254" duration="19196000" />
+      <workItem from="1551798501283" duration="16989000" />
+      <workItem from="1551894503288" duration="9480000" />
+      <workItem from="1551969752989" duration="6708000" />
+      <workItem from="1552055501694" duration="172000" />
+      <workItem from="1552075598705" duration="38000" />
+      <workItem from="1552075715891" duration="29657000" />
+      <workItem from="1552306427351" duration="11006000" />
+      <workItem from="1552434009184" duration="1401000" />
+      <workItem from="1552579390471" duration="9000" />
+      <workItem from="1552580200875" duration="7670000" />
+      <workItem from="1553009061401" duration="550000" />
+      <workItem from="1553017404935" duration="767000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="597934000" />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="23" width="1440" height="835" extended-state="6" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.50277776" visible="true" weight="0.21816881" />
+      <window_info id="Image Layers" order="1" />
+      <window_info id="Designer" order="2" />
+      <window_info id="Capture Tool" order="3" />
+      <window_info id="Favorites" order="4" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32916668" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.32916668" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.5013889" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Docker" order="7" />
+      <window_info anchor="bottom" id="Database Changes" order="8" />
+      <window_info anchor="bottom" id="Terminal" order="9" />
+      <window_info anchor="bottom" id="Event Log" order="10" side_tool="true" />
+      <window_info anchor="bottom" id="Version Control" order="11" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Theme Preview" order="3" />
+      <window_info anchor="right" id="Maven" order="4" />
+      <window_info anchor="right" id="Capture Analysis" order="5" />
+      <window_info anchor="right" id="Palette&#9;" order="6" />
+      <window_info anchor="right" id="SciView" order="7" />
+      <window_info anchor="right" id="Database" order="8" />
+      <window_info anchor="right" id="Structure" order="9" sideWeight="0.49722221" side_tool="true" weight="0.1416309" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/samples/AncestryGraph.go</url>
+          <line>255</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/samples/AncestryGraph.go</url>
+          <line>232</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/connection/ConnectionImpl.go</url>
+          <line>553</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/samples/AncestryGraph.go</url>
+          <line>179</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/channel/SslChannel.go</url>
+          <line>83</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/samples/SimpleConnections.go</url>
+          <line>142</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DlvLineBreakpoint">
+          <url>file://$PROJECT_DIR$/channel/SslChannel.go</url>
+          <line>164</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/model/AbstractEntity.go" />
+    <entry file="file://$PROJECT_DIR$/model/AbstractAttribute.go" />
+    <entry file="file://$PROJECT_DIR$/model/BooleanAttribute.go" />
+    <entry file="file://$PROJECT_DIR$/model/ByteArrayEntity.go" />
+    <entry file="file://$PROJECT_DIR$/types/TGChannel.go" />
+    <entry file="file://$PROJECT_DIR$/logging/TGLogManager.go" />
+    <entry file="file://$PROJECT_DIR$/logging/SimpleLogger.go" />
+    <entry file="file://$PROJECT_DIR$/README.md 2" />
+    <entry file="file://$PROJECT_DIR$/Gopkg.toml.1" />
+    <entry file="file://$PROJECT_DIR$/README.md" />
+    <entry file="file://$PROJECT_DIR$/utils/TGEnvironment.go" />
+    <entry file="file:///usr/local/go/src/strings/strings.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="369" column="5" selection-start-line="369" selection-start-column="5" selection-end-line="369" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/os/env.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="143">
+          <caret line="79" column="5" selection-start-line="79" selection-start-column="5" selection-end-line="79" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/math/big/int.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="231">
+          <caret line="409" column="14" selection-start-line="409" selection-start-column="14" selection-end-line="409" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/model/LongAttribute.go" />
+    <entry file="file://$PROJECT_DIR$/model/NumberAttribute.go" />
+    <entry file="file://$PROJECT_DIR$/samples/MetadataTransactions.go" />
+    <entry file="file://$PROJECT_DIR$/MetaDataTest1.log" />
+    <entry file="file://$PROJECT_DIR$/utils/TGDecimal.go" />
+    <entry file="file://$PROJECT_DIR$/connection/TransactionImpl.go" />
+    <entry file="file://$PROJECT_DIR$/channel/BlockingChannelResponse.go" />
+    <entry file="file://$PROJECT_DIR$/channel/TGCipherSuite.go" />
+    <entry file="file://$PROJECT_DIR$/channel/LinkUrl.go" />
+    <entry file="file://$PROJECT_DIR$/channel/ChannelReader.go" />
+    <entry file="file://$PROJECT_DIR$/channel/TcpChannel.go" />
+    <entry file="file://$PROJECT_DIR$/samples/stock-initdb.conf" />
+    <entry file="file://$PROJECT_DIR$/samples/TradingData.go" />
+    <entry file="file://$PROJECT_DIR$/TradingDataTest.log" />
+    <entry file="file://$PROJECT_DIR$/utils/ConfigName.go" />
+    <entry file="file:///usr/local/go/src/crypto/tls/common.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1039">
+          <caret line="335" column="5" selection-start-line="335" selection-start-column="5" selection-end-line="335" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/io/ioutil/ioutil.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="275">
+          <caret line="48" column="5" selection-start-line="48" selection-start-column="5" selection-end-line="48" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/encoding/pem/pem.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="29">
+          <caret line="69" column="34" selection-start-line="69" selection-start-column="34" selection-end-line="69" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/crypto/x509/x509.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="2185" column="5" selection-start-line="2185" selection-start-column="5" selection-end-line="2185" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/crypto/x509/root_darwin_test.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file:///usr/local/go/src/crypto/x509/root_darwin_arm_gen.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file:///usr/local/go/src/crypto/x509/root_darwin_armx.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="152">
+          <caret line="12" column="19" selection-start-line="12" selection-start-column="19" selection-end-line="12" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/crypto/x509/root_darwin.go">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file:///usr/local/go/src/crypto/x509/cert_pool.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-41">
+          <caret line="37" column="11" selection-start-line="37" selection-start-column="11" selection-end-line="37" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/runtime/proc.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="111">
+          <caret line="193" selection-start-line="193" selection-end-line="193" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/crypto/tls/tls.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1605">
+          <caret line="119" column="29" selection-start-line="119" selection-start-column="29" selection-end-line="119" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/go/src/net/dial.go">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1980">
+          <caret line="136" column="5" selection-start-line="136" selection-start-column="5" selection-end-line="136" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/channel/AbstractChannel.go" />
+    <entry file="file://$PROJECT_DIR$/connection/DefaultConnectionFactory.go" />
+    <entry file="file://$PROJECT_DIR$/connection/ConnectionImpl.go" />
+    <entry file="file://$PROJECT_DIR$/channel/SslChannel.go" />
+    <entry file="file://$PROJECT_DIR$/main.go" />
+    <entry file="file://$PROJECT_DIR$/samples/SimpleConnections.go" />
+    <entry file="file://$PROJECT_DIR$/SimpleConnTest1.log" />
+    <entry file="file://$PROJECT_DIR$/channel/TGChannelFactory.go" />
+    <entry file="file://$PROJECT_DIR$/types/TGChannelUrl.go" />
+    <entry file="file://$PROJECT_DIR$/connection/ConnectionPoolImpl.go" />
+  </component>
+  <component name="masterDetails">
+    <states>
+      <state key="GlobalLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="JdkListConfigurable.UI">
+        <settings>
+          <last-edited>Go 1.6</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectJDKs.UI">
+        <settings>
+          <last-edited>Go 1.6</last-edited>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+      <state key="ProjectLibrariesConfigurable.UI">
+        <settings>
+          <splitter-proportions>
+            <option name="proportions">
+              <list>
+                <option value="0.2" />
+              </list>
+            </option>
+          </splitter-proportions>
+        </settings>
+      </state>
+    </states>
+  </component>
+</project>
