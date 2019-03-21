@@ -43,8 +43,9 @@ const (
 type HandShakeRequestMessage struct {
 	*AbstractProtocolMessage
 	sslMode       bool
-	challenge     int
+	challenge     int64
 	handshakeType int
+	version       int64
 }
 
 func DefaultHandShakeRequestMessage() *HandShakeRequestMessage {
@@ -60,6 +61,7 @@ func DefaultHandShakeRequestMessage() *HandShakeRequestMessage {
 	newMsg.VerbId = VerbHandShakeRequest
 	newMsg.sslMode = false
 	newMsg.challenge = 0
+	newMsg.version = 0
 	newMsg.handshakeType = InvalidRequest
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
@@ -82,7 +84,7 @@ func (msg *HandShakeRequestMessage) GetSslMode() bool {
 	return msg.sslMode
 }
 
-func (msg *HandShakeRequestMessage) GetChallenge() int {
+func (msg *HandShakeRequestMessage) GetChallenge() int64 {
 	return msg.challenge
 }
 
@@ -90,16 +92,24 @@ func (msg *HandShakeRequestMessage) GetRequestType() int {
 	return msg.handshakeType
 }
 
+func (msg *HandShakeRequestMessage) GetVersion() int64 {
+	return msg.version
+}
+
 func (msg *HandShakeRequestMessage) SetSslMode(mode bool) {
 	msg.sslMode = mode
 }
 
-func (msg *HandShakeRequestMessage) SetChallenge(challenge int) {
+func (msg *HandShakeRequestMessage) SetChallenge(challenge int64) {
 	msg.challenge = challenge
 }
 
 func (msg *HandShakeRequestMessage) SetRequestType(rType int) {
 	msg.handshakeType = rType
+}
+
+func (msg *HandShakeRequestMessage) SetVersion(version int64) {
+	msg.version = version
 }
 
 /////////////////////////////////////////////////////////////////
@@ -240,6 +250,7 @@ func (msg *HandShakeRequestMessage) String() string {
 	buffer.WriteString(fmt.Sprintf("SslMode: %+v", msg.sslMode))
 	buffer.WriteString(fmt.Sprintf(", Challenge: %d", msg.challenge))
 	buffer.WriteString(fmt.Sprintf(", HandshakeType: %d", msg.handshakeType))
+	buffer.WriteString(fmt.Sprintf(", Version: %d", msg.version))
 	buffer.WriteString(fmt.Sprintf(", BufLength: %d", msg.BufLength))
 	strArray := []string{buffer.String(), msg.messageToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
@@ -281,7 +292,7 @@ func (msg *HandShakeRequestMessage) ReadPayload(is types.TGInputStream) types.TG
 	}
 	logger.Log(fmt.Sprintf("Inside HandShakeRequestMessage:ReadPayload read mode as '%+v'", mode))
 
-	challenge, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
+	challenge, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning HandShakeRequestMessage:ReadPayload w/ Error in reading challenge from message buffer"))
 		return err
@@ -301,7 +312,7 @@ func (msg *HandShakeRequestMessage) WritePayload(os types.TGOutputStream) types.
 	logger.Log(fmt.Sprintf("Entering HandShakeRequestMessage:WritePayload at output buffer position: '%d'", startPos))
 	os.(*iostream.ProtocolDataOutputStream).WriteByte(msg.GetRequestType())
 	os.(*iostream.ProtocolDataOutputStream).WriteBoolean(msg.GetSslMode())
-	os.(*iostream.ProtocolDataOutputStream).WriteInt(msg.GetChallenge())
+	os.(*iostream.ProtocolDataOutputStream).WriteLong(msg.GetChallenge())
 	currPos := os.GetPosition()
 	length := currPos - startPos
 	logger.Log(fmt.Sprintf("Returning HandShakeRequestMessage::WritePayload at output buffer position at: %d after writing %d payload bytes", currPos, length))
@@ -316,7 +327,7 @@ func (msg *HandShakeRequestMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
 	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.sslMode, msg.challenge, msg.handshakeType)
+		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.sslMode, msg.challenge, msg.handshakeType, msg.version)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning HandShakeRequestMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -334,7 +345,7 @@ func (msg *HandShakeRequestMessage) UnmarshalBinary(data []byte) error {
 	b := bytes.NewBuffer(data)
 	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
 		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
-		&msg.sslMode, &msg.challenge, &msg.handshakeType)
+		&msg.sslMode, &msg.challenge, &msg.handshakeType, &msg.version)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning HandShakeRequestMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

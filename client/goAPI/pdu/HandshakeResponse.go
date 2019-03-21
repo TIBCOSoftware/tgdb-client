@@ -38,12 +38,15 @@ const (
 	ResponseInvalid = iota
 	ResponseAcceptChallenge
 	ResponseProceedWithAuthentication
+	ResponseChallengeFailed
 )
 
 type HandShakeResponseMessage struct {
 	*AbstractProtocolMessage
-	challenge      int
+	challenge      int64
 	responseStatus int
+	version        int64
+	errorMessage   string
 }
 
 func DefaultHandShakeResponseMessage() *HandShakeResponseMessage {
@@ -56,6 +59,7 @@ func DefaultHandShakeResponseMessage() *HandShakeResponseMessage {
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
 	newMsg.challenge = 0
+	newMsg.version = 0
 	newMsg.responseStatus = ResponseInvalid
 	newMsg.VerbId = VerbHandShakeResponse
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
@@ -75,20 +79,36 @@ func NewHandShakeResponseMessage(authToken, sessionId int64) *HandShakeResponseM
 // Helper functions for HandShakeResponseMessage
 /////////////////////////////////////////////////////////////////
 
-func (msg *HandShakeResponseMessage) GetChallenge() int {
+func (msg *HandShakeResponseMessage) GetChallenge() int64 {
 	return msg.challenge
+}
+
+func (msg *HandShakeResponseMessage) GetErrorMessage() string {
+	return msg.errorMessage
 }
 
 func (msg *HandShakeResponseMessage) GetResponseStatus() int {
 	return msg.responseStatus
 }
 
-func (msg *HandShakeResponseMessage) SetChallenge(challenge int) {
+func (msg *HandShakeResponseMessage) GetVersion() int64 {
+	return msg.version
+}
+
+func (msg *HandShakeResponseMessage) SetChallenge(challenge int64) {
 	msg.challenge = challenge
+}
+
+func (msg *HandShakeResponseMessage) SetErrorMessage(errMsg string) {
+	msg.errorMessage = errMsg
 }
 
 func (msg *HandShakeResponseMessage) SetResponseStatus(rStatus int) {
 	msg.responseStatus = rStatus
+}
+
+func (msg *HandShakeResponseMessage) SetVersion(version int64) {
+	msg.version = version
 }
 
 /////////////////////////////////////////////////////////////////
@@ -262,13 +282,22 @@ func (msg *HandShakeResponseMessage) ReadPayload(is types.TGInputStream) types.T
 	}
 	logger.Log(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read rStatus as '%+v'", rStatus))
 
-	challenge, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
+	challenge, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:ReadPayload w/ Error in reading challenge from message buffer"))
 		return err
 	}
 	logger.Log(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read challenge as '%+v'", challenge))
 
+	if int(rStatus) == ResponseChallengeFailed {
+		errMsgBytes, err := is.(*iostream.ProtocolDataInputStream).ReadBytes()
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:ReadPayload w/ Error in reading errMsgBytes from message buffer"))
+			return err
+		}
+		logger.Log(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read rStatus as '%+v'", errMsgBytes))
+		msg.SetErrorMessage(string(errMsgBytes))
+	}
 	msg.SetResponseStatus(int(rStatus))
 	msg.SetChallenge(challenge)
 	logger.Log(fmt.Sprint("Returning HandShakeResponseMessage:ReadPayload"))
@@ -281,7 +310,7 @@ func (msg *HandShakeResponseMessage) WritePayload(os types.TGOutputStream) types
 	logger.Log(fmt.Sprintf("Entering HandShakeResponseMessage:WritePayload at output buffer position: '%d'", startPos))
 	//This is purely for testing. Client never writes out the response.
 	os.(*iostream.ProtocolDataOutputStream).WriteByte(msg.GetResponseStatus())
-	os.(*iostream.ProtocolDataOutputStream).WriteInt(msg.GetChallenge())
+	os.(*iostream.ProtocolDataOutputStream).WriteLong(msg.GetChallenge())
 	currPos := os.GetPosition()
 	length := currPos - startPos
 	logger.Log(fmt.Sprintf("Returning HandShakeResponseMessage::WritePayload at output buffer position at: %d after writing %d payload bytes", currPos, length))
@@ -296,7 +325,8 @@ func (msg *HandShakeResponseMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
 	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.challenge, msg.responseStatus)
+		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.challenge, msg.responseStatus,
+		msg.version, msg.errorMessage)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning HandShakeResponseMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -314,7 +344,7 @@ func (msg *HandShakeResponseMessage) UnmarshalBinary(data []byte) error {
 	b := bytes.NewBuffer(data)
 	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
 		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
-		&msg.challenge, &msg.responseStatus)
+		&msg.challenge, &msg.responseStatus, &msg.version, &msg.errorMessage)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning HandShakeResponseMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

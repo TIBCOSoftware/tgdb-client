@@ -145,8 +145,16 @@ func (obj *TCPChannel) performHandshake(sslMode bool) types.TGError {
 		return exception.NewTGGeneralException(types.TGDB_HNDSHKRESP_ERROR, types.TGErrorGeneralException, errMsg, "")
 	}
 
-	challenge := response.GetChallenge()
-	challenge = challenge * 2 / 3
+	// Validate the version specific information on the response object
+	serverVersion := response.GetChallenge()
+	clientVersion := utils.GetClientVersion()
+	err = obj.validateHandshakeResponseVersion(serverVersion, clientVersion)
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::performHandshake validateHandshakeResponseVersion failed w/ '%+v'", err.Error()))
+		return err
+	}
+
+	challenge := clientVersion.GetVersionAsLong()
 
 	// Ignore Error Handling
 	_ = msgRequest.(*pdu.HandShakeRequestMessage).UpdateSequenceAndTimeStamp(-1)
@@ -251,6 +259,23 @@ func (obj *TCPChannel) tryRead() (types.TGMessage, types.TGError) {
 
 	logger.Log(fmt.Sprintf("======> Inside TCPChannel:tryRead about to request message '%d' bytes from the wire", n))
 	return obj.ReadWireMsg()
+}
+
+func (obj *TCPChannel) validateHandshakeResponseVersion(sVersion int64, cVersion *utils.TGClientVersion) types.TGError {
+	serverVersion := utils.NewTGServerVersion(sVersion)
+	sStrVer := serverVersion.GetVersionString()
+
+	cStrVer := cVersion.GetVersionString()
+
+	if 	serverVersion.GetMajor() == cVersion.GetMajor() &&
+		serverVersion.GetMinor() == cVersion.GetMinor() &&
+		serverVersion.GetUpdate() == cVersion.GetUpdate() {
+		return nil
+	}
+
+	errMsg := fmt.Sprintf("======> Inside SSLChannel:validateHandshakeResponseVersion - Version mismatch between client(%s) & server(%s)", cStrVer, sStrVer)
+	logger.Log(errMsg)
+	return exception.GetErrorByType(types.TGErrorVersionMismatchException, "", errMsg, "")
 }
 
 func (obj *TCPChannel) writeLoop(done chan bool) {
@@ -676,6 +701,14 @@ func (obj *TCPChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 		errMsg := msg.(*pdu.ExceptionMessage).GetExceptionMsg()
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
 	}
+
+	//if msg.GetVerbId() == pdu.VerbHandShakeResponse {
+	//	if msg.GetResponseStatus() == pdu.ResponseChallengeFailed {
+	//		errMsg := msg.GetErrorMessage()
+	//		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::ReadWireMsg msg.GetVerbId() == pdu.VerbHandShakeResponse w/ '%+v'", errMsg))
+	//		return nil, exception.GetErrorByType(types.TGErrorVersionMismatchException, "", errMsg, "")
+	//	}
+	//}
 	logger.Log(fmt.Sprintf("======> Returning TCPChannel:ReadWireMsg w/ Socket '%+v' and Message as '%+v'", obj.socket, msg.String()))
 	return msg, nil
 }

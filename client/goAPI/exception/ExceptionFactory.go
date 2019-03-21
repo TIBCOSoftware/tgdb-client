@@ -64,6 +64,8 @@ func CreateExceptionByType(excpTypeId int) types.TGError {
 		return DefaultTGTypeCoercionNotSupported()
 	case types.TGErrorTypeNotSupported:
 		return DefaultTGTypeNotSupported()
+	case types.TGErrorVersionMismatchException:
+		return DefaultTGVersionMismatchException()
 
 	case types.TGErrorInvalidErrorCode:
 		fallthrough
@@ -116,6 +118,8 @@ func GetErrorByType(excpTypeId int, errorCode, errorMsg, errorDetails string) ty
 		return NewTGTypeCoercionNotSupported(errorCode, excpTypeId, errorMsg, errorDetails)
 	case types.TGErrorTypeNotSupported:
 		return NewTGTypeNotSupported(errorCode, excpTypeId, errorMsg, errorDetails)
+	case types.TGErrorVersionMismatchException:
+		return NewTGVersionMismatchException(errorCode, excpTypeId, errorMsg, errorDetails)
 
 	case types.TGErrorInvalidErrorCode:
 		fallthrough

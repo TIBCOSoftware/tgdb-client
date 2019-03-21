@@ -44,6 +44,7 @@ const (
 	TGErrorTransactionException
 	TGErrorTypeCoercionNotSupported
 	TGErrorTypeNotSupported
+	TGErrorVersionMismatchException
 	TGErrorInvalidErrorCode
 )
 
@@ -81,6 +82,7 @@ var PreDefinedErrors = map[int]TGDBError{
 	TGErrorTransactionException:     {ErrorCode: "TGErrorTransactionException", ErrorType: TGErrorTransactionException, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorTypeCoercionNotSupported: {ErrorCode: "TGErrorTypeCoercionNotSupported", ErrorType: TGErrorTypeCoercionNotSupported, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorTypeNotSupported:         {ErrorCode: "TGErrorTypeNotSupported", ErrorType: TGErrorTypeNotSupported, ErrorMsg: "", ErrorDetails: ""},
+	TGErrorVersionMismatchException: {ErrorCode: "TGErrorVersionMismatchException", ErrorType: TGErrorVersionMismatchException, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorInvalidErrorCode:         {ErrorCode: "TGErrorInvalidErrorCode", ErrorType: TGErrorInvalidErrorCode, ErrorMsg: "", ErrorDetails: ""},
 }
 

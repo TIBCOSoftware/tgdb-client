@@ -111,6 +111,7 @@ var PreDefinedVerbs = map[int]CommandVerbs{
 	VerbGetEntityResponse:           {Id: VerbGetEntityResponse, Name: "VerbGetEntityResponse", Implementor: "pdu.VerbGetEntityResponse"}, //Represented in ms. Default Value is 10sec
 	VerbGetLargeObjectRequest:       {Id: VerbGetLargeObjectRequest, Name: "VerbGetLargeObjectRequest", Implementor: "pdu.VerbGetLargeObjectRequest"},
 	VerbGetLargeObjectResponse:      {Id: VerbGetLargeObjectResponse, Name: "VerbGetLargeObjectResponse", Implementor: "pdu.VerbGetLargeObjectResponse"},
+	VerbDumpStacktraceRequest:       {Id: VerbDumpStacktraceRequest, Name: "VerbDumpStacktraceRequest", Implementor: "pdu.VerbDumpStacktraceRequest"},
 	VerbDisconnectChannelRequest:    {Id: VerbDisconnectChannelRequest, Name: "VerbDisconnectChannelRequest", Implementor: "pdu.VerbDisconnectChannelRequest"},
 	VerbSessionForcefullyTerminated: {Id: VerbSessionForcefullyTerminated, Name: "VerbSessionForcefullyTerminated", Implementor: "pdu.VerbSessionForcefullyTerminated"},
 	VerbExceptionMessage:            {Id: VerbExceptionMessage, Name: "VerbExceptionMessage", Implementor: "pdu.VerbExceptionMessage"},

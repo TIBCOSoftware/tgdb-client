@@ -78,6 +78,7 @@ var ConnectionsToChannel int32
 type AbstractChannel struct {
 	AuthToken         int64
 	ChannelProperties *utils.SortedProperties
+	ChannelUrl        *LinkUrl
 	ClientId          string
 	ConnectionIndex   int
 	InboxAddress      string
@@ -85,15 +86,15 @@ type AbstractChannel struct {
 	NumOfConnections  int32
 	LastActiveTime    time.Time
 	LinkState         types.LinkState
-	ChannelUrl        *LinkUrl
 	PrimaryUrl        *LinkUrl
+	Reader            *ChannelReader
 	RequestId         int64
 	Responses         map[int64]types.TGChannelResponse
 	SessionId         int64
-	Reader            *ChannelReader
-	sendLock          sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
 	exceptionLock     sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
 	exceptionCond     *sync.Cond // Condition for lock
+	sendLock          sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
+	//tracer            types.Tracer // Used for tracing the information flow during the execution
 }
 
 func DefaultAbstractChannel() *AbstractChannel {
@@ -124,6 +125,17 @@ func NewAbstractChannel(linkUrl *LinkUrl, props *utils.SortedProperties) *Abstra
 	newChannel.ChannelUrl = linkUrl
 	newChannel.PrimaryUrl = linkUrl
 	newChannel.ChannelProperties = props
+	//enableTraceFlag := newChannel.ChannelProperties.GetPropertyAsBoolean(utils.GetConfigFromKey(utils.EnableConnectionTrace))
+	//if enableTraceFlag {
+	//	traceDir := newChannel.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ConnectionTraceDir), ".")
+	//	clientId := newChannel.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ChannelClientId), "")
+	//	tracer, err := NewChannelTracer(clientId, traceDir)
+	//	if err != nil {
+	//		enableTraceFlag = false
+	//	} else {
+	//		newChannel.tracer = tracer
+	//	}
+	//}
 	return newChannel
 }
 
@@ -523,9 +535,8 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 			errMsg := fmt.Sprintf("AbstractChannel:channelSendRequest - Channel is closed")
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 		}
-		//if ! channelResponse.IsBlocking() {
-		//	logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendRequest as channel response is NOT blocking"))
-		//	return nil, nil
+		//if obj.tracer != nil {
+		//	obj.tracer.Trace(msg)
 		//}
 		obj.ChannelLock()
 		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest about to set channel response '%+v' in map '%+v'", channelResponse, obj.GetResponses()))
