@@ -45,7 +45,7 @@ func DefaultTraverseResponseMessage() *TraverseResponseMessage {
 	newMsg := TraverseResponseMessage{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.VerbId = VerbTraverseResponse
+	newMsg.verbId = VerbTraverseResponse
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -53,8 +53,8 @@ func DefaultTraverseResponseMessage() *TraverseResponseMessage {
 // Create New Message Instance
 func NewTraverseResponseMessage(authToken, sessionId int64) *TraverseResponseMessage {
 	newMsg := DefaultTraverseResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -236,8 +236,8 @@ func (msg *TraverseResponseMessage) WritePayload(os types.TGOutputStream) types.
 func (msg *TraverseResponseMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TraverseResponseMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -253,8 +253,8 @@ func (msg *TraverseResponseMessage) MarshalBinary() ([]byte, error) {
 func (msg *TraverseResponseMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable)
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TraverseResponseMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

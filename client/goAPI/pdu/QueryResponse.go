@@ -56,7 +56,7 @@ func DefaultQueryResponseMessage() *QueryResponseMessage {
 	newMsg.resultCount = 0
 	newMsg.result = 0
 	newMsg.queryHashId = 0
-	newMsg.VerbId = VerbQueryResponse
+	newMsg.verbId = VerbQueryResponse
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -64,8 +64,8 @@ func DefaultQueryResponseMessage() *QueryResponseMessage {
 // Create New Message Instance
 func NewQueryResponseMessage(authToken, sessionId int64) *QueryResponseMessage {
 	newMsg := DefaultQueryResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -378,8 +378,8 @@ func (msg *QueryResponseMessage) WritePayload(os types.TGOutputStream) types.TGE
 func (msg *QueryResponseMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.hasResult, msg.totalCount,
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.hasResult, msg.totalCount,
 		msg.resultCount, msg.result, msg.queryHashId)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning QueryResponseMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -396,8 +396,8 @@ func (msg *QueryResponseMessage) MarshalBinary() ([]byte, error) {
 func (msg *QueryResponseMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.hasResult, &msg.totalCount, &msg.resultCount, &msg.result, &msg.queryHashId)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning QueryResponseMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

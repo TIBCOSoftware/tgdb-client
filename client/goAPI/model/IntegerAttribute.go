@@ -52,20 +52,20 @@ func DefaultIntegerAttribute() *IntegerAttribute {
 
 func NewIntegerAttributeWithOwner(ownerEntity types.TGEntity) *IntegerAttribute {
 	newAttribute := DefaultIntegerAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewIntegerAttribute(attrDesc *AttributeDescriptor) *IntegerAttribute {
 	newAttribute := DefaultIntegerAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewIntegerAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *IntegerAttribute {
 	newAttribute := NewIntegerAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -74,10 +74,10 @@ func NewIntegerAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *Attribute
 /////////////////////////////////////////////////////////////////
 
 func (obj *IntegerAttribute) SetInteger(b int) {
-	if !obj.IsNull() && obj.AttrValue == b {
+	if !obj.IsNull() && obj.attrValue == b {
 		return
 	}
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
@@ -131,11 +131,11 @@ func (obj *IntegerAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
 		//errMsg := fmt.Sprintf("Attribute value is required")
 		//return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 
@@ -174,13 +174,13 @@ func (obj *IntegerAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("IntegerAttribute::ReadValue - read value: '%+v'", value))
-	obj.AttrValue = value
+	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *IntegerAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	iValue := reflect.ValueOf(obj.AttrValue).Int()
+	iValue := reflect.ValueOf(obj.attrValue).Int()
 	os.(*iostream.ProtocolDataOutputStream).WriteInt(int(iValue))
 	return nil
 }
@@ -214,7 +214,7 @@ func (obj *IntegerAttribute) WriteExternal(os types.TGOutputStream) types.TGErro
 func (obj *IntegerAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning IntegerAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -229,7 +229,7 @@ func (obj *IntegerAttribute) MarshalBinary() ([]byte, error) {
 func (obj *IntegerAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning IntegerAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

@@ -37,17 +37,17 @@ import (
 var EntitySequencer int64
 
 type AbstractEntity struct {
-	EntityId           int64
+	entityId           int64
 	EntityKind         types.TGEntityKind
 	EntityType         types.TGEntityType
-	IsDeleted          bool
-	IsInitialized      bool
-	IsNew              bool
-	Version            int
+	isDeleted          bool
+	isInitialized      bool
+	isNew              bool
+	version            int
 	virtualId          int64
-	GraphMetadata      *GraphMetadata
-	Attributes         map[string]types.TGAttribute
-	ModifiedAttributes []types.TGAttribute
+	graphMetadata      *GraphMetadata
+	attributes         map[string]types.TGAttribute
+	modifiedAttributes []types.TGAttribute
 }
 
 func DefaultAbstractEntity() *AbstractEntity {
@@ -57,14 +57,14 @@ func DefaultAbstractEntity() *AbstractEntity {
 	gob.Register(AbstractEntity{})
 
 	newAbstractEntity := AbstractEntity{
-		EntityId:           -1,
+		entityId: -1,
 		//EntityKind:         types.EntityKindInvalid,
-		IsDeleted:          false,
-		IsNew:              true,
-		IsInitialized:      true,
-		Version:            0,
-		Attributes:         make(map[string]types.TGAttribute, 0),
-		ModifiedAttributes: make([]types.TGAttribute, 0),
+		isDeleted:          false,
+		isNew:              true,
+		isInitialized:      true,
+		version:            0,
+		attributes:         make(map[string]types.TGAttribute, 0),
+		modifiedAttributes: make([]types.TGAttribute, 0),
 	}
 	newAbstractEntity.virtualId = atomic.AddInt64(&EntitySequencer, -1)
 	newAbstractEntity.EntityType = DefaultEntityType()
@@ -73,7 +73,7 @@ func DefaultAbstractEntity() *AbstractEntity {
 
 func NewAbstractEntity(gmd *GraphMetadata) *AbstractEntity {
 	newAbstractEntity := DefaultAbstractEntity()
-	newAbstractEntity.GraphMetadata = gmd
+	newAbstractEntity.graphMetadata = gmd
 	return newAbstractEntity
 }
 
@@ -84,34 +84,34 @@ func NewAbstractEntity(gmd *GraphMetadata) *AbstractEntity {
 func (obj *AbstractEntity) entityToString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("AbstractEntity:{")
-	buffer.WriteString(fmt.Sprintf("EntityId: %+v", obj.EntityId))
+	buffer.WriteString(fmt.Sprintf("EntityId: %+v", obj.entityId))
 	buffer.WriteString(fmt.Sprintf(", EntityKind: %d", obj.EntityKind))
 	buffer.WriteString(fmt.Sprintf(", EntityType: %+v", obj.EntityType))
-	buffer.WriteString(fmt.Sprintf(", IsDeleted: %+v", obj.IsDeleted))
-	buffer.WriteString(fmt.Sprintf(", IsInitialized: %+v", obj.IsInitialized))
-	buffer.WriteString(fmt.Sprintf(", IsNew: %+v", obj.IsNew))
-	buffer.WriteString(fmt.Sprintf(", Version: %d", obj.Version))
+	buffer.WriteString(fmt.Sprintf(", IsDeleted: %+v", obj.isDeleted))
+	buffer.WriteString(fmt.Sprintf(", IsInitialized: %+v", obj.isInitialized))
+	buffer.WriteString(fmt.Sprintf(", IsNew: %+v", obj.isNew))
+	buffer.WriteString(fmt.Sprintf(", Version: %d", obj.version))
 	buffer.WriteString(fmt.Sprintf(", virtualId: %d", obj.virtualId))
 	//buffer.WriteString(fmt.Sprintf(", GraphMetadata: %+v", obj.GraphMetadata))
-	buffer.WriteString(fmt.Sprintf(", Attributes: %+v", obj.Attributes))
-	buffer.WriteString(fmt.Sprintf(", ModifiedAttributes: %+v", obj.ModifiedAttributes))
+	buffer.WriteString(fmt.Sprintf(", Attributes: %+v", obj.attributes))
+	buffer.WriteString(fmt.Sprintf(", ModifiedAttributes: %+v", obj.modifiedAttributes))
 	buffer.WriteString("}")
 	return buffer.String()
 }
 
 func (obj *AbstractEntity) getAttribute(name string) types.TGAttribute {
-	attr := obj.Attributes[name]
+	attr := obj.attributes[name]
 	return attr
 }
 
 func (obj *AbstractEntity) getAttributes() ([]types.TGAttribute, types.TGError) {
-	if obj.Attributes == nil {
+	if obj.attributes == nil {
 		logger.Log(fmt.Sprint("ERROR: Returning AbstractEntity:getAttributes as there are NO attributes associated"))
 		errMsg := "This entity does not have any attributes associated"
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	attrList := make([]types.TGAttribute, 0)
-	for attrName, attr := range obj.Attributes {
+	for attrName, attr := range obj.attributes {
 		if len(attrName) != 0 {
 			if attr.GetAttributeDescriptor().GetName() != "" && strings.ToLower(attr.GetAttributeDescriptor().GetName()) != "@name" {
 				attrList = append(attrList, attr)
@@ -130,55 +130,59 @@ func (obj *AbstractEntity) getEntityType() types.TGEntityType {
 }
 
 func (obj *AbstractEntity) getGraphMetadata() *GraphMetadata {
-	return obj.GraphMetadata
+	return obj.graphMetadata
 }
 
 func (obj *AbstractEntity) getModifiedAttributes() []types.TGAttribute {
-	return obj.ModifiedAttributes
+	return obj.modifiedAttributes
 }
 
 func (obj *AbstractEntity) getVersion() int {
-	return obj.Version
+	return obj.version
 }
 
 func (obj *AbstractEntity) getVirtualId() int64 {
-	if obj.isNew() {
+	if obj.getIsNew() {
 		return obj.virtualId
 	}
-	return obj.EntityId
+	return obj.entityId
 }
 
 func (obj *AbstractEntity) isAttributeSet(name string) bool {
-	attr := obj.Attributes[name]
+	attr := obj.attributes[name]
 	if !attr.IsNull() {
 		return true
 	}
 	return false
 }
 
-func (obj *AbstractEntity) isDeleted() bool {
-	return obj.IsDeleted
+func (obj *AbstractEntity) getIsDeleted() bool {
+	return obj.isDeleted
 }
 
-func (obj *AbstractEntity) isInitialized() bool {
-	return obj.IsInitialized
+func (obj *AbstractEntity) getIsInitialized() bool {
+	return obj.isInitialized
 }
 
-func (obj *AbstractEntity) isNew() bool {
-	return obj.IsNew
+func (obj *AbstractEntity) getIsNew() bool {
+	return obj.isNew
 }
 
 func (obj *AbstractEntity) resetModifiedAttributes() {
-	for _, attr := range obj.ModifiedAttributes {
+	for _, attr := range obj.modifiedAttributes {
 		attr.ResetIsModified()
 	}
 	// Reset array of modified attributes
-	obj.ModifiedAttributes = make([]types.TGAttribute, 0)
+	obj.modifiedAttributes = make([]types.TGAttribute, 0)
+}
+
+func (obj *AbstractEntity) setAttributes(attrs map[string]types.TGAttribute) {
+	obj.attributes = attrs
 }
 
 func (obj *AbstractEntity) setEntityId(id int64) {
 	obj.virtualId = 0
-	obj.EntityId = id
+	obj.entityId = id
 }
 
 func (obj *AbstractEntity) setEntityKind(kind types.TGEntityKind) {
@@ -190,19 +194,23 @@ func (obj *AbstractEntity) setEntityType(eType types.TGEntityType) {
 }
 
 func (obj *AbstractEntity) setIsDeleted(flag bool) {
-	obj.IsDeleted = flag
+	obj.isDeleted = flag
 }
 
 func (obj *AbstractEntity) setIsInitialized(flag bool) {
-	obj.IsInitialized = flag
+	obj.isInitialized = flag
 }
 
 func (obj *AbstractEntity) setIsNew(flag bool) {
-	obj.IsNew = flag
+	obj.isNew = flag
+}
+
+func (obj *AbstractEntity) setModifiedAttributes(mAttrs []types.TGAttribute) {
+	obj.modifiedAttributes = mAttrs
 }
 
 func (obj *AbstractEntity) setVersion(version int) {
-	obj.Version = version
+	obj.version = version
 }
 
 func (obj *AbstractEntity) setAttribute(attr types.TGAttribute) types.TGError {
@@ -224,10 +232,10 @@ func (obj *AbstractEntity) setAttribute(attr types.TGAttribute) types.TGError {
 		errMsg := fmt.Sprintf("name of the attribute cannot be null")
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	obj.Attributes[attrDescName] = attr
+	obj.attributes[attrDescName] = attr
 	// Value can be null here
 	if !attr.GetIsModified() {
-		obj.ModifiedAttributes = append(obj.ModifiedAttributes, attr)
+		obj.modifiedAttributes = append(obj.modifiedAttributes, attr)
 	}
 	//logger.Log(fmt.Sprintf("=======> Abstract Entity has attributes '%+v' <=======", obj.attributes))
 	return nil
@@ -248,7 +256,7 @@ func setAttributeViaDescriptor(obj types.TGEntity, attrDesc *AttributeDescriptor
 	// TODO: Do we need to validate if this descriptor exists as part of Graph Meta Data???
 	// If attribute is not present in the set, create a new one
 	attrDescName := attrDesc.GetName()
-	attr := obj.(*AbstractEntity).Attributes[attrDescName]
+	attr := obj.(*AbstractEntity).attributes[attrDescName]
 	if attr == nil {
 		if attrDesc.GetAttrType() == types.AttributeTypeInvalid {
 			logger.Log(fmt.Sprint("ERROR: Returning AbstractEntity:setAttributeViaDescriptor as attrDesc.GetAttrType() == types.AttributeTypeInvalid"))
@@ -267,7 +275,7 @@ func setAttributeViaDescriptor(obj types.TGEntity, attrDesc *AttributeDescriptor
 	}
 	// Value can be null here
 	if !attr.GetIsModified() {
-		obj.(*AbstractEntity).ModifiedAttributes = append(obj.(*AbstractEntity).ModifiedAttributes, attr)
+		obj.(*AbstractEntity).modifiedAttributes = append(obj.(*AbstractEntity).modifiedAttributes, attr)
 	}
 	// Set the attribute value
 	err := attr.SetValue(value)
@@ -276,7 +284,7 @@ func setAttributeViaDescriptor(obj types.TGEntity, attrDesc *AttributeDescriptor
 		return err
 	}
 	// Add it to the set
-	obj.(*AbstractEntity).Attributes[attrDesc.name] = attr
+	obj.(*AbstractEntity).attributes[attrDesc.name] = attr
 	return nil
 }
 
@@ -319,7 +327,7 @@ func (obj *AbstractEntity) setOrCreateAttribute(name string, value interface{}) 
 	}
 	// Value can be null here
 	if !attr.GetIsModified() {
-		obj.ModifiedAttributes = append(obj.ModifiedAttributes, attr)
+		obj.modifiedAttributes = append(obj.modifiedAttributes, attr)
 	}
 	// Set the attribute value
 	err := attr.SetValue(value)
@@ -328,7 +336,7 @@ func (obj *AbstractEntity) setOrCreateAttribute(name string, value interface{}) 
 		return err
 	}
 	// Add it to the set
-	obj.Attributes[name] = attr
+	obj.attributes[name] = attr
 	logger.Log(fmt.Sprintf("Returning AbstractEntity:SetOrCreateAttribute created/set attribute for '%+v'='%+v'", name, value))
 	return nil
 }
@@ -338,11 +346,15 @@ func (obj *AbstractEntity) setOrCreateAttribute(name string, value interface{}) 
 /////////////////////////////////////////////////////////////////
 
 func (obj *AbstractEntity) GetIsInitialized() bool {
-	return obj.isInitialized()
+	return obj.getIsInitialized()
 }
 
 func (obj *AbstractEntity) GetModifiedAttributes() []types.TGAttribute {
 	return obj.getModifiedAttributes()
+}
+
+func (obj *AbstractEntity) SetAttributes(modAttrs map[string]types.TGAttribute) {
+	obj.setAttributes(modAttrs)
 }
 
 // TODO: Revisit later - Once SetAttributeViaDescriptor is properly implemented after discussing with TGDB Engineering Team
@@ -365,6 +377,10 @@ func (obj *AbstractEntity) SetEntityType(eType types.TGEntityType) {
 
 func (obj *AbstractEntity) SetIsInitialized(flag bool) {
 	obj.setIsInitialized(flag)
+}
+
+func (obj *AbstractEntity) SetModifiedAttributes(modAttrs []types.TGAttribute) {
+	obj.setModifiedAttributes(modAttrs)
 }
 
 func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) types.TGError {
@@ -417,14 +433,14 @@ func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) ty
 	}
 	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read entityTypeId as '%d'", entityTypeId))
 	if entityTypeId != 0 {
-		eType1, err := obj.GraphMetadata.GetNodeTypeById(entityTypeId)
+		eType1, err := obj.graphMetadata.GetNodeTypeById(entityTypeId)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read nodeType w/ Error: '%+v'", err.Error()))
 			return err
 		}
 		logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal verified eType1 (nodeTypeById) as '%+v'", eType1))
 		if eType1 == nil {
-			eType, err = obj.GraphMetadata.GetEdgeTypeById(entityTypeId)
+			eType, err = obj.graphMetadata.GetEdgeTypeById(entityTypeId)
 			if err != nil {
 				logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read edgeType w/ Error: '%+v'", err.Error()))
 				return err
@@ -459,7 +475,7 @@ func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) ty
 			return err
 		}
 	}
-	obj.EntityId = entityId
+	obj.entityId = entityId
 	obj.SetEntityType(eType)
 	obj.SetIsNew(newEntityFlag)
 	obj.SetVersion(version)
@@ -484,13 +500,13 @@ func (obj *AbstractEntity) AbstractEntityWriteExternal(os types.TGOutputStream) 
 	// The attribute id can be temporary which is a negative number
 	// The actual attribute id is > 0
 	modCount := 0
-	for _, attr := range obj.Attributes {
+	for _, attr := range obj.attributes {
 		if attr.GetIsModified() {
 			modCount++
 		}
 	}
 	os.(*iostream.ProtocolDataOutputStream).WriteInt(modCount)
-	for _, attr := range obj.Attributes {
+	for _, attr := range obj.attributes {
 		// If an attribute is not modified, do not include in the stream
 		if !attr.GetIsModified() {
 			logger.Warning(fmt.Sprint("WARNING: Continuing loop AbstractEntity:AbstractEntityWriteExternal as attr is NOT modified"))
@@ -537,12 +553,12 @@ func (obj *AbstractEntity) GetGraphMetadata() types.TGGraphMetadata {
 
 // GetIsDeleted checks whether this entity is already deleted in the system or not
 func (obj *AbstractEntity) GetIsDeleted() bool {
-	return obj.isDeleted()
+	return obj.getIsDeleted()
 }
 
 // GetIsNew checks whether this entity that is currently being added to the system is new or not
 func (obj *AbstractEntity) GetIsNew() bool {
-	return obj.isNew()
+	return obj.getIsNew()
 }
 
 // GetVersion gets the version of the Entity
@@ -623,8 +639,8 @@ func (obj *AbstractEntity) WriteExternal(os types.TGOutputStream) types.TGError 
 func (obj *AbstractEntity) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.IsNew, obj.EntityKind, obj.virtualId, obj.Version, obj.EntityId, obj.EntityType,
-		obj.IsDeleted, obj.IsInitialized, obj.GraphMetadata, obj.Attributes, obj.ModifiedAttributes)
+	_, err := fmt.Fprintln(&b, obj.isNew, obj.EntityKind, obj.virtualId, obj.version, obj.entityId, obj.EntityType,
+		obj.isDeleted, obj.isInitialized, obj.graphMetadata, obj.attributes, obj.modifiedAttributes)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -639,8 +655,8 @@ func (obj *AbstractEntity) MarshalBinary() ([]byte, error) {
 func (obj *AbstractEntity) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.IsNew, &obj.EntityKind, &obj.virtualId, &obj.Version, &obj.EntityId, &obj.EntityType,
-		&obj.IsDeleted, &obj.IsInitialized, &obj.GraphMetadata, &obj.Attributes, &obj.ModifiedAttributes)
+	_, err := fmt.Fscanln(b, &obj.isNew, &obj.EntityKind, &obj.virtualId, &obj.version, &obj.entityId, &obj.EntityType,
+		&obj.isDeleted, &obj.isInitialized, &obj.graphMetadata, &obj.attributes, &obj.modifiedAttributes)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

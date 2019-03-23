@@ -85,7 +85,7 @@ func (obj *GraphObjectFactory) CreateCompositeKey(nodeTypeName string) (types.TG
 // CreateEdgeWithEdgeType creates an Edge
 func (obj *GraphObjectFactory) CreateEdgeWithEdgeType(fromNode types.TGNode, toNode types.TGNode, edgeType types.TGEdgeType) (types.TGEdge, types.TGError) {
 	newEdge := NewEdgeWithEdgeType(obj.graphMData, fromNode, toNode, edgeType)
-	if newEdge.IsInitialized != true {
+	if newEdge.isInitialized != true {
 		logger.Error(fmt.Sprint("ERROR: Returning GraphObjectFactory:CreateEdgeWithEdgeType as edge in NOT initialized"))
 		errMsg := fmt.Sprintf("Unable to create an edge with type %s", edgeType.(*EdgeType).name)
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -98,7 +98,7 @@ func (obj *GraphObjectFactory) CreateEdgeWithEdgeType(fromNode types.TGNode, toN
 // CreateEdgeWithDirection creates an Edge with a direction
 func (obj *GraphObjectFactory) CreateEdgeWithDirection(fromNode types.TGNode, toNode types.TGNode, directionType types.TGDirectionType) (types.TGEdge, types.TGError) {
 	newEdge := NewEdgeWithDirection(obj.graphMData, fromNode, toNode, directionType)
-	if newEdge.IsInitialized != true {
+	if newEdge.isInitialized != true {
 		logger.Error(fmt.Sprint("ERROR: Returning GraphObjectFactory:CreateEdgeWithDirection as edge in NOT initialized"))
 		errMsg := fmt.Sprintf("Unable to create an edge with direction %s", directionType)
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -131,7 +131,7 @@ func (obj *GraphObjectFactory) CreateEntityId(buf []byte) (types.TGEntityId, typ
 // CreateGraph creates a Graph
 func (obj *GraphObjectFactory) CreateGraph(name string) (types.TGGraph, types.TGError) {
 	graph := NewGraphWithName(obj.graphMData, name)
-	if graph.IsInitialized != true {
+	if graph.isInitialized != true {
 		logger.Error(fmt.Sprint("ERROR: Returning GraphObjectFactory:CreateGraph as graph in NOT initialized"))
 		errMsg := fmt.Sprint("Unable to create a graph with this Graph Object Factory")
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -142,7 +142,7 @@ func (obj *GraphObjectFactory) CreateGraph(name string) (types.TGGraph, types.TG
 // CreateNode creates a Node
 func (obj *GraphObjectFactory) CreateNode() (types.TGNode, types.TGError) {
 	node := NewNode(obj.graphMData)
-	if node.IsInitialized != true {
+	if node.isInitialized != true {
 		logger.Error(fmt.Sprint("ERROR: Returning GraphObjectFactory:CreateNode as node in NOT initialized"))
 		errMsg := fmt.Sprint("Unable to create a node with this Graph Object Factory")
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -153,7 +153,7 @@ func (obj *GraphObjectFactory) CreateNode() (types.TGNode, types.TGError) {
 // CreateNodeInGraph creates Node within this Graph. There is a default Root Graph.
 func (obj *GraphObjectFactory) CreateNodeInGraph(nodeType types.TGNodeType) (types.TGNode, types.TGError) {
 	node := NewNodeWithType(obj.graphMData, nodeType)
-	if node.IsInitialized != true {
+	if node.isInitialized != true {
 		logger.Error(fmt.Sprint("ERROR: Returning GraphObjectFactory:CreateNodeInGraph as node in NOT initialized"))
 		errMsg := fmt.Sprint("Unable to create a node with this Graph Object Factory")
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")

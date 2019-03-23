@@ -38,7 +38,7 @@ func TestSetOrCreateAttribute(t *testing.T) {
 	_ = newKey.SetOrCreateAttribute("NumberDesc", 5.0)
 	_ = newKey.SetOrCreateAttribute("TimeDesc", time.Now().Unix())
 
-	t.Logf("Composite key has been modified to add '%d' attributes as '%+v'", len(newKey.Attributes), newKey)
+	t.Logf("Composite key has been modified to add '%d' attributes as '%+v'", len(newKey.attributes), newKey)
 }
 
 // This automatically will test both APIs - (a) ReadExternal and (b) WriteExternal

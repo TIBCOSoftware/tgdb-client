@@ -39,8 +39,8 @@ var UniqueId int64
 
 type BlobAttribute struct {
 	*AbstractAttribute
-	EntityId int64
-	IsCached bool
+	entityId int64
+	isCached bool
 }
 
 // Create NewTGDecimal Attribute Instance
@@ -52,29 +52,29 @@ func DefaultBlobAttribute() *BlobAttribute {
 
 	newAttribute := BlobAttribute{
 		AbstractAttribute: defaultNewAbstractAttribute(),
-		IsCached:          false,
+		isCached:          false,
 	}
-	newAttribute.EntityId = atomic.AddInt64(&UniqueId, 1)
-	newAttribute.AttrValue = []byte{}
+	newAttribute.entityId = atomic.AddInt64(&UniqueId, 1)
+	newAttribute.attrValue = []byte{}
 	return &newAttribute
 }
 
 func NewBlobAttributeWithOwner(ownerEntity types.TGEntity) *BlobAttribute {
 	newAttribute := DefaultBlobAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewBlobAttribute(attrDesc *AttributeDescriptor) *BlobAttribute {
 	newAttribute := DefaultBlobAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewBlobAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *BlobAttribute {
 	newAttribute := NewBlobAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -85,7 +85,7 @@ func NewBlobAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDes
 func (obj *BlobAttribute) getValueAsBytes() ([]byte, types.TGError) {
 	var network bytes.Buffer
 	enc := gob.NewEncoder(&network)
-	err := enc.Encode(obj.AttrValue)
+	err := enc.Encode(obj.attrValue)
 	if err != nil {
 		errMsg := "BlobAttribute::getValueAsBytes - Unable to encode attribute value"
 		return nil, exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.Error())
@@ -101,27 +101,43 @@ func (obj *BlobAttribute) getValueAsBytes() ([]byte, types.TGError) {
 }
 
 func (obj *BlobAttribute) SetBlob(b []byte) {
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
 func (obj *BlobAttribute) GetAsBytes() []byte {
-	if obj.EntityId < 0 || obj.IsCached {
+	if obj.entityId < 0 || obj.isCached {
 		ba, _ := obj.getValueAsBytes()
 		return ba
 	}
 	// TODO: Revisit later once connection.GetLargeObjectAsBytes() is implemented
 	gmd := obj.GetOwner().GetGraphMetadata()
 	conn := gmd.(*GraphMetadata).GetConnection()
-	v, _ := conn.GetLargeObjectAsBytes(obj.EntityId)
-	obj.AttrValue = v
-	obj.IsCached = true
-	return obj.AttrValue.([]byte)
+	v, _ := conn.GetLargeObjectAsBytes(obj.entityId)
+	obj.attrValue = v
+	obj.isCached = true
+	return obj.attrValue.([]byte)
 }
 
 func (obj *BlobAttribute) GetAsByteBuffer() *bytes.Buffer {
 	buf := obj.GetAsBytes()
 	return bytes.NewBuffer(buf)
+}
+
+func (obj *BlobAttribute) GetEntityId() int64 {
+	return obj.entityId
+}
+
+func (obj *BlobAttribute) GetIsCached() bool {
+	return obj.isCached
+}
+
+func (obj *BlobAttribute) SetEntityId(eId int64) {
+	obj.entityId = eId
+}
+
+func (obj *BlobAttribute) SetIsCached(flag bool) {
+	obj.isCached = flag
 }
 
 /////////////////////////////////////////////////////////////////
@@ -174,7 +190,7 @@ func (obj *BlobAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
 		//errMsg := fmt.Sprintf("Attribute value is required")
 		//return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
@@ -210,7 +226,7 @@ func (obj *BlobAttribute) SetValue(value interface{}) types.TGError {
 		v := []byte(value.(string))
 		obj.SetBlob(v)
 	} else {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 	}
 	// TODO: Revisit later - use retrospection via go/constant package
@@ -244,15 +260,15 @@ func (obj *BlobAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("BlobAttribute::ReadValue - read entityId: '%+v'", entityId))
-	obj.EntityId = entityId
-	obj.IsCached = false
+	obj.entityId = entityId
+	obj.isCached = false
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *BlobAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	os.(*iostream.ProtocolDataOutputStream).WriteLong(obj.EntityId)
-	if obj.AttrValue == nil {
+	os.(*iostream.ProtocolDataOutputStream).WriteLong(obj.entityId)
+	if obj.attrValue == nil {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(false)
 	} else {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(true)
@@ -275,8 +291,8 @@ func (obj *BlobAttribute) WriteValue(os types.TGOutputStream) types.TGError {
 func (obj *BlobAttribute) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("BlobAttribute:{")
-	buffer.WriteString(fmt.Sprintf("EntityId: %+v", obj.EntityId))
-	buffer.WriteString(fmt.Sprintf(", IsCached: %+v", obj.IsCached))
+	buffer.WriteString(fmt.Sprintf("EntityId: %+v", obj.entityId))
+	buffer.WriteString(fmt.Sprintf(", IsCached: %+v", obj.isCached))
 	strArray := []string{buffer.String(), obj.attributeToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return  msgStr
@@ -303,7 +319,7 @@ func (obj *BlobAttribute) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *BlobAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified, obj.EntityId, obj.IsCached)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified, obj.entityId, obj.isCached)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning BlobAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -318,7 +334,7 @@ func (obj *BlobAttribute) MarshalBinary() ([]byte, error) {
 func (obj *BlobAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified, &obj.EntityId, &obj.IsCached)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified, &obj.entityId, &obj.isCached)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning BlobAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

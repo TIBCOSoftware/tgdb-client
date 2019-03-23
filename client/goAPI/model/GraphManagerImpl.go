@@ -26,71 +26,80 @@ import (
  */
 
 type GraphManager struct {
-	Name string
+	name string
 }
 
 func NewGraphManager(gmd GraphMetadata) GraphManager {
 	newGraphManager := GraphManager{
-		Name: "TGDB Graph Manager",
+		name: "TGDB Graph Manager",
 	}
 	return newGraphManager
 }
 
-/////////////////////////////////////////////////////////////////
-// Implement functions from Interface ==> TGGraphManager
-/////////////////////////////////////////////////////////////////
+///////////////////////////////////////
+// Helper functions for GraphManager //
+///////////////////////////////////////
+
+// GetName gets Graph Manager's name
+func (obj *GraphManager) GetName() string {
+	return obj.name
+}
+
+///////////////////////////////////////////////////////////
+// Implement functions from Interface ==> TGGraphManager //
+///////////////////////////////////////////////////////////
 
 // CreateNode creates Node within this Graph. There is a default Root Graph.
-func (obj GraphManager) CreateNode() (types.TGNode, types.TGError) {
+func (obj *GraphManager) CreateNode() (types.TGNode, types.TGError) {
 	return nil, nil
 }
 
 // CreateNodeForNodeType creates Node of particular Type
-func (obj GraphManager) CreateNodeForNodeType(nodeType types.TGNodeType) (types.TGNode, types.TGError) {
+func (obj *GraphManager) CreateNodeForNodeType(nodeType types.TGNodeType) (types.TGNode, types.TGError) {
 	return nil, nil
 }
 
 // CreateEdge creates an Edge
-func (obj GraphManager) CreateEdge(fromNode types.TGNode, toNode types.TGNode, edgeType int) (types.TGEdge, types.TGError) {
+func (obj *GraphManager) CreateEdge(fromNode types.TGNode, toNode types.TGNode, edgeType int) (types.TGEdge, types.TGError) {
 	return nil, nil
 }
 
 // CreateEdgeWithDirection creates an Edge with direction
-func (obj GraphManager) CreateEdgeWithDirection(fromNode types.TGNode, toNode types.TGNode, directionType types.TGDirectionType) (types.TGEdge, types.TGError) {
+func (obj *GraphManager) CreateEdgeWithDirection(fromNode types.TGNode, toNode types.TGNode, directionType types.TGDirectionType) (types.TGEdge, types.TGError) {
 	return nil, nil
 }
 
 // CreateGraph creates a SubGraph at the Root level.
-func (obj GraphManager) CreateGraph(name string) (types.TGGraph, types.TGError) {
+func (obj *GraphManager) CreateGraph(name string) (types.TGGraph, types.TGError) {
 	return nil, nil
 }
 
 // DeleteNode removes this node from the graph
-func (obj GraphManager) DeleteNode(filter types.TGFilter) (types.TGGraphManager, types.TGError) {
+func (obj *GraphManager) DeleteNode(filter types.TGFilter) (types.TGGraphManager, types.TGError) {
 	return nil, nil
 }
 
 // DeleteNodes removes the nodes from this graph that match the filter
-func (obj GraphManager) DeleteNodes(filter types.TGFilter) (types.TGGraphManager, types.TGError) {
+func (obj *GraphManager) DeleteNodes(filter types.TGFilter) (types.TGGraphManager, types.TGError) {
 	return nil, nil
 }
 
 // CreateQuery creates a Reusable Query
-func (obj GraphManager) CreateQuery(filter types.TGFilter) types.TGQuery {
+func (obj *GraphManager) CreateQuery(filter types.TGFilter) types.TGQuery {
 	return nil
 }
 
 // QueryNodes gets Nodes based on the Filter condition with a set of Arguments
-func (obj GraphManager) QueryNodes(filter types.TGFilter, args ...interface{}) types.TGResultSet {
+func (obj *GraphManager) QueryNodes(filter types.TGFilter, args ...interface{}) types.TGResultSet {
 	return nil
 }
 
 // Traverse follows the graph using the traversal descriptor
-func (obj GraphManager) Traverse(descriptor types.TGTraversalDescriptor, startingPoints []types.TGNode) types.TGResultSet {
+func (obj *GraphManager) Traverse(descriptor types.TGTraversalDescriptor, startingPoints []types.TGNode) types.TGResultSet {
 	return nil
 }
 
 // GetGraphMetadata gets the Graph Metadata
-func (obj GraphManager) GetGraphMetadata() types.TGGraphMetadata {
+func (obj *GraphManager) GetGraphMetadata() types.TGGraphMetadata {
 	return nil
 }

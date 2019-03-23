@@ -32,9 +32,9 @@ import (
 
 type NodeType struct {
 	*EntityType
-	PKeys      []*AttributeDescriptor
-	IdxIds     []int
-	NumEntries int64
+	pKeys      []*AttributeDescriptor
+	idxIds     []int
+	numEntries int64
 }
 
 func DefaultNodeType() *NodeType {
@@ -45,11 +45,11 @@ func DefaultNodeType() *NodeType {
 
 	newNodeType := NodeType{
 		EntityType: DefaultEntityType(),
-		PKeys:      make([]*AttributeDescriptor, 0),
-		IdxIds:     make([]int, 0),
-		NumEntries: 0,
+		pKeys:      make([]*AttributeDescriptor, 0),
+		idxIds:     make([]int, 0),
+		numEntries: 0,
 	}
-	newNodeType.SysType = types.SystemTypeNode
+	newNodeType.sysType = types.SystemTypeNode
 	return &newNodeType
 }
 
@@ -65,11 +65,11 @@ func NewNodeType(name string, parent types.TGEntityType) *NodeType {
 /////////////////////////////////////////////////////////////////
 
 func (obj *NodeType) GetIndexIds() []int {
-	return obj.IdxIds
+	return obj.idxIds
 }
 
 func (obj *NodeType) GetNumEntries() int64 {
-	return obj.NumEntries
+	return obj.numEntries
 }
 
 func (obj *NodeType) SetAttributeMap(attrMap map[string]*AttributeDescriptor) {
@@ -85,7 +85,7 @@ func (obj *NodeType) SetParent(parentEntity types.TGEntityType) {
 }
 
 func (obj *NodeType) SetNumEntries(num int64) {
-	obj.NumEntries = num
+	obj.numEntries = num
 }
 
 func (obj *NodeType) UpdateMetadata(gmd *GraphMetadata) types.TGError {
@@ -96,7 +96,7 @@ func (obj *NodeType) UpdateMetadata(gmd *GraphMetadata) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprint("Inside NodeType:UpdateMetadata, updated base entity type's attributes"))
-	for id, key := range obj.PKeys {
+	for id, key := range obj.pKeys {
 		attrDesc, err := gmd.GetAttributeDescriptor(key.GetName())
 		if err == nil {
 			logger.Warning(fmt.Sprintf("WARNING: Continuing loop NodeType:UpdateMetadata - cannot find '%s' attribute descriptor", key.GetName()))
@@ -107,7 +107,7 @@ func (obj *NodeType) UpdateMetadata(gmd *GraphMetadata) types.TGError {
 			//gLogger.log(TGLevel.Warning, "Cannot find '%s' attribute descriptor", attrName)
 			continue
 		}
-		obj.PKeys[id] = attrDesc.(*AttributeDescriptor)
+		obj.pKeys[id] = attrDesc.(*AttributeDescriptor)
 	}
 	logger.Log(fmt.Sprintf("Returning NodeType:UpdateMetadata w/ NO error, for entityType: '%+v'", obj))
 	return nil
@@ -120,10 +120,15 @@ func (obj *NodeType) UpdateMetadata(gmd *GraphMetadata) types.TGError {
 // GetPKeyAttributeDescriptors returns a set of primary key descriptors
 func (obj *NodeType) GetPKeyAttributeDescriptors() []types.TGAttributeDescriptor {
 	pkDesc := make([]types.TGAttributeDescriptor, 0)
-	for _, pk := range obj.PKeys {
+	for _, pk := range obj.pKeys {
 		pkDesc = append(pkDesc, pk)
 	}
 	return pkDesc
+}
+
+// SetPKeyAttributeDescriptors sets primary key descriptors
+func (obj *NodeType) SetPKeyAttributeDescriptors(keys []*AttributeDescriptor) {
+	obj.pKeys = keys
 }
 
 /////////////////////////////////////////////////////////////////
@@ -174,15 +179,15 @@ func (obj *NodeType) SetName(eTypeName string) {
 
 // SetSystemType sets system object's type
 func (obj *NodeType) SetSystemType(eSysType types.TGSystemType) {
-	obj.SysType = eSysType
+	obj.sysType = eSysType
 }
 
 func (obj *NodeType) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("NodeType:{")
 	//buffer.WriteString(fmt.Sprintf("PKeys: %+v", obj.PKeys))
-	buffer.WriteString(fmt.Sprintf(", IdxIds: %+v", obj.IdxIds))
-	buffer.WriteString(fmt.Sprintf(", NumEntries: %+v", obj.NumEntries))
+	buffer.WriteString(fmt.Sprintf(", IdxIds: %+v", obj.idxIds))
+	buffer.WriteString(fmt.Sprintf(", NumEntries: %+v", obj.numEntries))
 	strArray := []string{buffer.String(), obj.entityTypeToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return  msgStr
@@ -199,7 +204,7 @@ func (obj *NodeType) GetName() string {
 
 // GetSystemType gets system object's type
 func (obj *NodeType) GetSystemType() types.TGSystemType {
-	return obj.SysType
+	return obj.sysType
 }
 
 /////////////////////////////////////////////////////////////////
@@ -228,7 +233,7 @@ func (obj *NodeType) ReadExternal(is types.TGInputStream) types.TGError {
 			return err
 		}
 		attrDesc := NewAttributeDescriptorWithType(attrName, types.AttributeTypeString)
-		obj.PKeys = append(obj.PKeys, attrDesc)
+		obj.pKeys = append(obj.pKeys, attrDesc)
 	}
 
 	idxCount, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
@@ -243,7 +248,7 @@ func (obj *NodeType) ReadExternal(is types.TGInputStream) types.TGError {
 			logger.Error(fmt.Sprintf("ERROR: Returning NodeType:ReadExternal - unable to read indexId w/ Error: '%+v'", err.Error()))
 			return err
 		}
-		obj.IdxIds = append(obj.IdxIds, indexId)
+		obj.idxIds = append(obj.idxIds, indexId)
 	}
 
 	numEntries, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
@@ -270,7 +275,7 @@ func (obj *NodeType) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *NodeType) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.SysType, obj.id, obj.name, obj.parent, obj.attributes, obj.PKeys, obj.IdxIds, obj.NumEntries)
+	_, err := fmt.Fprintln(&b, obj.sysType, obj.id, obj.name, obj.parent, obj.attributes, obj.pKeys, obj.idxIds, obj.numEntries)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning NodeType:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -285,8 +290,8 @@ func (obj *NodeType) MarshalBinary() ([]byte, error) {
 func (obj *NodeType) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.SysType, &obj.id, &obj.name, &obj.parent, &obj.attributes, &obj.PKeys,
-		&obj.IdxIds, &obj.NumEntries)
+	_, err := fmt.Fscanln(b, &obj.sysType, &obj.id, &obj.name, &obj.parent, &obj.attributes, &obj.pKeys,
+		&obj.idxIds, &obj.numEntries)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning NodeType:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

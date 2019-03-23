@@ -30,7 +30,7 @@ import (
  */
 
 type TGEnvironment struct {
-	TGEnv map[ConfigName]string
+	envMap map[ConfigName]string
 	//rwMutex sync.RWMutex // Intentionally kept Private - rw-lock for synchronizing read-n-update of env configuration
 }
 
@@ -53,7 +53,7 @@ func defaultTGEnvironment() *TGEnvironment {
 			newConfigKey := NewConfigName(s[0], s[0], s[1])
 			envSuperSet[*newConfigKey] = s[1]
 		}
-		gInstance.TGEnv = envSuperSet
+		gInstance.envMap = envSuperSet
 	//})
 	return gInstance
 }
@@ -83,7 +83,7 @@ func GetConfig(name string) *ConfigName {
 // TODO: Revisit later - for more testing
 func (obj *TGEnvironment) GetAsSortedProperties() types.TGProperties {
 	sp := NewSortedProperties()
-	for cn := range obj.TGEnv {
+	for cn := range obj.envMap {
 		name := cn.GetName()
 		value := cn.GetDefaultValue()
 		if name == "" {
@@ -99,7 +99,7 @@ func (obj *TGEnvironment) GetChannelClientId() string {
 	if cn == nil || cn.GetName() == "" {
 		return "tgdb-client"
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelClientId Value is '%+v'\n", value))
 	if value == "" {
 		return "tgdb-client"
@@ -112,7 +112,7 @@ func (obj *TGEnvironment) GetChannelConnectTimeout() int {
 	if cn == nil || cn.GetName() == "" {
 		return -1
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelConnectTimeout Value is '%+v'\n", value))
 	if value == "" {
 		return -1
@@ -126,7 +126,7 @@ func (obj *TGEnvironment) GetChannelDefaultHost() string {
 	if cn == nil || cn.GetName() == "" {
 		return "localhost"
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelDefaultHost Value is '%+v'\n", value))
 	if value == "" {
 		return "localhost"
@@ -139,7 +139,7 @@ func (obj *TGEnvironment) GetChannelDefaultPort() int {
 	if cn == nil || cn.GetName() == "" {
 		return -1
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelDefaultPort Value is '%+v'\n", value))
 	if value == "" {
 		return -1
@@ -153,7 +153,7 @@ func (obj *TGEnvironment) GetChannelDefaultUser() string {
 	if cn == nil || cn.GetName() == "" {
 		return ""
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelDefaultUser Value is '%+v'\n", value))
 	if value == "" {
 		return ""
@@ -166,7 +166,7 @@ func (obj *TGEnvironment) GetChannelFTHosts() string {
 	if cn == nil || cn.GetName() == "" {
 		return ""
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelFTHosts Value is '%+v'\n", value))
 	if value == "" {
 		return ""
@@ -179,7 +179,7 @@ func (obj *TGEnvironment) GetChannelPingInterval() int {
 	if cn == nil || cn.GetName() == "" {
 		return -1
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelPingInterval Value is '%+v'\n", value))
 	if value == "" {
 		return -1
@@ -193,7 +193,7 @@ func (obj *TGEnvironment) GetChannelSendSize() int {
 	if cn == nil || cn.GetName() == "" {
 		return 122
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelSendSize Value is '%+v'\n", value))
 	if value == "" {
 		return 122
@@ -207,7 +207,7 @@ func (obj *TGEnvironment) GetChannelReceiveSize() int {
 	if cn == nil || cn.GetName() == "" {
 		return 128
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelReceiveSize Value is '%+v'\n", value))
 	if value == "" {
 		return 128
@@ -221,7 +221,7 @@ func (obj *TGEnvironment) GetChannelUser() string {
 	if cn == nil || cn.GetName() == "" {
 		return ""
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetChannelUser Value is '%+v'\n", value))
 	if value == "" {
 		return ""
@@ -234,7 +234,7 @@ func (obj *TGEnvironment) GetConnectionPoolDefaultPoolSize() int {
 	if cn == nil || cn.GetName() == "" {
 		return -1
 	}
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetConnectionPoolDefaultPoolSize Value is '%+v'\n", value))
 	if value == "" {
 		return -1
@@ -253,7 +253,7 @@ func (obj *TGEnvironment) GetEnvironmentProperty(name string) interface{} {
 		return ""
 	}
 	//logger.Log(fmt.Sprintf("GetEnvironmentProperty has properties as '%+v' - '%+v'", len(obj.TGEnv), obj.TGEnv))
-	value := obj.TGEnv[*cn]
+	value := obj.envMap[*cn]
 	//logger.Log(fmt.Sprintf("GetEnvironmentProperty Value is '%+v'\n", value))
 	return value
 }
@@ -265,5 +265,5 @@ func (obj *TGEnvironment) SetEnvironmentProperty(name string, value string) {
 		return
 	}
 	// Set only if the configuration is already present
-	obj.TGEnv[*cn] = value
+	obj.envMap[*cn] = value
 }

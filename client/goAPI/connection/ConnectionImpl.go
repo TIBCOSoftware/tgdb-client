@@ -146,7 +146,7 @@ func (obj *TGDBConnection) SetConnectionProperties(connProps *utils.SortedProper
 /////////////////////////////////////////////////////////////////
 
 func (obj *TGDBConnection) createChannelRequest(verb int) (types.TGMessage, types.TGChannelResponse, types.TGError) {
-	logger.Log(fmt.Sprintf("Entering TGDBConnection:createChannelRequest for Verb: '%s'", pdu.GetVerb(verb).Name))
+	logger.Log(fmt.Sprintf("Entering TGDBConnection:createChannelRequest for Verb: '%s'", pdu.GetVerb(verb).GetName()))
 	cn := utils.GetConfigFromKey(utils.ConnectionOperationTimeoutSeconds)
 	//logger.Log(fmt.Sprintf("Inside AbstractChannel::channelTryRepeatConnect config for ConnectionOperationTimeoutSeconds is '%+v", cn))
 	timeout := obj.GetConnectionProperties().GetPropertyAsInt(cn)
@@ -160,10 +160,10 @@ func (obj *TGDBConnection) createChannelRequest(verb int) (types.TGMessage, type
 	//msgRequest, err := pdu.CreateMessageForVerb(verb)
 	msgRequest, err := pdu.CreateMessageWithToken(verb, obj.Channel.GetAuthToken(), obj.Channel.GetSessionId())
 	if err != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:createChannelRequest - CreateMessageForVerb failed for Verb: '%s' w/ '%+v'", pdu.GetVerb(verb).Name, err.Error()))
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:createChannelRequest - CreateMessageForVerb failed for Verb: '%s' w/ '%+v'", pdu.GetVerb(verb).GetName(), err.Error()))
 		return nil, nil, err
 	}
-	logger.Log(fmt.Sprintf("Returning TGDBConnection:createChannelRequest for Verb: '%s' w/ MessageRequest: '%+v' ChannelResponse: '%+v'", pdu.GetVerb(verb).Name, msgRequest, channelResponse))
+	logger.Log(fmt.Sprintf("Returning TGDBConnection:createChannelRequest for Verb: '%s' w/ MessageRequest: '%+v' ChannelResponse: '%+v'", pdu.GetVerb(verb).GetName(), msgRequest, channelResponse))
 	return msgRequest, channelResponse, nil
 }
 
@@ -604,7 +604,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 			if len(nodes) > 0 {
 				for _, vNode := range nodes {
 					node := vNode.(*model.Node)
-					if !node.IsNew {
+					if !node.GetIsNew() {
 						obj.ChangedList[node.GetVirtualId()] = node
 						logger.Warning(fmt.Sprintf("WARNING: TGDBConnection:Commit - Existing node '%d' added to change list for a new edge", node.GetVirtualId()))
 					}
@@ -621,7 +621,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 			if len(nodes) > 0 {
 				for _, vNode := range nodes {
 					node := vNode.(*model.Node)
-					if !node.IsNew {
+					if !node.GetIsNew() {
 						obj.ChangedList[node.GetVirtualId()] = node
 						logger.Warning(fmt.Sprintf("WARNING: TGDBConnection:Commit - Existing node '%d' added to change list for an existing edge '%d'", node.GetVirtualId(), modEntity.GetVirtualId()))
 					}
@@ -638,7 +638,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 			if len(nodes) > 0 {
 				for _, vNode := range nodes {
 					node := vNode.(*model.Node)
-					if !node.IsNew {
+					if !node.GetIsNew() {
 						if obj.RemovedList[node.GetVirtualId()] == nil {
 							obj.ChangedList[node.GetVirtualId()] = node
 							logger.Warning(fmt.Sprintf("WARNING: TGDBConnection:Commit - Existing node '%d' added to change list for an edge %d to be deleted", node.GetVirtualId(), delEntity.GetVirtualId()))
@@ -1106,7 +1106,7 @@ func (obj *TGDBConnection) GetGraphMetadata(refresh bool) (types.TGGraphMetadata
 			logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:GetGraphMetadata - unable to Channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 			return nil, channelErr
 		}
-		logger.Log(fmt.Sprintf("Inside TGDBConnection::GetGraphMetadata received response for: pdu.VerbMetadataRequest as '%+v'", msgResponse))
+		//logger.Log(fmt.Sprintf("Inside TGDBConnection::GetGraphMetadata received response for: pdu.VerbMetadataRequest as '%+v'", msgResponse))
 
 		response := msgResponse.(*pdu.MetadataResponse)
 		attrDescList := response.GetAttrDescList()

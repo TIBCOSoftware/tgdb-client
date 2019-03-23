@@ -52,20 +52,20 @@ func DefaultDoubleAttribute() *DoubleAttribute {
 
 func NewDoubleAttributeWithOwner(ownerEntity types.TGEntity) *DoubleAttribute {
 	newAttribute := DefaultDoubleAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewDoubleAttribute(attrDesc *AttributeDescriptor) *DoubleAttribute {
 	newAttribute := DefaultDoubleAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewDoubleAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *DoubleAttribute {
 	newAttribute := NewDoubleAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -74,10 +74,10 @@ func NewDoubleAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeD
 /////////////////////////////////////////////////////////////////
 
 func (obj *DoubleAttribute) SetDouble(b float64) {
-	if !obj.IsNull() && obj.AttrValue == b {
+	if !obj.IsNull() && obj.attrValue == b {
 		return
 	}
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
@@ -129,11 +129,11 @@ func (obj *DoubleAttribute) SetOwner(ownerEntity types.TGEntity) {
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *DoubleAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 	if reflect.TypeOf(value).Kind() != reflect.Float32 &&
@@ -166,13 +166,13 @@ func (obj *DoubleAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("DoubleAttribute::ReadValue - read value: '%+v'", value))
-	obj.AttrValue = value
+	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *DoubleAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	iValue := reflect.ValueOf(obj.AttrValue).Float()
+	iValue := reflect.ValueOf(obj.attrValue).Float()
 	os.(*iostream.ProtocolDataOutputStream).WriteDouble(iValue)
 	return nil
 }
@@ -206,7 +206,7 @@ func (obj *DoubleAttribute) WriteExternal(os types.TGOutputStream) types.TGError
 func (obj *DoubleAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning DoubleAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -221,7 +221,7 @@ func (obj *DoubleAttribute) MarshalBinary() ([]byte, error) {
 func (obj *DoubleAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning DoubleAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

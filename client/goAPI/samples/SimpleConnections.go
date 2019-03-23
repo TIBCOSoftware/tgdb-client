@@ -54,7 +54,7 @@ func SimpleConnectAndValidateBootstrappedEntities() {
 		return
 	}
 	if attrDesc != nil {
-		fmt.Printf(">>>>>>> 'factor' has id %d and data desc: %s <<<<<<<\n", attrDesc.GetAttributeId(), types.GetAttributeTypeFromId(attrDesc.GetAttrType()).TypeName)
+		fmt.Printf(">>>>>>> 'factor' has id %d and data desc: %s <<<<<<<\n", attrDesc.GetAttributeId(), types.GetAttributeTypeFromId(attrDesc.GetAttrType()).GetTypeName())
 	} else {
 		fmt.Println(">>>>>>> 'factor' is not found from meta data fetch <<<<<<<")
 		return
@@ -66,7 +66,7 @@ func SimpleConnectAndValidateBootstrappedEntities() {
 		return
 	}
 	if attrDesc != nil {
-		fmt.Printf(">>>>>>> 'level' has id %d and data desc: %s <<<<<<<\n", attrDesc.GetAttributeId(), types.GetAttributeTypeFromId(attrDesc.GetAttrType()).TypeName)
+		fmt.Printf(">>>>>>> 'level' has id %d and data desc: %s <<<<<<<\n", attrDesc.GetAttributeId(), types.GetAttributeTypeFromId(attrDesc.GetAttrType()).GetTypeName())
 	} else {
 		fmt.Println(">>>>>>> 'level' is not found from meta data fetch <<<<<<<")
 		return

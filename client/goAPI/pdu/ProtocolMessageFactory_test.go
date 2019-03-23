@@ -205,7 +205,7 @@ func createTestGetLargeObjectResponseMessage() *GetLargeObjectResponseMessage {
 func createTestHandShakeRequestMessage() *HandShakeRequestMessage {
 	authToken := rand.Int63()
 	sessionId := rand.Int63()
-	challenge := rand.Int()
+	challenge := rand.Int63()
 	handshakeType := rand.Int()
 	msg := NewHandShakeRequestMessage(authToken, sessionId)
 	msg.SetChallenge(challenge)
@@ -218,7 +218,7 @@ func createTestHandShakeRequestMessage() *HandShakeRequestMessage {
 func createTestHandShakeResponseMessage() *HandShakeResponseMessage {
 	authToken := rand.Int63()
 	sessionId := rand.Int63()
-	challenge := rand.Int()
+	challenge := rand.Int63()
 	responseStatus := rand.Int()
 	msg := NewHandShakeResponseMessage(authToken, sessionId)
 	msg.SetChallenge(challenge)
@@ -429,10 +429,10 @@ func TestCreateMessageForVerb(t *testing.T) {
 		}
 		newMsg, err := CreateMessageForVerb(inputVerbId)
 		if err != nil {
-			t.Errorf("MessageFactory could not instantiate %s message for verbId: '%+v'", GetVerb(inputVerbId).Name, inputVerbId)
+			t.Errorf("MessageFactory could not instantiate %s message for verbId: '%+v'", GetVerb(inputVerbId).name, inputVerbId)
 			break
 		}
-		t.Logf("MessageFactory returned %s message for verbId: '%+v' as '%+v'", GetVerb(inputVerbId).Name, inputVerbId, newMsg.String())
+		t.Logf("MessageFactory returned %s message for verbId: '%+v' as '%+v'", GetVerb(inputVerbId).name, inputVerbId, newMsg.String())
 	}
 }
 
@@ -446,16 +446,16 @@ func TestCreateMessageWithToken(t *testing.T) {
 		sessionId := rand.Int63()
 		newMsg, err := CreateMessageWithToken(inputVerbId, authToken, sessionId)
 		if err != nil {
-			t.Errorf("MessageFactory could not instantiate %s message w/ token %d and sessionId %d for verbId: '%+v'", GetVerb(inputVerbId).Name, authToken, sessionId, inputVerbId)
+			t.Errorf("MessageFactory could not instantiate %s message w/ token %d and sessionId %d for verbId: '%+v'", GetVerb(inputVerbId).name, authToken, sessionId, inputVerbId)
 			break
 		}
-		t.Logf("MessageFactory returned %s message w/ token %d and sessionId %d for verbId: '%+v' as '%+v'", GetVerb(inputVerbId).Name, authToken, sessionId, inputVerbId, newMsg.String())
+		t.Logf("MessageFactory returned %s message w/ token %d and sessionId %d for verbId: '%+v' as '%+v'", GetVerb(inputVerbId).name, authToken, sessionId, inputVerbId, newMsg.String())
 	}
 }
 
 func TestCreateMessageFromBuffer(t *testing.T) {
 	for inputVerbId := range PreDefinedVerbs {
-		if inputVerbId == 3 || inputVerbId == 8 || inputVerbId == 12 || inputVerbId == 20  || inputVerbId == 22 || inputVerbId == 24 {
+		if inputVerbId == 3 || inputVerbId == 4 || inputVerbId == 8 || inputVerbId == 12 || inputVerbId == 20  || inputVerbId == 22 || inputVerbId == 24 {
 			continue
 		}
 		if inputVerbId == 15 || inputVerbId == 16 || inputVerbId == 39 {
@@ -474,7 +474,7 @@ func TestCreateMessageFromBuffer(t *testing.T) {
 
 		constructedMsg, err := CreateMessageFromBuffer(buf[0:bufLen], 0, bufLen)
 		if err != nil {
-			t.Errorf("MessageFactory::TestCreateMessageFromBuffer could not instantiate %s message from buffer for verbId: '%+v'", GetVerb(inputVerbId).Name, inputVerbId)
+			t.Errorf("MessageFactory::TestCreateMessageFromBuffer could not instantiate %s message from buffer for verbId: '%+v'", GetVerb(inputVerbId).name, inputVerbId)
 			break
 		}
 		t.Logf("MessageFactory::TestCreateMessageFromBuffer execution resulted in '%+v'", constructedMsg.String())
@@ -484,7 +484,7 @@ func TestCreateMessageFromBuffer(t *testing.T) {
 // This automatically will test both APIs - (a) ToBytes and (b) FromBytes
 func TestFromBytes(t *testing.T) {
 	for inputVerbId := range PreDefinedVerbs {
-		if inputVerbId == 3 || inputVerbId == 8 || inputVerbId == 12 || inputVerbId == 20  || inputVerbId == 22 || inputVerbId == 24 {
+		if inputVerbId == 3 || inputVerbId == 4 || inputVerbId == 8 || inputVerbId == 12 || inputVerbId == 20  || inputVerbId == 22 || inputVerbId == 24 {
 			continue
 		}
 		if inputVerbId == 15 || inputVerbId == 16 || inputVerbId == 39 {

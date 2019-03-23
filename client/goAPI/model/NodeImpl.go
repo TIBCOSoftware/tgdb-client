@@ -32,7 +32,7 @@ import (
 
 type Node struct {
 	*AbstractEntity
-	Edges []types.TGEdge
+	edges []types.TGEdge
 }
 
 func DefaultNode() *Node {
@@ -46,13 +46,13 @@ func DefaultNode() *Node {
 	}
 	newNode.EntityKind = types.EntityKindNode
 	newNode.EntityType = DefaultNodeType()
-	newNode.Edges = make([]types.TGEdge, 0)
+	newNode.edges = make([]types.TGEdge, 0)
 	return &newNode
 }
 
 func NewNode(gmd *GraphMetadata) *Node {
 	newNode := DefaultNode()
-	newNode.GraphMetadata = gmd
+	newNode.graphMetadata = gmd
 	return newNode
 }
 
@@ -67,7 +67,7 @@ func NewNodeWithType(gmd *GraphMetadata, nodeType types.TGNodeType) *Node {
 /////////////////////////////////////////////////////////////////
 
 func (obj *Node) GetIsInitialized() bool {
-	return obj.IsInitialized
+	return obj.isInitialized
 }
 
 func (obj *Node) GetModifiedAttributes() []types.TGAttribute {
@@ -79,27 +79,27 @@ func (obj *Node) GetModifiedAttributes() []types.TGAttribute {
 /////////////////////////////////////////////////////////////////
 
 func (obj *Node) AddEdge(edge types.TGEdge) {
-	obj.Edges = append(obj.Edges, edge)
+	obj.edges = append(obj.edges, edge)
 }
 
 func (obj *Node) AddEdgeWithDirectionType(node types.TGNode, edgeType types.TGEdgeType, directionType types.TGDirectionType) types.TGEdge {
-	newEdge := NewEdgeWithDirection(obj.GraphMetadata, obj, node, directionType)
+	newEdge := NewEdgeWithDirection(obj.graphMetadata, obj, node, directionType)
 	obj.AddEdge(newEdge)
 	return newEdge
 }
 
 func (obj *Node) GetEdges() []types.TGEdge {
-	return obj.Edges
+	return obj.edges
 }
 
 func (obj *Node) GetEdgesForDirectionType(directionType types.TGDirectionType) []types.TGEdge {
 	edgesWithDirections := make([]types.TGEdge, 0)
-	if len(obj.Edges) == 0 {
+	if len(obj.edges) == 0 {
 		logger.Warning(fmt.Sprint("WARNING: Returning Node:GetEdgesForDirectionType as there are NO edges"))
 		return edgesWithDirections
 	}
 
-	for _, edge := range obj.Edges {
+	for _, edge := range obj.edges {
 		if edge.(*Edge).directionType == directionType {
 			edgesWithDirections = append(edgesWithDirections, edge)
 		}
@@ -109,21 +109,21 @@ func (obj *Node) GetEdgesForDirectionType(directionType types.TGDirectionType) [
 
 func (obj *Node) GetEdgesForEdgeType(edgeType types.TGEdgeType, direction types.TGDirection) []types.TGEdge {
 	edgesWithDirections := make([]types.TGEdge, 0)
-	if len(obj.Edges) == 0 {
+	if len(obj.edges) == 0 {
 		logger.Warning(fmt.Sprint("WARNING: Returning Node:GetEdgesForEdgeType as there are NO edges"))
 		return edgesWithDirections
 	}
 
 	if edgeType == nil && direction == types.DirectionAny {
-		for _, edge := range obj.Edges {
+		for _, edge := range obj.edges {
 			if edge.(*Edge).GetIsInitialized() {
 				edgesWithDirections = append(edgesWithDirections, edge)
 			}
 		}
-		return obj.Edges
+		return obj.edges
 	}
 
-	for _, edge := range obj.Edges {
+	for _, edge := range obj.edges {
 		if !edge.(*Edge).GetIsInitialized() {
 			logger.Warning(fmt.Sprintf("WARNING: Continuing loop Node:GetEdgesForEdgeType - skipping uninitialized edge '%+v'", edge))
 			continue
@@ -137,12 +137,12 @@ func (obj *Node) GetEdgesForEdgeType(edgeType types.TGEdgeType, direction types.
 			edgesWithDirections = append(edgesWithDirections, edge)
 		} else if direction == types.DirectionOutbound {
 			edgesForThisNode := edge.GetVertices()
-			if obj.EntityId == edgesForThisNode[0].GetVirtualId() {
+			if obj.GetVirtualId() == edgesForThisNode[0].GetVirtualId() {
 				edgesWithDirections = append(edgesWithDirections, edge)
 			}
 		} else {
 			edgesForThisNode := edge.GetVertices()
-			if obj.EntityId == edgesForThisNode[1].GetVirtualId() {
+			if obj.GetVirtualId() == edgesForThisNode[1].GetVirtualId() {
 				edgesWithDirections = append(edgesWithDirections, edge)
 			}
 		}
@@ -181,12 +181,12 @@ func (obj *Node) GetGraphMetadata() types.TGGraphMetadata {
 
 // GetIsDeleted checks whether this entity is already deleted in the system or not
 func (obj *Node) GetIsDeleted() bool {
-	return obj.isDeleted()
+	return obj.getIsDeleted()
 }
 
 // GetIsNew checks whether this entity that is currently being added to the system is new or not
 func (obj *Node) GetIsNew() bool {
-	return obj.isNew()
+	return obj.getIsNew()
 }
 
 // GetVersion gets the version of the Entity
@@ -298,7 +298,7 @@ func (obj *Node) ReadExternal(is types.TGInputStream) types.TGError {
 			entity = refMap[edgeId]
 		}
 		if entity == nil {
-			edge1 := NewEdge(obj.GraphMetadata)
+			edge1 := NewEdge(obj.graphMetadata)
 			edge1.SetEntityId(edgeId)
 			edge1.SetIsInitialized(false)
 			if refMap != nil {
@@ -309,7 +309,7 @@ func (obj *Node) ReadExternal(is types.TGInputStream) types.TGError {
 		} else {
 			edge = entity.(*Edge)
 		}
-		obj.Edges = append(obj.Edges, edge)
+		obj.edges = append(obj.edges, edge)
 	}
 
 	obj.SetIsInitialized(true)
@@ -329,7 +329,7 @@ func (obj *Node) WriteExternal(os types.TGOutputStream) types.TGError {
 	}
 	logger.Log(fmt.Sprint("Inside Node:WriteExternal - exported base entity attributes"))
 	newCount := 0
-	for _, edge := range obj.Edges {
+	for _, edge := range obj.edges {
 		if edge.GetIsNew() {
 			newCount++
 		}
@@ -337,7 +337,7 @@ func (obj *Node) WriteExternal(os types.TGOutputStream) types.TGError {
 	os.(*iostream.ProtocolDataOutputStream).WriteInt(newCount)
 	logger.Log(fmt.Sprintf("Inside Node:WriteExternal - exported new edge count '%d'", newCount))
 	// Write the edges ids - ONLY include new edges
-	for _, edge := range obj.Edges {
+	for _, edge := range obj.edges {
 		if ! edge.GetIsNew() {
 			continue
 		}
@@ -362,8 +362,8 @@ func (obj *Node) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *Node) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.IsNew, obj.EntityKind, obj.virtualId, obj.Version, obj.EntityId, obj.EntityType,
-		obj.IsDeleted, obj.IsInitialized, obj.GraphMetadata, obj.Attributes, obj.ModifiedAttributes, obj.Edges)
+	_, err := fmt.Fprintln(&b, obj.isNew, obj.EntityKind, obj.virtualId, obj.version, obj.entityId, obj.EntityType,
+		obj.isDeleted, obj.isInitialized, obj.graphMetadata, obj.attributes, obj.modifiedAttributes, obj.edges)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Node:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -378,8 +378,8 @@ func (obj *Node) MarshalBinary() ([]byte, error) {
 func (obj *Node) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.IsNew, &obj.EntityKind, &obj.virtualId, &obj.Version, &obj.EntityId, &obj.EntityType,
-		&obj.IsDeleted, &obj.IsInitialized, &obj.GraphMetadata, &obj.Attributes, &obj.ModifiedAttributes, &obj.Edges)
+	_, err := fmt.Fscanln(b, &obj.isNew, &obj.EntityKind, &obj.virtualId, &obj.version, &obj.entityId, &obj.EntityType,
+		&obj.isDeleted, &obj.isInitialized, &obj.graphMetadata, &obj.attributes, &obj.modifiedAttributes, &obj.edges)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Node:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

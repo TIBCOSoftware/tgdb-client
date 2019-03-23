@@ -115,27 +115,7 @@ func GetPreDefinedErrors(code string) *TGDBError {
 }
 
 /////////////////////////////////////////////////////////////////
-// Helper functions from Interface ==> TGError
-/////////////////////////////////////////////////////////////////
-
-func (e *TGDBError) getCode() string {
-	return e.ErrorCode
-}
-
-func (e *TGDBError) getErrorType() int {
-	return e.ErrorType
-}
-
-func (e *TGDBError) getErrorMsg() string {
-	return e.ErrorMsg
-}
-
-func (e *TGDBError) getErrorDetails() string {
-	return e.ErrorDetails
-}
-
-/////////////////////////////////////////////////////////////////
-// Implement functions from Interface ==> TGError
+// Helper functions for Interface ==> TGError
 /////////////////////////////////////////////////////////////////
 
 func (e *TGDBError) GetErrorCode() string {

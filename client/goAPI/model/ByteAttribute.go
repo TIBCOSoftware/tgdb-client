@@ -52,20 +52,20 @@ func DefaultByteAttribute() *ByteAttribute {
 
 func NewByteAttributeWithOwner(ownerEntity types.TGEntity) *ByteAttribute {
 	newAttribute := DefaultByteAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewByteAttribute(attrDesc *AttributeDescriptor) *ByteAttribute {
 	newAttribute := DefaultByteAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewByteAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *ByteAttribute {
 	newAttribute := NewByteAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -77,7 +77,7 @@ func (obj *ByteAttribute) SetByte(b uint8) {
 	if !obj.IsNull() {
 		return
 	}
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
@@ -132,11 +132,11 @@ func (obj *ByteAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
 		//errMsg := fmt.Sprintf("Attribute value is required")
 		//return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 
@@ -204,7 +204,7 @@ func (obj *ByteAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("ByteAttribute::ReadValue - read value: '%+v'", value))
-	obj.AttrValue = value
+	obj.attrValue = value
 	return nil
 }
 
@@ -212,7 +212,7 @@ func (obj *ByteAttribute) ReadValue(is types.TGInputStream) types.TGError {
 func (obj *ByteAttribute) WriteValue(os types.TGOutputStream) types.TGError {
 	var network bytes.Buffer
 	enc := gob.NewEncoder(&network)
-	err := enc.Encode(obj.AttrValue)
+	err := enc.Encode(obj.attrValue)
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning ByteAttribute:WriteValue - unable to encode attribute value"))
 		errMsg := "AbstractAttribute::WriteExternal - Unable to encode attribute value"
@@ -259,7 +259,7 @@ func (obj *ByteAttribute) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *ByteAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ByteAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -274,7 +274,7 @@ func (obj *ByteAttribute) MarshalBinary() ([]byte, error) {
 func (obj *ByteAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ByteAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

@@ -117,7 +117,7 @@ func CreateMessageForVerb(verbId int) (types.TGMessage, types.TGError) {
 		return DefaultInvalidMessage(), nil
 	default:
 		//if type is invalid, return an error
-		errMsg := fmt.Sprintf("AttributeTypeInvalid Message Type '%s'", GetVerb(inputVerbId).Name)
+		errMsg := fmt.Sprintf("AttributeTypeInvalid Message Type '%s'", GetVerb(inputVerbId).name)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 }
@@ -190,7 +190,7 @@ func CreateMessageWithToken(verbId int, authToken, sessionId int64) (types.TGMes
 		return NewInvalidMessage(authToken, sessionId), nil
 	default:
 		//if type is invalid, return an error
-		errMsg := fmt.Sprintf("AttributeTypeInvalid Message Type '%s'", GetVerb(inputVerbId).Name)
+		errMsg := fmt.Sprintf("AttributeTypeInvalid Message Type '%s'", GetVerb(inputVerbId).name)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 }
@@ -211,10 +211,10 @@ func CreateMessageFromBuffer(buffer []byte, offset int, length int) (types.TGMes
 		logger.Error(fmt.Sprintf("ERROR: Returning MessageFactory::CreateMessageFromBuffer w/ error in extracting verbId from message buffer: %s", err.Error()))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer retrieved VerbId '%s'", commandVerb.Name))
-	msg, err := CreateMessageForVerb(commandVerb.Id)
+	logger.Log(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer retrieved VerbId '%s'", commandVerb.name))
+	msg, err := CreateMessageForVerb(commandVerb.id)
 	if err != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning MessageFactory::CreateMessageFromBuffer w/ error in creating message for verb('%s'): %s", commandVerb.Name, err.Error()))
+		logger.Error(fmt.Sprintf("ERROR: Returning MessageFactory::CreateMessageFromBuffer w/ error in creating message for verb('%s'): %s", commandVerb.name, err.Error()))
 		return nil, err
 	}
 	logger.Log(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer created '%+v'", msg))

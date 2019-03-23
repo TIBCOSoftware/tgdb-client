@@ -30,7 +30,7 @@ import (
 func CreateTestEntityType(name string, entityType types.TGSystemType) *EntityType {
 	newEntityType := DefaultEntityType()
 	newEntityType.name = name
-	newEntityType.SysType = entityType
+	newEntityType.sysType = entityType
 	attributes := make(map[string]*AttributeDescriptor, 3)
 	bAttrDesc := CreateTestAttributeDescriptor("BoolDesc", types.AttributeTypeBoolean)
 	iAttrDesc := CreateTestAttributeDescriptor("IntegerDesc", types.AttributeTypeInteger)

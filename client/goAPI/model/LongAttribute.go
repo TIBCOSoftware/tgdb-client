@@ -52,20 +52,20 @@ func DefaultLongAttribute() *LongAttribute {
 
 func NewLongAttributeWithOwner(ownerEntity types.TGEntity) *LongAttribute {
 	newAttribute := DefaultLongAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewLongAttribute(attrDesc *AttributeDescriptor) *LongAttribute {
 	newAttribute := DefaultLongAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewLongAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *LongAttribute {
 	newAttribute := NewLongAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -74,10 +74,10 @@ func NewLongAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDes
 /////////////////////////////////////////////////////////////////
 
 func (obj *LongAttribute) SetLong(b int64) {
-	if !obj.IsNull() && obj.AttrValue == b {
+	if !obj.IsNull() && obj.attrValue == b {
 		return
 	}
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
@@ -129,11 +129,11 @@ func (obj *LongAttribute) SetOwner(ownerEntity types.TGEntity) {
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *LongAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 	if reflect.TypeOf(value).Kind() != reflect.Int64 &&
@@ -167,13 +167,13 @@ func (obj *LongAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("LongAttribute::ReadValue - read value: '%+v'", value))
-	obj.AttrValue = value
+	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *LongAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	iValue := reflect.ValueOf(obj.AttrValue).Int()
+	iValue := reflect.ValueOf(obj.attrValue).Int()
 	os.(*iostream.ProtocolDataOutputStream).WriteLong(iValue)
 	return nil
 }
@@ -207,7 +207,7 @@ func (obj *LongAttribute) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *LongAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning LongAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -222,7 +222,7 @@ func (obj *LongAttribute) MarshalBinary() ([]byte, error) {
 func (obj *LongAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning LongAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

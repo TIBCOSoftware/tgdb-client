@@ -52,12 +52,12 @@ func DefaultGetEntityRequestMessage() *GetEntityRequestMessage {
 	newMsg := GetEntityRequestMessage{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.IsUpdatable = true
+	newMsg.isUpdatable = true
 	newMsg.commandType = 0
 	newMsg.fetchSize = 1000
 	newMsg.batchSize = 50
 	newMsg.traversalDepth = 3
-	newMsg.VerbId = VerbGetEntityRequest
+	newMsg.verbId = VerbGetEntityRequest
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -65,8 +65,8 @@ func DefaultGetEntityRequestMessage() *GetEntityRequestMessage {
 // Create New Message Instance
 func NewGetEntityRequestMessage(authToken, sessionId int64) *GetEntityRequestMessage {
 	newMsg := DefaultGetEntityRequestMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -347,8 +347,8 @@ func (msg *GetEntityRequestMessage) WritePayload(os types.TGOutputStream) types.
 func (msg *GetEntityRequestMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.commandType, msg.fetchSize,
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.commandType, msg.fetchSize,
 		msg.batchSize, msg.traversalDepth, msg.edgeLimit, msg.resultId, msg.key)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GetEntityRequestMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -365,8 +365,8 @@ func (msg *GetEntityRequestMessage) MarshalBinary() ([]byte, error) {
 func (msg *GetEntityRequestMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.commandType, &msg.fetchSize, &msg.batchSize, &msg.traversalDepth, &msg.edgeLimit, &msg.resultId, &msg.key)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GetEntityRequestMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

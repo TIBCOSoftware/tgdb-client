@@ -71,7 +71,8 @@ func NewBlockingChannelResponse(reqId, rTimeout int64) *BlockingChannelResponse 
 
 // Await waits (loops) till the channel response receives reply message from the server
 func (obj *BlockingChannelResponse) Await(tester types.StatusTester) {
-	logger.Log(fmt.Sprintf("Entering BlockingChannelResponse:Await w/ contents as '%+v'", obj.String()))
+	//logger.Log(fmt.Sprintf("Entering BlockingChannelResponse:Await w/ contents as '%+v'", obj.String()))
+	logger.Log(fmt.Sprint("Entering BlockingChannelResponse:Await"))
 	//obj.lock.Lock()
 	//defer obj.lock.Unlock()
 

@@ -45,7 +45,7 @@ func DefaultSessionForcefullyTerminatedMessage() *SessionForcefullyTerminatedMes
 	newMsg := SessionForcefullyTerminatedMessage{
 		ExceptionMessage: DefaultExceptionMessage(),
 	}
-	newMsg.VerbId = VerbSessionForcefullyTerminated
+	newMsg.verbId = VerbSessionForcefullyTerminated
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -53,8 +53,8 @@ func DefaultSessionForcefullyTerminatedMessage() *SessionForcefullyTerminatedMes
 // Create New Message Instance
 func NewSessionForcefullyTerminatedMessage(authToken, sessionId int64) *SessionForcefullyTerminatedMessage {
 	newMsg := DefaultSessionForcefullyTerminatedMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -261,8 +261,8 @@ func (msg *SessionForcefullyTerminatedMessage) WritePayload(os types.TGOutputStr
 func (msg *SessionForcefullyTerminatedMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.exceptionMsg, msg.exceptionType)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.exceptionMsg, msg.exceptionType)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning SessionForcefullyTerminatedMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -278,8 +278,8 @@ func (msg *SessionForcefullyTerminatedMessage) MarshalBinary() ([]byte, error) {
 func (msg *SessionForcefullyTerminatedMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.exceptionMsg, &msg.exceptionType)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning SessionForcefullyTerminatedMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

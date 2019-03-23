@@ -156,7 +156,7 @@ func TestCreateAttributeByType(t *testing.T) {
 			continue
 		}
 		newAttr := createTestAttributeByType(attrTypeId)
-		t.Logf("AttributeFactory returned %s attribute for attrType: '%+v' as '%+v'", types.GetAttributeTypeFromId(attrTypeId).TypeName, attrTypeId, newAttr)
+		t.Logf("AttributeFactory returned %s attribute for attrType: '%+v' as '%+v'", types.GetAttributeTypeFromId(attrTypeId).GetTypeName(), attrTypeId, newAttr)
 	}
 }
 
@@ -166,7 +166,7 @@ func TestCreateAttribute(t *testing.T) {
 		if attrTypeId == 0 {
 			continue
 		}
-		attrDesc := createTestAttributeDescriptor(attrType.TypeId)
+		attrDesc := createTestAttributeDescriptor(attrType.GetTypeId())
 		if attrTypeId == 9 {
 			attrDesc.SetPrecision(24)
 			attrDesc.SetScale(8)
@@ -174,9 +174,9 @@ func TestCreateAttribute(t *testing.T) {
 		value := rand.Int63()
 		newAttr, err := CreateAttributeWithDesc(nil, attrDesc, value)
 		if err != nil {
-			t.Errorf("AttributeFactory could not instantiate %s attribute for attrType: '%+v'", types.GetAttributeTypeFromId(attrTypeId).TypeName, attrTypeId)
+			t.Errorf("AttributeFactory could not instantiate %s attribute for attrType: '%+v'", types.GetAttributeTypeFromId(attrTypeId).GetTypeName(), attrTypeId)
 		}
-		t.Logf("AttributeFactory returned %s attribute for attrType: '%+v' as '%+v'", types.GetAttributeTypeFromId(attrTypeId).TypeName, attrTypeId, newAttr)
+		t.Logf("AttributeFactory returned %s attribute for attrType: '%+v' as '%+v'", types.GetAttributeTypeFromId(attrTypeId).GetTypeName(), attrTypeId, newAttr)
 	}
 }
 
@@ -186,7 +186,7 @@ func TestGetName(t *testing.T) {
 			continue
 		}
 		name := GetName(attrTypeId)
-		t.Logf("AttributeFactory returned '%+v' attribute name for attrType: '%+v'", name, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+		t.Logf("AttributeFactory returned '%+v' attribute name for attrType: '%+v'", name, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 	}
 }
 
@@ -195,7 +195,7 @@ func TestGetValue(t *testing.T) {
 		if attrTypeId == 0 {
 			continue
 		}
-		attrDesc := createTestAttributeDescriptor(attrType.TypeId)
+		attrDesc := createTestAttributeDescriptor(attrType.GetTypeId())
 		if attrTypeId == 9 {
 			attrDesc.SetPrecision(24)
 			attrDesc.SetScale(8)
@@ -203,10 +203,10 @@ func TestGetValue(t *testing.T) {
 		value1 := rand.Int63()
 		newAttr, err := CreateAttributeWithDesc(nil, attrDesc, value1)
 		if err != nil {
-			t.Errorf("AttributeFactory could not instantiate %s attribute for attrType: '%+v'", types.GetAttributeTypeFromId(attrTypeId).TypeName, attrTypeId)
+			t.Errorf("AttributeFactory could not instantiate %s attribute for attrType: '%+v'", types.GetAttributeTypeFromId(attrTypeId).GetTypeName(), attrTypeId)
 		}
 		value := newAttr.GetValue()
-		t.Logf("AttributeFactory returned '%+v' attribute value for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+		t.Logf("AttributeFactory returned '%+v' attribute value for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 	}
 }
 
@@ -216,7 +216,7 @@ func TestIsNull(t *testing.T) {
 			continue
 		}
 		value := IsNull(attrTypeId)
-		t.Logf("AttributeFactory verified '%+v' attribute value whether it is null (TRUE) or not (FALSE): '%+v'", types.GetAttributeTypeFromId(attrTypeId).TypeName, value)
+		t.Logf("AttributeFactory verified '%+v' attribute value whether it is null (TRUE) or not (FALSE): '%+v'", types.GetAttributeTypeFromId(attrTypeId).GetTypeName(), value)
 	}
 }
 
@@ -235,7 +235,7 @@ func TestSetValue(t *testing.T) {
 		}
 		newAttr := createTestAttributeByType(attrTypeId)
 		oldValue := newAttr.GetValue()
-		t.Logf("AttributeFactory verified existing attribute value '%+v' for attrType: '%+v'", oldValue, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+		t.Logf("AttributeFactory verified existing attribute value '%+v' for attrType: '%+v'", oldValue, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 
 		var value interface{}
 		switch attrTypeId {
@@ -256,7 +256,7 @@ func TestSetValue(t *testing.T) {
 		case types.AttributeTypeDouble:
 			value = rand.Float64()
 		case types.AttributeTypeNumber:
-			value, _ = NewFromString("123456.0987654")
+			value, _ = utils.NewTGDecimalFromString("123456.0987654")
 		case types.AttributeTypeString:
 			value = "Winner"
 		case types.AttributeTypeDate:
@@ -290,13 +290,13 @@ func TestSetValue(t *testing.T) {
 		default:
 		}
 
-		t.Logf("AttributeFactory trying to set the attribute value '%+v' for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+		t.Logf("AttributeFactory trying to set the attribute value '%+v' for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 		err := newAttr.SetValue(value)
 		if err != nil {
-			t.Errorf("AttributeFactory could not set attribute value '%+v' for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+			t.Errorf("AttributeFactory could not set attribute value '%+v' for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 		}
 		newValue := newAttr.GetValue()
-		t.Logf("AttributeFactory verified modified attribute value '%+v' for attrType: '%+v'", newValue, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+		t.Logf("AttributeFactory verified modified attribute value '%+v' for attrType: '%+v'", newValue, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 		t.Log("")
 	}
 }
@@ -327,7 +327,7 @@ func TestWriteExternal(t *testing.T) {
 		case types.AttributeTypeDouble:
 			value = rand.Float64()
 		case types.AttributeTypeNumber:
-			value, _ = NewFromString("123456.0987654")
+			value, _ = utils.NewTGDecimalFromString("123456.0987654")
 		case types.AttributeTypeString:
 			value = "Winner"
 		case types.AttributeTypeDate:
@@ -365,9 +365,9 @@ func TestWriteExternal(t *testing.T) {
 		newAttr := createTestAttributeByType(attrTypeId)
 		err := newAttr.SetValue(value)
 		if err != nil {
-			t.Errorf("AttributeFactory could not set attribute value '%+v' for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+			t.Errorf("AttributeFactory could not set attribute value '%+v' for attrType: '%+v'", value, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 		}
-		t.Logf("AttributeFactory returned modified attribute '%+v' for attrType: '%+v'", newAttr, types.GetAttributeTypeFromId(attrTypeId).TypeName)
+		t.Logf("AttributeFactory returned modified attribute '%+v' for attrType: '%+v'", newAttr, types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 
 		//var network bytes.Buffer
 		oNetwork := iostream.DefaultProtocolDataOutputStream()
@@ -375,7 +375,7 @@ func TestWriteExternal(t *testing.T) {
 		if err != nil {
 			t.Errorf("AttributeFactory could not newAttr.WriteExternal for attr: '%+v'", newAttr)
 		}
-		t.Logf("AttributeFactory WriteExternal exported '%+v' attribute value", types.GetAttributeTypeFromId(attrTypeId).TypeName)
+		t.Logf("AttributeFactory WriteExternal exported '%+v' attribute value", types.GetAttributeTypeFromId(attrTypeId).GetTypeName())
 
 		//iNetwork := iostream.DefaultProtocolDataInputStream()
 		//err = newAttr.ReadExternal(iNetwork)

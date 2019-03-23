@@ -34,11 +34,10 @@ import (
 
 type CommitTransactionRequest struct {
 	*AbstractProtocolMessage
-	AddedList   map[int64]types.TGEntity
-	//ChangedList map[int64]types.TGEntity
-	UpdatedList map[int64]types.TGEntity
-	RemovedList map[int64]types.TGEntity
-	AttrDescSet []types.TGAttributeDescriptor
+	addedList   map[int64]types.TGEntity
+	updatedList map[int64]types.TGEntity
+	removedList map[int64]types.TGEntity
+	attrDescSet []types.TGAttributeDescriptor
 }
 
 func DefaultCommitTransactionRequestMessage() *CommitTransactionRequest {
@@ -50,12 +49,11 @@ func DefaultCommitTransactionRequestMessage() *CommitTransactionRequest {
 	newMsg := CommitTransactionRequest{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.VerbId = VerbCommitTransactionRequest
-	newMsg.AddedList = make(map[int64]types.TGEntity, 0)
-	//newMsg.ChangedList = make(map[int64]types.TGEntity, 0)
-	newMsg.UpdatedList = make(map[int64]types.TGEntity, 0)
-	newMsg.RemovedList = make(map[int64]types.TGEntity, 0)
-	newMsg.AttrDescSet = make([]types.TGAttributeDescriptor, 0)
+	newMsg.verbId = VerbCommitTransactionRequest
+	newMsg.addedList = make(map[int64]types.TGEntity, 0)
+	newMsg.updatedList = make(map[int64]types.TGEntity, 0)
+	newMsg.removedList = make(map[int64]types.TGEntity, 0)
+	newMsg.attrDescSet = make([]types.TGAttributeDescriptor, 0)
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -63,8 +61,8 @@ func DefaultCommitTransactionRequestMessage() *CommitTransactionRequest {
 // Create New Message Instance
 func NewCommitTransactionRequestMessage(authToken, sessionId int64) *CommitTransactionRequest {
 	newMsg := DefaultCommitTransactionRequestMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -75,18 +73,34 @@ func NewCommitTransactionRequestMessage(authToken, sessionId int64) *CommitTrans
 
 func (msg *CommitTransactionRequest) AddCommitLists(addedList, updatedList, removedList map[int64]types.TGEntity, attrDescriptors []types.TGAttributeDescriptor) *CommitTransactionRequest {
 	if len(addedList) > 0 {
-		msg.AddedList = addedList
+		msg.addedList = addedList
 	}
 	if len(updatedList) > 0 {
-		msg.UpdatedList = updatedList
+		msg.updatedList = updatedList
 	}
 	if len(removedList) > 0 {
-		msg.RemovedList = removedList
+		msg.removedList = removedList
 	}
 	if len(attrDescriptors) > 0 {
-		msg.AttrDescSet = attrDescriptors
+		msg.attrDescSet = attrDescriptors
 	}
 	return msg
+}
+
+func (msg *CommitTransactionRequest) GetAddedList() map[int64]types.TGEntity {
+	return msg.addedList
+}
+
+func (msg *CommitTransactionRequest) GetUpdatedList() map[int64]types.TGEntity {
+	return msg.updatedList
+}
+
+func (msg *CommitTransactionRequest) GetRemovedList() map[int64]types.TGEntity {
+	return msg.removedList
+}
+
+func (msg *CommitTransactionRequest) GetAttrDescSet() []types.TGAttributeDescriptor {
+	return msg.attrDescSet
 }
 
 /////////////////////////////////////////////////////////////////
@@ -232,7 +246,7 @@ func (msg *CommitTransactionRequest) String() string {
 	//}
 	buffer.WriteString("}")
 	buffer.WriteString(fmt.Sprint(", AddedList:{"))
-	for k, v := range msg.AddedList {
+	for k, v := range msg.addedList {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d=Entity: %+v ", k, v))
 	}
 	buffer.WriteString("}")
@@ -241,12 +255,12 @@ func (msg *CommitTransactionRequest) String() string {
 	//	buffer.WriteString(fmt.Sprintf("EntityId: %d Entity: %+v ", k, v))
 	//}
 	buffer.WriteString(fmt.Sprint(", UpdatedList:{"))
-	for k, v := range msg.UpdatedList {
+	for k, v := range msg.updatedList {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d=Entity: %+v ", k, v))
 	}
 	buffer.WriteString("}")
 	buffer.WriteString(fmt.Sprint(", RemovedList:{"))
-	for k, v := range msg.RemovedList {
+	for k, v := range msg.removedList {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d=Entity: %+v ", k, v))
 	}
 	buffer.WriteString("}")
@@ -288,20 +302,20 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 	os.(*iostream.ProtocolDataOutputStream).WriteInt(0) // This is for the checksum for the commit buffer to be added later.  Currently not used
 	////<A> for attribute descriptor, <N> for node desc definitions, <E> for edge desc definitions
 	////meta should be sent before the instance data
-	if len(msg.AttrDescSet) > 0 {
+	if len(msg.attrDescSet) > 0 {
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(0x1010) // For attribute descriptor
 		// There should be nothing after the marker due to no new attribute descriptor
 		// Need to check for new descriptor only with attribute id as negative number
 		// Check for size overrun
 		newAttrCount := 0
-		for _, attrDesc := range msg.AttrDescSet {
+		for _, attrDesc := range msg.attrDescSet {
 			if attrDesc.GetAttributeId() < 0 {
 				newAttrCount++
 			}
 		}
 		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:ReadPayload - There are '%d' new attribute descriptors", newAttrCount))
 		os.(*iostream.ProtocolDataOutputStream).WriteInt(newAttrCount)
-		for _, attrDesc := range msg.AttrDescSet {
+		for _, attrDesc := range msg.attrDescSet {
 				err := attrDesc.WriteExternal(os)
 				if err != nil {
 					logger.Error(fmt.Sprintf("ERROR: Returning CommitTransactionRequest:WritePayload w/ Error in writing attrDesc '%+v' to message buffer", attrDesc))
@@ -309,45 +323,45 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 				}
 			//}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:ReadPayload - '%d' attribute descriptors are written in byte format", len(msg.AttrDescSet)))
+		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:ReadPayload - '%d' attribute descriptors are written in byte format", len(msg.attrDescSet)))
 	}
-	if len(msg.AddedList) > 0 {
+	if len(msg.addedList) > 0 {
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(0x1011) // For entity creation
-		os.(*iostream.ProtocolDataOutputStream).WriteInt(len(msg.AddedList))
-		for _, entity := range msg.AddedList {
+		os.(*iostream.ProtocolDataOutputStream).WriteInt(len(msg.addedList))
+		for _, entity := range msg.addedList {
 			err := entity.WriteExternal(os)
 			if err != nil {
 				logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionRequest:WritePayload w/ Error in writing addedEntity to message buffer"))
 				return err
 			}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' new entities are written in byte format", len(msg.AddedList)))
+		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' new entities are written in byte format", len(msg.addedList)))
 	}
 	//TODO: Ask TGDB Engineering Team - Need to write only the modified attributes
-	if len(msg.UpdatedList) > 0 {
+	if len(msg.updatedList) > 0 {
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(0x1012) // For entity update
-		os.(*iostream.ProtocolDataOutputStream).WriteInt(len(msg.UpdatedList))
-		for _, entity := range msg.UpdatedList {
+		os.(*iostream.ProtocolDataOutputStream).WriteInt(len(msg.updatedList))
+		for _, entity := range msg.updatedList {
 			err := entity.WriteExternal(os)
 			if err != nil {
 				logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionRequest:WritePayload w/ Error in writing updatedEntity to message buffer"))
 				return err
 			}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' updateable entities are written in byte format", len(msg.UpdatedList)))
+		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' updateable entities are written in byte format", len(msg.updatedList)))
 	}
 	//TODO: Ask TGDB Engineering Team - Need to write the id only
-	if len(msg.RemovedList) > 0 {
+	if len(msg.removedList) > 0 {
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(0x1013) // For deleted entities
-		os.(*iostream.ProtocolDataOutputStream).WriteInt(len(msg.RemovedList))
-		for _, entity := range msg.RemovedList {
+		os.(*iostream.ProtocolDataOutputStream).WriteInt(len(msg.removedList))
+		for _, entity := range msg.removedList {
 			err := entity.WriteExternal(os)
 			if err != nil {
 				logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionRequest:WritePayload w/ Error in writing removedEntity to message buffer"))
 				return err
 			}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' removable entities are written in byte format", len(msg.RemovedList)))
+		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' removable entities are written in byte format", len(msg.removedList)))
 	}
 	currPos := os.GetPosition()
 	length := currPos - startPos
@@ -366,9 +380,9 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 func (msg *CommitTransactionRequest) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.AuthToken, msg.SessionId, msg.DataOffset, msg.IsUpdatable, msg.AddedList, //msg.ChangedList,
-		msg.UpdatedList, msg.RemovedList, msg.AttrDescSet)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable, msg.addedList, //msg.ChangedList,
+		msg.updatedList, msg.removedList, msg.attrDescSet)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CommitTransactionRequest:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -384,9 +398,9 @@ func (msg *CommitTransactionRequest) MarshalBinary() ([]byte, error) {
 func (msg *CommitTransactionRequest) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.AuthToken, &msg.SessionId, &msg.DataOffset, &msg.IsUpdatable,
-		&msg.AddedList, &msg.UpdatedList, &msg.RemovedList, &msg.AttrDescSet)
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.authToken, &msg.sessionId, &msg.dataOffset, &msg.isUpdatable,
+		&msg.addedList, &msg.updatedList, &msg.removedList, &msg.attrDescSet)
 		//&msg.AddedList, &msg.ChangedList, &msg.UpdatedList, &msg.RemovedList, &msg.AttrDescSet)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CommitTransactionRequest:UnmarshalBinary w/ Error: '%+v'", err.Error()))

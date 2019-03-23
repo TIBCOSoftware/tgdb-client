@@ -55,20 +55,20 @@ func DefaultNumberAttribute() *NumberAttribute {
 
 func NewNumberAttributeWithOwner(ownerEntity types.TGEntity) *NumberAttribute {
 	newAttribute := DefaultNumberAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewNumberAttribute(attrDesc *AttributeDescriptor) *NumberAttribute {
 	newAttribute := DefaultNumberAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewNumberAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *NumberAttribute {
 	newAttribute := NewNumberAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -78,13 +78,13 @@ func NewNumberAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeD
 
 func (obj *NumberAttribute) SetDecimal(b utils.TGDecimal, precision, scale int) {
 	logger.Log(fmt.Sprintf("Inside NumberAttribute::SetDecimal about to set value '%+v' w/ precision:scale %d/%d", b, precision, scale))
-	if !obj.IsNull() && obj.AttrValue == b {
+	if !obj.IsNull() && obj.attrValue == b {
 		return
 	}
 	obj.GetAttributeDescriptor().SetPrecision(int16(precision))
 	obj.GetAttributeDescriptor().SetScale(int16(scale))
-	obj.AttrValue = b.String()	//strings.Replace(b.String(), ".", "", -1)
-	logger.Log(fmt.Sprintf("Inside NumberAttribute::SetDecimal attrValue is '%+v'", obj.AttrValue))
+	obj.attrValue = b.String() //strings.Replace(b.String(), ".", "", -1)
+	logger.Log(fmt.Sprintf("Inside NumberAttribute::SetDecimal attrValue is '%+v'", obj.attrValue))
 	obj.setIsModified(true)
 }
 
@@ -167,11 +167,11 @@ func (obj *NumberAttribute) SetOwner(ownerEntity types.TGEntity) {
 func (obj *NumberAttribute) SetValue(value interface{}) types.TGError {
 	logger.Log(fmt.Sprintf("Inside NumberAttribute::SetValue about to set value '%+v' of kind '%+v'", value, reflect.TypeOf(value).Kind()))
 	if value == nil {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 
@@ -267,7 +267,7 @@ func (obj *NumberAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("Inside NumberAttribute::ReadValue - read bdStr: '%+v'", bdStr))
-	obj.AttrValue, _ = utils.NewTGDecimalFromString(bdStr)
+	obj.attrValue, _ = utils.NewTGDecimalFromString(bdStr)
 	return nil
 }
 
@@ -275,11 +275,11 @@ func (obj *NumberAttribute) ReadValue(is types.TGInputStream) types.TGError {
 func (obj *NumberAttribute) WriteValue(os types.TGOutputStream) types.TGError {
 	os.(*iostream.ProtocolDataOutputStream).WriteShort(int(obj.GetAttributeDescriptor().GetPrecision()))
 	os.(*iostream.ProtocolDataOutputStream).WriteShort(int(obj.GetAttributeDescriptor().GetScale()))
-	logger.Log(fmt.Sprintf("Inside NumberAttribute::WriteValue attrValue is '%+v'", obj.AttrValue))
+	logger.Log(fmt.Sprintf("Inside NumberAttribute::WriteValue attrValue is '%+v'", obj.attrValue))
 	//dValue := reflect.ValueOf(obj.AttrValue).Float()
 	//strValue := strconv.FormatFloat(dValue, 'f', int(obj.GetAttributeDescriptor().GetPrecision()), 64)
 	//newStr := strings.Replace(strValue, ".", "", -1)
-	dValue := obj.AttrValue.(string)
+	dValue := obj.attrValue.(string)
 	newStr := dValue	//strings.Replace(dValue, ".", "", -1)
 	logger.Log(fmt.Sprintf("Inside NumberAttribute::WriteValue newStr is '%+v'", newStr))
 	return os.(*iostream.ProtocolDataOutputStream).WriteUTF(newStr)
@@ -314,7 +314,7 @@ func (obj *NumberAttribute) WriteExternal(os types.TGOutputStream) types.TGError
 func (obj *NumberAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning NumberAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -329,7 +329,7 @@ func (obj *NumberAttribute) MarshalBinary() ([]byte, error) {
 func (obj *NumberAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning NumberAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

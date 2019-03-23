@@ -52,20 +52,20 @@ func DefaultStringAttribute() *StringAttribute {
 
 func NewStringAttributeWithOwner(ownerEntity types.TGEntity) *StringAttribute {
 	newAttribute := DefaultStringAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewStringAttribute(attrDesc *AttributeDescriptor) *StringAttribute {
 	newAttribute := DefaultStringAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewStringAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *StringAttribute {
 	newAttribute := NewStringAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -137,11 +137,11 @@ func (obj *StringAttribute) SetOwner(ownerEntity types.TGEntity) {
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *StringAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 
@@ -152,7 +152,7 @@ func (obj *StringAttribute) SetValue(value interface{}) types.TGError {
 		errMsg := fmt.Sprintf("UTF length of String exceed the maximum string length supported for a String Attribute (%d > %d", strLen, MaxStringAttrLength)
 		return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	obj.AttrValue = value.(string)
+	obj.attrValue = value.(string)
 	obj.setIsModified(true)
 	return nil
 }
@@ -164,13 +164,13 @@ func (obj *StringAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("StringAttribute::ReadValue - read value: '%+v'", value))
-	obj.AttrValue = value
+	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *StringAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	return os.(*iostream.ProtocolDataOutputStream).WriteUTF(obj.AttrValue.(string))
+	return os.(*iostream.ProtocolDataOutputStream).WriteUTF(obj.attrValue.(string))
 }
 
 func (obj *StringAttribute) String() string {
@@ -202,7 +202,7 @@ func (obj *StringAttribute) WriteExternal(os types.TGOutputStream) types.TGError
 func (obj *StringAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning StringAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -217,7 +217,7 @@ func (obj *StringAttribute) MarshalBinary() ([]byte, error) {
 func (obj *StringAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning StringAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

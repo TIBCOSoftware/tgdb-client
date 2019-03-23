@@ -86,7 +86,7 @@ func (obj *TGChannelFactory) createChannelWithProperties(urlPath, userName, pass
 	channelUrl := ParseChannelUrl(urlPath)
 	if channelUrl != nil {
 		urlProps := channelUrl.GetProperties().(*utils.SortedProperties)
-		for _, kvp := range urlProps.Properties {
+		for _, kvp := range urlProps.GetAllProperties() {
 			properties.AddProperty(kvp.KeyName, kvp.KeyValue)
 		}
 	}

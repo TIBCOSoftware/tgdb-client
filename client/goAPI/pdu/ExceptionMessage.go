@@ -47,7 +47,7 @@ func DefaultExceptionMessage() *ExceptionMessage {
 	newMsg := ExceptionMessage{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.VerbId = VerbExceptionMessage
+	newMsg.verbId = VerbExceptionMessage
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -55,8 +55,8 @@ func DefaultExceptionMessage() *ExceptionMessage {
 // Create New Message Instance
 func NewExceptionMessage(authToken, sessionId int64) *ExceptionMessage {
 	newMsg := DefaultExceptionMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return newMsg
 }
@@ -290,8 +290,8 @@ func (msg *ExceptionMessage) WritePayload(os types.TGOutputStream) types.TGError
 func (msg *ExceptionMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.exceptionMsg, msg.exceptionType)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.exceptionMsg, msg.exceptionType)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ExceptionMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -307,8 +307,8 @@ func (msg *ExceptionMessage) MarshalBinary() ([]byte, error) {
 func (msg *ExceptionMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.exceptionMsg, &msg.exceptionType)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ExceptionMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

@@ -52,7 +52,7 @@ func DefaultEdgeType() *EdgeType {
 		EntityType: DefaultEntityType(),
 		numEntries: 0,
 	}
-	newEdgeType.SysType = types.SystemTypeEdge
+	newEdgeType.sysType = types.SystemTypeEdge
 	return newEdgeType
 }
 
@@ -205,7 +205,7 @@ func (obj *EdgeType) SetName(eTypeName string) {
 
 // SetSystemType sets system object's type
 func (obj *EdgeType) SetSystemType(eSysType types.TGSystemType) {
-	obj.SysType = eSysType
+	obj.sysType = eSysType
 }
 
 func (obj *EdgeType) String() string {
@@ -233,7 +233,7 @@ func (obj *EdgeType) GetName() string {
 
 // GetSystemType gets system object's type
 func (obj *EdgeType) GetSystemType() types.TGSystemType {
-	return obj.SysType
+	return obj.sysType
 }
 
 /////////////////////////////////////////////////////////////////
@@ -303,7 +303,7 @@ func (obj *EdgeType) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *EdgeType) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.SysType, obj.id, obj.name, obj.parent, obj.attributes, obj.directionType,
+	_, err := fmt.Fprintln(&b, obj.sysType, obj.id, obj.name, obj.parent, obj.attributes, obj.directionType,
 		obj.fromTypeId, obj.fromNodeType, obj.toTypeId, obj.toNodeType, obj.numEntries)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EdgeType:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -319,7 +319,7 @@ func (obj *EdgeType) MarshalBinary() ([]byte, error) {
 func (obj *EdgeType) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.SysType, &obj.id, &obj.name, &obj.parent, &obj.attributes, &obj.directionType,
+	_, err := fmt.Fscanln(b, &obj.sysType, &obj.id, &obj.name, &obj.parent, &obj.attributes, &obj.directionType,
 		&obj.fromTypeId, &obj.fromNodeType, &obj.toTypeId, &obj.toNodeType, &obj.numEntries)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EdgeType:UnmarshalBinary w/ Error: '%+v'", err.Error()))

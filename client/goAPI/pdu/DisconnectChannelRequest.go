@@ -45,7 +45,7 @@ func DefaultDisconnectChannelRequestMessage() *DisconnectChannelRequestMessage {
 	newMsg := DisconnectChannelRequestMessage{
 		AuthenticatedMessage: DefaultAuthenticatedMessage(),
 	}
-	newMsg.VerbId = VerbDisconnectChannelRequest
+	newMsg.verbId = VerbDisconnectChannelRequest
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -53,8 +53,8 @@ func DefaultDisconnectChannelRequestMessage() *DisconnectChannelRequestMessage {
 // Create New Message Instance
 func NewDisconnectChannelRequestMessage(authToken, sessionId int64) *DisconnectChannelRequestMessage {
 	newMsg := DefaultDisconnectChannelRequestMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -262,8 +262,8 @@ func (msg *DisconnectChannelRequestMessage) WritePayload(os types.TGOutputStream
 func (msg *DisconnectChannelRequestMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning DisconnectChannelRequestMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -279,8 +279,8 @@ func (msg *DisconnectChannelRequestMessage) MarshalBinary() ([]byte, error) {
 func (msg *DisconnectChannelRequestMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable)
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning DisconnectChannelRequestMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

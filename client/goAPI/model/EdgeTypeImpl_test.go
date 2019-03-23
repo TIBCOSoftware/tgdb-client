@@ -30,7 +30,7 @@ import (
 func CreateTestEdgeType(name string, directionType types.TGDirectionType, entityType types.TGSystemType, parent types.TGEntityType) *EdgeType {
 	newEdgeType := DefaultEdgeType()
 	newEdgeType.SetName(name)
-	newEdgeType.SysType = entityType
+	newEdgeType.sysType = entityType
 	attributes := make(map[string]*AttributeDescriptor, 3)
 	bAttrDesc := CreateTestAttributeDescriptor("BoolDesc", types.AttributeTypeBoolean)
 	iAttrDesc := CreateTestAttributeDescriptor("IntegerDesc", types.AttributeTypeInteger)

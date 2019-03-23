@@ -50,7 +50,7 @@ initdb/tgdb configuration files.
 All command-line instructions in this document assume `bash` as the target shell, running in Linux or Mac OS X. 
 If you're using Windows, you'll have to work out the PowerShell equivalents.
 
-###(3) How do you execute / test the sample programs?
+###(3) How do I execute / test the sample programs?
 
 As mentioned earlier, the driver program to execute is 'main.go'
    
@@ -62,14 +62,21 @@ You can edit 'main.go' to comment / uncomment required sample execution.
 Each of the sample execution is documented within 'main.go' with appropriate and required steps. If you need to 
 add / edit / modify new tests, 'main.go' is the starting point before moving on to bigger integrations and solutions.
 
-###(4) How do you compile TGDB-GO-Client API?
+###(4) How do I compile TGDB-GO-Client API?
 
 It is standard GO compilation as shown below:
    
     $ cd client/go
     $ go build ./...
 
-###(5) Is there a provision to override/change log level?
+###(5) How do I verify any functional changes / enhancements / augmentation via unit tests?
+
+It is standard GO testing as shown below:
+   
+    $ cd client/go
+    $ go test ./...
+
+###(6) Is there a provision to override/change log level?
 
 Yes, the default log level is set at 'DEBUG' state, as part of defaultLogger(). However, it can be overridden in 3 ways:
 
@@ -77,13 +84,13 @@ Yes, the default log level is set at 'DEBUG' state, as part of defaultLogger(). 
 * Instead of using defaultLogger(), use NewLogger() that accepts the log level as one of the function parameters
 * Develop CustomLogger.go (similar to SimpleLogger.go) that implements all the interfaces from types/TGLogger.go
 
-###(6) Can I implement/use my own custom connection factory with custom functionality?
+###(7) Can I implement/use my own custom connection factory with custom functionality?
 
 Yes, it is possible for you to develop and implement your own custom connection functionality. 
 Please take a look at connection/defaultConnectionFactory.go as a reference, and make sure that your custom
 connection factory implementation is in-line with the interface implementations from types/TGConnection.go
 
-###(7) Are there any known issues / gotchas that we should be aware of?
+###(8) Are there any known issues / gotchas that we should be aware of?
 
 As always, this set of API implemented in GO language is work-in-progress, and is continuously being enhanced to add
 new features / options / capabilities / functionality that may be needed to effectively and efficiently communicate

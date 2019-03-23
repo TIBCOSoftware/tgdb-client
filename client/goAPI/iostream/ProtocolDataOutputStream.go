@@ -55,9 +55,9 @@ func main() {
 var writeBuf = ""
 
 type ProtocolDataOutputStream struct {
-	Buf          []byte
-	BufLen       int
-	Count        int
+	Buf              []byte
+	oStreamBufLen    int
+	oStreamByteCount int
 }
 
 func DefaultProtocolDataOutputStream() *ProtocolDataOutputStream {
@@ -67,9 +67,9 @@ func DefaultProtocolDataOutputStream() *ProtocolDataOutputStream {
 	gob.Register(ProtocolDataOutputStream{})
 
 	newStream := ProtocolDataOutputStream{
-		Buf: make([]byte, 256),
-		BufLen: 256,
-		Count: 0,
+		Buf:              make([]byte, 256),
+		oStreamBufLen:    256,
+		oStreamByteCount: 0,
 	}
 	return &newStream
 }
@@ -78,7 +78,7 @@ func DefaultProtocolDataOutputStream() *ProtocolDataOutputStream {
 func NewProtocolDataOutputStream(len int) *ProtocolDataOutputStream {
 	newStream := DefaultProtocolDataOutputStream()
 	newStream.Buf = make([]byte, len)
-	newStream.BufLen = len
+	newStream.oStreamBufLen = len
 	return newStream
 }
 
@@ -98,28 +98,28 @@ func intToBytes(value int, bytes []byte, offset int) {
 
 func (msg *ProtocolDataOutputStream) Ensure(len int) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::Ensure('%d') in contents", len))
-	if (msg.Count + len) <= msg.BufLen {
+	if (msg.oStreamByteCount + len) <= msg.oStreamBufLen {
 		//logger.Log(fmt.Sprint("Returning ProtocolDataOutputStream::Ensure as (msg.Count + len) <= msg.BufLen"))
 		return
 	}
 	newLen := 0
 	if len > 100000 {
-		newLen = msg.Count + len + 2048
+		newLen = msg.oStreamByteCount + len + 2048
 	} else {
-		newLen = (msg.Count + len) * 2
+		newLen = (msg.oStreamByteCount + len) * 2
 	}
 	b := make([]byte, newLen)
-	copy(b, msg.Buf[0:msg.Count])
+	copy(b, msg.Buf[0:msg.oStreamByteCount])
 	msg.Buf = b
-	msg.BufLen = newLen
+	msg.oStreamBufLen = newLen
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::Ensure('%d') in contents '%+v'", len, msg.Buf))
 }
 
 func (msg *ProtocolDataOutputStream) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("ProtocolDataOutputStream:{")
-	buffer.WriteString(fmt.Sprintf("Buffer Length: %d", msg.BufLen))
-	buffer.WriteString(fmt.Sprintf(", Count: %d", msg.Count))
+	buffer.WriteString(fmt.Sprintf("Buffer Length: %d", msg.oStreamBufLen))
+	buffer.WriteString(fmt.Sprintf(", Count: %d", msg.oStreamByteCount))
 	buffer.WriteString(fmt.Sprintf(", Buffer: "))
 	strArray := []string{buffer.String(), bytes.NewBuffer(msg.Buf).String()+"}"}
 	msgStr := strings.Join(strArray, ", ")
@@ -128,25 +128,25 @@ func (msg *ProtocolDataOutputStream) String() string {
 
 func (msg *ProtocolDataOutputStream) WriteBoolean(value bool) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteBoolean('%+v') in contents", value))
-	if msg.Count >= msg.BufLen {
+	if msg.oStreamByteCount >= msg.oStreamBufLen {
 		msg.Ensure(1)
 	}
 	if value {
-		msg.Buf[msg.Count] = byte(1)
+		msg.Buf[msg.oStreamByteCount] = byte(1)
 	} else {
-		msg.Buf[msg.Count] = byte(0)
+		msg.Buf[msg.oStreamByteCount] = byte(0)
 	}
-	msg.Count++
+	msg.oStreamByteCount++
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteBoolean('%+v') in contents '%+v'", value, msg.Buf))
 }
 
 func (msg *ProtocolDataOutputStream) WriteByte(value int) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteByte('%+v') in contents", value))
-	if msg.Count >= msg.BufLen {
+	if msg.oStreamByteCount >= msg.oStreamBufLen {
 		msg.Ensure(1)
 	}
-	msg.Buf[msg.Count] = byte(value)
-	msg.Count++
+	msg.Buf[msg.oStreamByteCount] = byte(value)
+	msg.oStreamByteCount++
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteByte('%+v') in contents '%+v'", value, msg.Buf))
 }
 
@@ -158,13 +158,13 @@ func (msg *ProtocolDataOutputStream) WriteBytesFromString(value string) types.TG
 
 func (msg *ProtocolDataOutputStream) WriteChar(value int) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteChar('%+v') in contents", value))
-	if (msg.Count + 2) >= msg.BufLen {
+	if (msg.oStreamByteCount + 2) >= msg.oStreamBufLen {
 		msg.Ensure(2)
 	}
-	msg.Buf[msg.Count] = byte(value >> 8)
-	msg.Count++
-	msg.Buf[msg.Count] = byte(value)
-	msg.Count++
+	msg.Buf[msg.oStreamByteCount] = byte(value >> 8)
+	msg.oStreamByteCount++
+	msg.Buf[msg.oStreamByteCount] = byte(value)
+	msg.oStreamByteCount++
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteChar('%+v') in contents '%+v'", value, msg.Buf))
 }
 
@@ -192,52 +192,52 @@ func (msg *ProtocolDataOutputStream) WriteFloat(value float32) {
 
 func (msg *ProtocolDataOutputStream) WriteInt(value int) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteInt('%+v') in contents", value))
-	if (msg.Count + 4) >= msg.BufLen {
+	if (msg.oStreamByteCount + 4) >= msg.oStreamBufLen {
 		msg.Ensure(4)
 	}
 	//intToBytes(value, msg.Buf, msg.Count)
-	msg.Buf[msg.Count] = byte(value >> 24)
-	msg.Count++
-	msg.Buf[msg.Count] = byte(value >> 16)
-	msg.Count++
-	msg.Buf[msg.Count] = byte(value >> 8)
-	msg.Count++
-	msg.Buf[msg.Count] = byte(value)
-	msg.Count++
+	msg.Buf[msg.oStreamByteCount] = byte(value >> 24)
+	msg.oStreamByteCount++
+	msg.Buf[msg.oStreamByteCount] = byte(value >> 16)
+	msg.oStreamByteCount++
+	msg.Buf[msg.oStreamByteCount] = byte(value >> 8)
+	msg.oStreamByteCount++
+	msg.Buf[msg.oStreamByteCount] = byte(value)
+	msg.oStreamByteCount++
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteInt('%+v') in contents '%+v'", value, msg.Buf))
 }
 
 func (msg *ProtocolDataOutputStream) WriteLong(value int64) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteLong('%+v') in contents", value))
-	if (msg.Count + 8) >= msg.BufLen {
+	if (msg.oStreamByteCount + 8) >= msg.oStreamBufLen {
 		msg.Ensure(8)
 	}
 	// Splitting in into two ints, is much faster than shifting bits for a long i.e (byte)val >> 56, (byte)val >> 48 ..
 	a := int(value >> 32)
 	b := int(value)
 	//intToBytes(a, msg.Buf, msg.Count)
-	msg.Buf[msg.Count] = byte(a >> 24)
-	msg.Buf[msg.Count+1] = byte(a >> 16)
-	msg.Buf[msg.Count+2] = byte(a >> 8)
-	msg.Buf[msg.Count+3] = byte(a)
+	msg.Buf[msg.oStreamByteCount] = byte(a >> 24)
+	msg.Buf[msg.oStreamByteCount+1] = byte(a >> 16)
+	msg.Buf[msg.oStreamByteCount+2] = byte(a >> 8)
+	msg.Buf[msg.oStreamByteCount+3] = byte(a)
 	//intToBytes(b, msg.Buf, msg.Count+4)
-	msg.Buf[msg.Count+4] = byte(b >> 24)
-	msg.Buf[msg.Count+5] = byte(b >> 16)
-	msg.Buf[msg.Count+6] = byte(b >> 8)
-	msg.Buf[msg.Count+7] = byte(b)
-	msg.Count += 8
+	msg.Buf[msg.oStreamByteCount+4] = byte(b >> 24)
+	msg.Buf[msg.oStreamByteCount+5] = byte(b >> 16)
+	msg.Buf[msg.oStreamByteCount+6] = byte(b >> 8)
+	msg.Buf[msg.oStreamByteCount+7] = byte(b)
+	msg.oStreamByteCount += 8
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteLong('%+v') in contents '%+v'", value, msg.Buf))
 }
 
 func (msg *ProtocolDataOutputStream) WriteShort(value int)  {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteShort('%+v') in contents", value))
-	if (msg.Count + 2) >= msg.BufLen {
+	if (msg.oStreamByteCount + 2) >= msg.oStreamBufLen {
 		msg.Ensure(2)
 	}
-	msg.Buf[msg.Count] = byte(value >> 8)
-	msg.Count++
-	msg.Buf[msg.Count] = byte(value)
-	msg.Count++
+	msg.Buf[msg.oStreamByteCount] = byte(value >> 8)
+	msg.oStreamByteCount++
+	msg.Buf[msg.oStreamByteCount] = byte(value)
+	msg.oStreamByteCount++
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteShort('%+v') in contents '%+v'", value, msg.Buf))
 }
 
@@ -258,26 +258,26 @@ func (msg *ProtocolDataOutputStream) WriteBytesFromPos(value []byte, writePos, w
 	}
 	msg.Ensure(writeLen)
 	tempBuf := value[writePos:]
-	copy(msg.Buf[msg.Count:], tempBuf[:writeLen])
-	msg.Count += writeLen
+	copy(msg.Buf[msg.oStreamByteCount:], tempBuf[:writeLen])
+	msg.oStreamByteCount += writeLen
 	logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteBytesFromPos(''%d') for len '%d' from '%+v' in contents '%+v'", writePos, writeLen, value, msg.Buf))
 	return nil
 }
 
 func (msg *ProtocolDataOutputStream) WriteUTF(str string) types.TGError {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteUTF('%+v') in contents", str))
-	start := msg.Count
+	start := msg.oStreamByteCount
 	sLen := 0
 
-	if msg.Count + 2 > msg.BufLen {
+	if msg.oStreamByteCount+ 2 > msg.oStreamBufLen {
 		msg.Ensure(2 + len(str) * 3)
 	}
-	msg.Count += 2
+	msg.oStreamByteCount += 2
 
 	sLen, err := msg.WriteUTFString(str)
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataOutputStream:WriteUTF - UTF Data Format Issue"))
-		msg.Count = start
+		msg.oStreamByteCount = start
 		errMsg := fmt.Sprint("UTF Data Format Issue")
 		return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, err.GetErrorDetails())
 	}
@@ -300,28 +300,28 @@ func (msg *ProtocolDataOutputStream) GetBuffer() []byte {
 
 // GetLength gets the total write length
 func (msg *ProtocolDataOutputStream) GetLength() int {
-	return msg.Count
+	return msg.oStreamByteCount
 }
 
 // GetPosition gets the current write position
 func (msg *ProtocolDataOutputStream) GetPosition() int {
-	return msg.Count
+	return msg.oStreamByteCount
 }
 
 // SkipNBytes skips n bytes. Allocate if necessary
 func (msg *ProtocolDataOutputStream) SkipNBytes(n int) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::SkipNBytes('%d') in contents", n))
-	if msg.Count + n > msg.BufLen {
+	if msg.oStreamByteCount+ n > msg.oStreamBufLen {
 		msg.Ensure(n)
 	}
-	msg.Count += n
+	msg.oStreamByteCount += n
 	logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::SkipNBytes('%d') in contents are '%+v'", n, msg))
 }
 
 // WriteBooleanAt writes boolean at a given position. Buffer should have sufficient space to write the content.
 func (msg *ProtocolDataOutputStream) WriteBooleanAt(pos int, value bool) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteBooleanAt(Pos '%d' - '%+v') in contents", pos, value))
-	if pos >= msg.Count {
+	if pos >= msg.oStreamByteCount {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataOutputStream:WriteBooleanAt - Invalid position '%d' specified", pos))
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -339,7 +339,7 @@ func (msg *ProtocolDataOutputStream) WriteBooleanAt(pos int, value bool) (int, t
 // WriteByteAt writes a byte at the position. Buffer should have sufficient space to write the content.
 func (msg *ProtocolDataOutputStream) WriteByteAt(pos int, value int) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteByteAt(Pos '%d' - '%+v') in contents", pos, value))
-	if pos >= msg.Count {
+	if pos >= msg.oStreamByteCount {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataOutputStream:WriteByteAt - Invalid position '%d' specified", pos))
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -368,7 +368,7 @@ func (msg *ProtocolDataOutputStream) WriteBytes(buf []byte) types.TGError {
 func (msg *ProtocolDataOutputStream) WriteBytesAt(pos int, s string) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteBytesAt(Pos '%d' - '%+v') in contents", pos, s))
 	sLen := len([]rune(s))
-	if (pos + sLen) >= msg.Count {
+	if (pos + sLen) >= msg.oStreamByteCount {
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
@@ -394,7 +394,7 @@ func (msg *ProtocolDataOutputStream) WriteBytesAt(pos int, s string) (int, types
 // WriteCharAt writes a Java Char at the position. Buffer should have sufficient space to write the content.
 func (msg *ProtocolDataOutputStream) WriteCharAt(pos int, value int) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteCharAt(Pos '%d' - '%+v') in contents", pos, value))
-	if (pos + 2) >= msg.Count {
+	if (pos + 2) >= msg.oStreamByteCount {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataOutputStream:WriteCharAt as (pos + 2) >= msg.Count"))
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -411,7 +411,7 @@ func (msg *ProtocolDataOutputStream) WriteCharAt(pos int, value int) (int, types
 func (msg *ProtocolDataOutputStream) WriteCharsAt(pos int, s string) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteCharsAt(Pos '%d' - '%+v') in contents", pos, s))
 	sLen := len([]rune(s))
-	if (pos + sLen) >= msg.Count {
+	if (pos + sLen) >= msg.oStreamByteCount {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataOutputStream:WriteCharsAt as (pos + sLen) >= msg.Count"))
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -454,7 +454,7 @@ func (msg *ProtocolDataOutputStream) WriteFloatAt(pos int, value float32) (int, 
 // WriteIntAt writes Integer at the position.Buffer should have sufficient space to write the content.
 func (msg *ProtocolDataOutputStream) WriteIntAt(pos int, value int) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteIntAt(Pos '%d' - '%+v') in contents", pos, value))
-	if (pos + 4) >= msg.Count {
+	if (pos + 4) >= msg.oStreamByteCount {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataOutputStream:WriteIntAt as (pos + 4) >= msg.Count"))
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -474,7 +474,7 @@ func (msg *ProtocolDataOutputStream) WriteIntAt(pos int, value int) (int, types.
 // WriteLongAt writes Long at the position. Buffer should have sufficient space to write the content.
 func (msg *ProtocolDataOutputStream) WriteLongAt(pos int, value int64) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteLongAt(Pos '%d' - '%+v') in contents", pos, value))
-	if (pos + 8) >= msg.Count {
+	if (pos + 8) >= msg.oStreamByteCount {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataOutputStream:WriteLongAt as (pos + 8) >= msg.Count"))
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -499,7 +499,7 @@ func (msg *ProtocolDataOutputStream) WriteLongAt(pos int, value int64) (int, typ
 // WriteShortAt writes a Java Char at the position. Buffer should have sufficient space to write the content.
 func (msg *ProtocolDataOutputStream) WriteShortAt(pos int, value int) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteShortAt(Pos '%d' - '%+v') in contents", pos, value))
-	if (pos + 2) >= msg.Count {
+	if (pos + 2) >= msg.oStreamByteCount {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataOutputStream:WriteShortAt as (pos + 2) >= msg.Count"))
 		errMsg := fmt.Sprintf("Invalid position '%d' specified", pos)
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -515,12 +515,12 @@ func (msg *ProtocolDataOutputStream) WriteShortAt(pos int, value int) (int, type
 // WriteUTFString writes UTFString
 func (msg *ProtocolDataOutputStream) WriteUTFString(str string) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteUTFString('%+v') in contents", str))
-	start := msg.Count
+	start := msg.oStreamByteCount
 	sLen := len(str)
 	i := 0
 	c := 0
 
-	if (msg.Count + 3 * sLen) > msg.BufLen {
+	if (msg.oStreamByteCount + 3 * sLen) > msg.oStreamBufLen {
 		msg.Ensure(len(str) * 3)
 	}
 	writeBuf = str[0:sLen]
@@ -533,27 +533,27 @@ func (msg *ProtocolDataOutputStream) WriteUTFString(str string) (int, types.TGEr
 		c = int(writeBuf[i])
 		i++
 		if (c >= 0x0001) && (c <= 0x007F) {
-			msg.Buf[msg.Count] = byte(c)
-			msg.Count++
+			msg.Buf[msg.oStreamByteCount] = byte(c)
+			msg.oStreamByteCount++
 		} else if c > 0x07FF {
-			msg.Buf[msg.Count] = byte(0xE0 | ((c >> 12) & 0x0F))
-			msg.Count++
-			msg.Buf[msg.Count] = byte(0x80 | ((c >> 6) & 0x3F))
-			msg.Count++
-			msg.Buf[msg.Count] = byte(0x80 | ((c >> 0) & 0x3F))
-			msg.Count++
+			msg.Buf[msg.oStreamByteCount] = byte(0xE0 | ((c >> 12) & 0x0F))
+			msg.oStreamByteCount++
+			msg.Buf[msg.oStreamByteCount] = byte(0x80 | ((c >> 6) & 0x3F))
+			msg.oStreamByteCount++
+			msg.Buf[msg.oStreamByteCount] = byte(0x80 | ((c >> 0) & 0x3F))
+			msg.oStreamByteCount++
 		} else {
-			msg.Buf[msg.Count] = byte(0xC0 | ((c >> 6) & 0x1F))
-			msg.Count++
-			msg.Buf[msg.Count] = byte(0x80 | ((c >> 0) & 0x3F))
-			msg.Count++
+			msg.Buf[msg.oStreamByteCount] = byte(0xC0 | ((c >> 6) & 0x1F))
+			msg.oStreamByteCount++
+			msg.Buf[msg.oStreamByteCount] = byte(0x80 | ((c >> 0) & 0x3F))
+			msg.oStreamByteCount++
 		}
 		//logger.Log(fmt.Sprintf("ProtocolDataOutputStream::WriteUTFString - Inside loop i='%d', c='%d', msg.Count='%d', msg.Buf[msg.Count]='%d'", i, c, msg.Count, msg.Buf[msg.Count]))
 	}
 
-	writtenLen := msg.Count - start
+	writtenLen := msg.oStreamByteCount - start
 	if writtenLen > 65535 {
-		msg.Count = start
+		msg.oStreamByteCount = start
 		errMsg := fmt.Sprint("Input String is too long")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
@@ -570,46 +570,46 @@ func (msg *ProtocolDataOutputStream) WriteVarLong(value int64) types.TGError {
 		return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	if value == types.U64_NULL {
-		if msg.Count >= msg.BufLen {
+		if msg.oStreamByteCount >= msg.oStreamBufLen {
 			msg.Ensure(1)
 		}
-		msg.Buf[msg.Count] = types.U64PACKED_NULL
-		msg.Count++
+		msg.Buf[msg.oStreamByteCount] = types.U64PACKED_NULL
+		msg.oStreamByteCount++
 		logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteVarLong('%+v') in contents are '%+v'", value, msg.Buf))
 		return nil
 	}
 
 	if value <= 0x7f {
-		if msg.Count >= msg.BufLen {
+		if msg.oStreamByteCount >= msg.oStreamBufLen {
 			msg.Ensure(1)
 		}
-		msg.Buf[msg.Count] = byte(value)
-		msg.Count++
+		msg.Buf[msg.oStreamByteCount] = byte(value)
+		msg.oStreamByteCount++
 		logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteVarLong('%+v') in contents are '%+v'", value, msg.Buf))
 		return nil
 	}
 
 	if value <= 0x3fff {
-		if (msg.Count + 2) >= msg.BufLen {
+		if (msg.oStreamByteCount + 2) >= msg.oStreamBufLen {
 			msg.Ensure(2)
 		}
 		value |= 0x00008000
-		msg.Buf[msg.Count] = byte(value >> 8)
-		msg.Count++
-		msg.Buf[msg.Count] = byte(value)
-		msg.Count++
+		msg.Buf[msg.oStreamByteCount] = byte(value >> 8)
+		msg.oStreamByteCount++
+		msg.Buf[msg.oStreamByteCount] = byte(value)
+		msg.oStreamByteCount++
 		logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteVarLong('%+v') in contents are '%+v'", value, msg.Buf))
 		return nil
 	}
 
 	if value <= 0x1fffffff {
-		if (msg.Count + 4) >= msg.BufLen {
+		if (msg.oStreamByteCount + 4) >= msg.oStreamBufLen {
 			msg.Ensure(4)
 		}
 		value |= 0xC0000000
-		msg.Count += 4
+		msg.oStreamByteCount += 4
 		for i := 1; i < 4; i++ {
-			msg.Buf[msg.Count - 1] = byte(value)
+			msg.Buf[msg.oStreamByteCount- 1] = byte(value)
 			value = value >> 8
 		}
 		logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteVarLong('%+v') in contents are '%+v'", value, msg.Buf))
@@ -617,7 +617,7 @@ func (msg *ProtocolDataOutputStream) WriteVarLong(value int64) types.TGError {
 	}
 
 	// We may need up to 9 bytes
-	if (msg.Count + 9) > msg.BufLen {
+	if (msg.oStreamByteCount + 9) > msg.oStreamBufLen {
 		msg.Ensure(9)
 	}
 
@@ -633,8 +633,8 @@ func (msg *ProtocolDataOutputStream) WriteVarLong(value int64) types.TGError {
 	}
 
 	b := byte(cnt | 0xE0)
-	msg.Buf[msg.Count] = b
-	msg.Count++
+	msg.Buf[msg.oStreamByteCount] = b
+	msg.oStreamByteCount++
 
 	cnt += cnt
 	for i:=1; i<=cnt; i++ {
@@ -652,7 +652,7 @@ func (msg *ProtocolDataOutputStream) WriteVarLong(value int64) types.TGError {
 func (msg *ProtocolDataOutputStream) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.Buf, msg.BufLen, msg.Count)
+	_, err := fmt.Fprintln(&b, msg.Buf, msg.oStreamBufLen, msg.oStreamByteCount)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataOutputStream:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -667,7 +667,7 @@ func (msg *ProtocolDataOutputStream) MarshalBinary() ([]byte, error) {
 func (msg *ProtocolDataOutputStream) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.Buf, &msg.BufLen, &msg.Count)
+	_, err := fmt.Fscanln(b, &msg.Buf, &msg.oStreamBufLen, &msg.oStreamByteCount)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataOutputStream:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

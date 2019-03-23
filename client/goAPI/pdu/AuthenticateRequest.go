@@ -53,7 +53,7 @@ func DefaultAuthenticateRequestMessage() *AuthenticateRequestMessage {
 		userName:                "",
 		password:                make([]byte, 0), // TGConstants.EmptyByteArray
 	}
-	newMsg.VerbId = VerbAuthenticateRequest
+	newMsg.verbId = VerbAuthenticateRequest
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -61,8 +61,8 @@ func DefaultAuthenticateRequestMessage() *AuthenticateRequestMessage {
 // Create New Message Instance
 func NewAuthenticateRequestMessage(authToken, sessionId int64) *AuthenticateRequestMessage {
 	newMsg := DefaultAuthenticateRequestMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -365,8 +365,8 @@ func (msg *AuthenticateRequestMessage) WritePayload(os types.TGOutputStream) typ
 func (msg *AuthenticateRequestMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.AuthToken, msg.SessionId, msg.DataOffset, msg.IsUpdatable, msg.clientId, msg.inboxAddr,
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable, msg.clientId, msg.inboxAddr,
 		msg.userName, msg.password)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AuthenticateRequestMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -383,8 +383,8 @@ func (msg *AuthenticateRequestMessage) MarshalBinary() ([]byte, error) {
 func (msg *AuthenticateRequestMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.AuthToken, &msg.SessionId, &msg.DataOffset, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.authToken, &msg.sessionId, &msg.dataOffset, &msg.isUpdatable,
 		&msg.clientId, &msg.inboxAddr, &msg.userName, &msg.password)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AuthenticateRequestMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

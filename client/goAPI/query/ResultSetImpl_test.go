@@ -44,10 +44,12 @@ func CreateTestGraphMetadata() *model.GraphMetadata {
 	descMap["LongDesc"] = lAttrDesc
 	descMap["NumberDesc"] = nAttrDesc
 	descMap["TimeDesc"] = tAttrDesc
-	newGraphMetadata.Descriptors = descMap
+	newGraphMetadata.SetAttributeDescriptors(descMap)
+	descById := make(map[int64]types.TGAttributeDescriptor, 0)
 	for _, attrDesc := range descMap {
-		newGraphMetadata.DescriptorsById[attrDesc.GetAttributeId()] = attrDesc
+		descById[attrDesc.GetAttributeId()] = attrDesc
 	}
+	newGraphMetadata.SetAttributeDescriptorsById(descById)
 
 	nodeType1 := CreateTestNodeType("Node-1", types.SystemTypeNode, model.DefaultNodeType())
 	nodeType2 := CreateTestNodeType("ChildNode-1", types.SystemTypeNode, nodeType1)
@@ -56,10 +58,12 @@ func CreateTestGraphMetadata() *model.GraphMetadata {
 	nodeMap["Node-1"] = nodeType1
 	nodeMap["ChildNode-1"] = nodeType2
 	nodeMap["ChildNode-2"] = nodeType3
-	newGraphMetadata.NodeTypes = nodeMap
+	newGraphMetadata.SetNodeTypes(nodeMap)
+	nodeById := make(map[int]types.TGNodeType, 0)
 	for _, nodeType := range nodeMap {
-		newGraphMetadata.NodeTypesById[nodeType.GetEntityTypeId()] = nodeType
+		nodeById[nodeType.GetEntityTypeId()] = nodeType
 	}
+	newGraphMetadata.SetNodeTypesById(nodeById)
 
 	edgeType1 := CreateTestEdgeType("Edge-1", types.DirectionTypeBiDirectional, types.SystemTypeNode, model.DefaultEntityType())
 	edgeType2 := CreateTestEdgeType("Edge-2", types.DirectionTypeDirected, types.SystemTypeEdge, edgeType1)
@@ -68,10 +72,12 @@ func CreateTestGraphMetadata() *model.GraphMetadata {
 	edgeMap["Edge-1"] = edgeType1
 	edgeMap["Edge-2"] = edgeType2
 	edgeMap["Edge-3"] = edgeType3
-	newGraphMetadata.EdgeTypes = edgeMap
+	newGraphMetadata.SetEdgeTypes(edgeMap)
+	edgeById := make(map[int]types.TGEdgeType, 0)
 	for _, edgeType := range edgeMap {
-		newGraphMetadata.EdgeTypesById[edgeType.GetEntityTypeId()] = edgeType
+		edgeById[edgeType.GetEntityTypeId()] = edgeType
 	}
+	newGraphMetadata.SetEdgeTypesById(edgeById)
 	return newGraphMetadata
 }
 
@@ -83,7 +89,7 @@ func CreateTestAttributeDescriptor(name string, attributeType int) *model.Attrib
 func CreateTestEdgeType(name string, directionType types.TGDirectionType, entityType types.TGSystemType, parent types.TGEntityType) *model.EdgeType {
 	newEdgeType := model.DefaultEdgeType()
 	newEdgeType.SetName(name)
-	newEdgeType.SysType = entityType
+	newEdgeType.SetSystemType(entityType)
 	attributes := make(map[string]*model.AttributeDescriptor, 3)
 	bAttrDesc := CreateTestAttributeDescriptor("BoolDesc", types.AttributeTypeBoolean)
 	iAttrDesc := CreateTestAttributeDescriptor("IntegerDesc", types.AttributeTypeInteger)
@@ -100,7 +106,7 @@ func CreateTestEdgeType(name string, directionType types.TGDirectionType, entity
 func CreateTestNodeType(name string, entityType types.TGSystemType, parent types.TGEntityType) *model.NodeType {
 	newNodeType := model.DefaultNodeType()
 	newNodeType.SetName(name)
-	newNodeType.SysType = entityType
+	newNodeType.SetSystemType(entityType)
 	attributes := make(map[string]*model.AttributeDescriptor, 3)
 	bAttrDesc := CreateTestAttributeDescriptor("BoolDesc", types.AttributeTypeBoolean)
 	iAttrDesc := CreateTestAttributeDescriptor("IntegerDesc", types.AttributeTypeInteger)
@@ -113,7 +119,7 @@ func CreateTestNodeType(name string, entityType types.TGSystemType, parent types
 	iPkAttrDesc := CreateTestAttributeDescriptor("IntegerPkDesc", types.AttributeTypeInteger)
 	sPkAttrDesc := CreateTestAttributeDescriptor("StringPkDesc", types.AttributeTypeString)
 	pKeys := []*model.AttributeDescriptor{bPkAttrDesc, iPkAttrDesc, sPkAttrDesc}
-	newNodeType.PKeys = pKeys
+	newNodeType.SetPKeyAttributeDescriptors(pKeys)
 	newNodeType.SetParent(parent)
 	return newNodeType
 }
@@ -131,7 +137,7 @@ func CreateTestNodeEntity() *model.Node {
 	attrMap["Bool"] = boolAttr
 	attrMap["Integer"] = intAttr
 	attrMap["String"] = strAttr
-	newNodeEntity.Attributes = attrMap
+	newNodeEntity.SetAttributes(attrMap)
 	return newNodeEntity
 }
 

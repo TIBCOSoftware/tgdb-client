@@ -76,24 +76,26 @@ func (proType ExceptionChannelType) ChannelException() *ExceptionHandleResult {
 var ConnectionsToChannel int32
 
 type AbstractChannel struct {
-	AuthToken         int64
-	ChannelProperties *utils.SortedProperties
-	ChannelUrl        *LinkUrl
-	ClientId          string
-	ConnectionIndex   int
-	InboxAddress      string
-	NeedsPing         bool
-	NumOfConnections  int32
-	LastActiveTime    time.Time
-	LinkState         types.LinkState
-	PrimaryUrl        *LinkUrl
-	Reader            *ChannelReader
-	RequestId         int64
-	Responses         map[int64]types.TGChannelResponse
-	SessionId         int64
-	exceptionLock     sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
-	exceptionCond     *sync.Cond // Condition for lock
-	sendLock          sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
+	authToken         int64
+	channelLinkState types.LinkState
+	channelProperties *utils.SortedProperties
+	channelUrl        *LinkUrl
+	clientId          string
+	connectionIndex   int
+	//dataCryptographer *DataCryptoGrapher	// TODO: Uncomment once DataCryptoGrapher is implemented
+	inboxAddress     string
+	needsPing        bool
+	numOfConnections int32
+	lastActiveTime   time.Time
+	primaryUrl       *LinkUrl
+	reader           *ChannelReader
+	requestId        int64
+	responses        map[int64]types.TGChannelResponse
+	sessionId        int64
+	exceptionLock    sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
+	exceptionCond    *sync.Cond // Condition for lock
+	sendLock         sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
+	// TODO: Uncomment the following once Tracer is implemented
 	//tracer            types.Tracer // Used for tracing the information flow during the execution
 }
 
@@ -104,27 +106,27 @@ func DefaultAbstractChannel() *AbstractChannel {
 	gob.Register(AbstractChannel{})
 
 	newChannel := AbstractChannel{
-		AuthToken:        -1,
-		ConnectionIndex:  0,
-		NeedsPing:        false,
-		NumOfConnections: 0,
-		LastActiveTime:   time.Now(),
-		LinkState:        types.LinkNotConnected,
-		ChannelUrl:       DefaultLinkUrl(),
-		PrimaryUrl:       DefaultLinkUrl(),
-		Responses:        make(map[int64]types.TGChannelResponse, 0),
-		SessionId:        -1,
+		authToken:        -1,
+		connectionIndex:  0,
+		needsPing:        false,
+		numOfConnections: 0,
+		lastActiveTime:   time.Now(),
+		channelLinkState: types.LinkNotConnected,
+		channelUrl:       DefaultLinkUrl(),
+		primaryUrl:       DefaultLinkUrl(),
+		responses:        make(map[int64]types.TGChannelResponse, 0),
+		sessionId:        -1,
 	}
 	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
-	newChannel.Reader = NewChannelReader(&newChannel)
+	newChannel.reader = NewChannelReader(&newChannel)
 	return &newChannel
 }
 
 func NewAbstractChannel(linkUrl *LinkUrl, props *utils.SortedProperties) *AbstractChannel {
 	newChannel := DefaultAbstractChannel()
-	newChannel.ChannelUrl = linkUrl
-	newChannel.PrimaryUrl = linkUrl
-	newChannel.ChannelProperties = props
+	newChannel.channelUrl = linkUrl
+	newChannel.primaryUrl = linkUrl
+	newChannel.channelProperties = props
 	//enableTraceFlag := newChannel.ChannelProperties.GetPropertyAsBoolean(utils.GetConfigFromKey(utils.EnableConnectionTrace))
 	//if enableTraceFlag {
 	//	traceDir := newChannel.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ConnectionTraceDir), ".")
@@ -175,20 +177,20 @@ func isChannelConnected(obj types.TGChannel) bool {
 func (obj *AbstractChannel) channelToString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("AbstractChannel:{")
-	buffer.WriteString(fmt.Sprintf("AuthToken: %d", obj.AuthToken))
+	buffer.WriteString(fmt.Sprintf("AuthToken: %d", obj.authToken))
 	//buffer.WriteString(fmt.Sprintf(", ChannelProperties: %+v", obj.ChannelProperties))
-	buffer.WriteString(fmt.Sprintf(", ClientId: %s", obj.ClientId))
-	buffer.WriteString(fmt.Sprintf(", ConnectionIndex: %d", obj.ConnectionIndex))
-	buffer.WriteString(fmt.Sprintf(", InboxAddress: %s", obj.InboxAddress))
-	buffer.WriteString(fmt.Sprintf(", NeedsPing: %+v", obj.NeedsPing))
-	buffer.WriteString(fmt.Sprintf(", NumOfConnections: %d", obj.NumOfConnections))
-	buffer.WriteString(fmt.Sprintf(", LastActiveTime: %+v", obj.LastActiveTime))
-	buffer.WriteString(fmt.Sprintf(", LinkState: %s", obj.LinkState.String()))
-	buffer.WriteString(fmt.Sprintf(", ChannelUrl: %s", obj.ChannelUrl.String()))
-	buffer.WriteString(fmt.Sprintf(", PrimaryUrl: %s", obj.PrimaryUrl.String()))
-	buffer.WriteString(fmt.Sprintf(", RequestId: %d", obj.RequestId))
-	buffer.WriteString(fmt.Sprintf(", Responses: %+v", obj.Responses))
-	buffer.WriteString(fmt.Sprintf(", SessionId: %d", obj.SessionId))
+	buffer.WriteString(fmt.Sprintf(", ClientId: %s", obj.clientId))
+	buffer.WriteString(fmt.Sprintf(", ConnectionIndex: %d", obj.connectionIndex))
+	buffer.WriteString(fmt.Sprintf(", InboxAddress: %s", obj.inboxAddress))
+	buffer.WriteString(fmt.Sprintf(", NeedsPing: %+v", obj.needsPing))
+	buffer.WriteString(fmt.Sprintf(", NumOfConnections: %d", obj.numOfConnections))
+	buffer.WriteString(fmt.Sprintf(", LastActiveTime: %+v", obj.lastActiveTime))
+	buffer.WriteString(fmt.Sprintf(", LinkState: %s", obj.channelLinkState.String()))
+	buffer.WriteString(fmt.Sprintf(", ChannelUrl: %s", obj.channelUrl.String()))
+	buffer.WriteString(fmt.Sprintf(", PrimaryUrl: %s", obj.primaryUrl.String()))
+	buffer.WriteString(fmt.Sprintf(", RequestId: %d", obj.requestId))
+	buffer.WriteString(fmt.Sprintf(", Responses: %+v", obj.responses))
+	buffer.WriteString(fmt.Sprintf(", SessionId: %d", obj.sessionId))
 	//buffer.WriteString(fmt.Sprintf(", Reader: %s", obj.GetReader().String()))
 	buffer.WriteString(fmt.Sprintf(", ExceptionCond: %+v", obj.exceptionCond))
 	buffer.WriteString("}")
@@ -197,42 +199,42 @@ func (obj *AbstractChannel) channelToString() string {
 
 func (obj *AbstractChannel) getChannelPassword() []byte {
 	pwd := ""
-	if len(obj.ChannelProperties.Properties) > 0 {
-		pwd = obj.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ChannelPassword), "")
+	if len(obj.channelProperties.GetAllProperties()) > 0 {
+		pwd = obj.channelProperties.GetProperty(utils.GetConfigFromKey(utils.ChannelPassword), "")
 	}
 	return []byte(pwd)
 }
 
 func (obj *AbstractChannel) getChannelUserName() string {
 	user := ""
-	if len(obj.ChannelProperties.Properties) > 0 {
-		user = obj.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ChannelUserID), "")
+	if len(obj.channelProperties.GetAllProperties()) > 0 {
+		user = obj.channelProperties.GetProperty(utils.GetConfigFromKey(utils.ChannelUserID), "")
 	}
 	return user
 }
 
 func (obj *AbstractChannel) isChannelPingable() bool {
-	return obj.NeedsPing
+	return obj.needsPing
 }
 
 func (obj *AbstractChannel) setChannelAuthToken(authToken int64) {
-	obj.AuthToken = authToken
+	obj.authToken = authToken
 }
 
 func (obj *AbstractChannel) setChannelClientId(clientId string) {
-	obj.ClientId = clientId
+	obj.clientId = clientId
 }
 
 func (obj *AbstractChannel) setChannelInboxAddr(addr string) {
-	obj.InboxAddress = addr
+	obj.inboxAddress = addr
 }
 
 func (obj *AbstractChannel) setChannelSessionId(sessionId int64) {
-	obj.SessionId = sessionId
+	obj.sessionId = sessionId
 }
 
 func (obj *AbstractChannel) setNoOfConnections(num int32) {
-	obj.NumOfConnections = num
+	obj.numOfConnections = num
 }
 
 /////////////////////////////////////////////////////////////////
@@ -348,7 +350,8 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 
 // channelProcessMessage processes a message received on the channel. This is called from the ChannelReader.
 func channelProcessMessage(obj types.TGChannel, msg types.TGMessage) types.TGError {
-	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelProcessMessage w/ Message: '%+v'", msg.String()))
+	logger.Log(fmt.Sprint("Entering AbstractChannel:channelProcessMessage"))
+	//logger.Log(fmt.Sprintf("Entering AbstractChannel:channelProcessMessage w/ Message: '%+v'", msg.String()))
 	reqId := msg.GetRequestId()
 	channelResponseMap := obj.GetResponses()
 	channelResponse := channelResponseMap[reqId]
@@ -359,7 +362,8 @@ func channelProcessMessage(obj types.TGChannel, msg types.TGMessage) types.TGErr
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to channelResponse.SetReply() w/ MSG: '%s'", msg.String()))
+	logger.Log(fmt.Sprint("Inside AbstractChannel:channelTryRepeatConnect about to channelResponse.SetReply() w/ MSG"))
+	//logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to channelResponse.SetReply() w/ MSG: '%s'", msg.String()))
 	channelResponse.SetReply(msg)
 
 	logger.Log(fmt.Sprintf("Returning AbstractChannel:channelProcessMessage"))
@@ -460,7 +464,8 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 }
 
 func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag bool) types.TGError {
-	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendMessage w/ Message: '%+v'", msg.String()))
+	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendMessage w/ Message type: '%+v'", msg.GetVerbId()))
+	//logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendMessage w/ Message: '%+v'", msg.String()))
 	var resendMode types.ResendMode
 	if resendFlag {
 		resendMode = types.ModeReconnectAndResend
@@ -513,7 +518,8 @@ func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag boo
 }
 
 func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelResponse types.TGChannelResponse, resendFlag bool) (types.TGMessage, types.TGError) {
-	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendRequest w/ Message: '%+v' ChannelResponse: '%+v'", msg.String(), channelResponse))
+	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendRequest w/ Message type: '%+v' ChannelResponse: '%+v'", msg.GetVerbId(), channelResponse))
+	//logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendRequest w/ Message: '%+v' ChannelResponse: '%+v'", msg.String(), channelResponse))
 	reqId := channelResponse.GetRequestId()
 	msg.SetRequestId(reqId)
 
@@ -776,7 +782,7 @@ func (obj *AbstractChannel) Connect() types.TGError {
 
 // DisablePing disables the pinging ability to the channel
 func (obj *AbstractChannel) DisablePing() {
-	obj.NeedsPing = false
+	obj.needsPing = false
 }
 
 // Disconnect disconnects the channel from its URL end point
@@ -786,7 +792,7 @@ func (obj *AbstractChannel) Disconnect() types.TGError {
 
 // EnablePing enables the pinging ability to the channel
 func (obj *AbstractChannel) EnablePing() {
-	obj.NeedsPing = true
+	obj.needsPing = true
 }
 
 // ExceptionLock locks the communication channel between TGDB client and server in case of business exceptions
@@ -801,22 +807,22 @@ func (obj *AbstractChannel) ExceptionUnlock() {
 
 // GetAuthToken gets Authorization Token
 func (obj *AbstractChannel) GetAuthToken() int64 {
-	return obj.AuthToken
+	return obj.authToken
 }
 
 // GetClientId gets Client Name
 func (obj *AbstractChannel) GetClientId() string {
-	return obj.ClientId
+	return obj.clientId
 }
 
 // GetChannelURL gets the Channel URL
 func (obj *AbstractChannel) GetChannelURL() types.TGChannelUrl {
-	return obj.ChannelUrl
+	return obj.channelUrl
 }
 
 // GetConnectionIndex gets the Connection Index
 func (obj *AbstractChannel) GetConnectionIndex() int {
-	return obj.ConnectionIndex
+	return obj.connectionIndex
 }
 
 // GetExceptionCondition gets the Exception Condition
@@ -826,42 +832,42 @@ func (obj *AbstractChannel) GetExceptionCondition() *sync.Cond {
 
 // GetLinkState gets the Link/Channel State
 func (obj *AbstractChannel) GetLinkState() types.LinkState {
-	return obj.LinkState
+	return obj.channelLinkState
 }
 
 // GetNoOfConnections gets number of connections this channel has
 func (obj *AbstractChannel) GetNoOfConnections() int32 {
-	return obj.NumOfConnections
+	return obj.numOfConnections
 }
 
 // GetPrimaryURL gets the Primary URL
 func (obj *AbstractChannel) GetPrimaryURL() types.TGChannelUrl {
-	return obj.PrimaryUrl
+	return obj.primaryUrl
 }
 
 // GetProperties gets the Channel Properties
 func (obj *AbstractChannel) GetProperties() types.TGProperties {
-	return obj.ChannelProperties
+	return obj.channelProperties
 }
 
 // GetReader gets the Channel Reader
 func (obj *AbstractChannel) GetReader() types.TGChannelReader {
-	return obj.Reader
+	return obj.reader
 }
 
 // GetResponses gets the Channel Response Map
 func (obj *AbstractChannel) GetResponses() map[int64]types.TGChannelResponse {
-	return obj.Responses
+	return obj.responses
 }
 
 // GetSessionId gets Session id
 func (obj *AbstractChannel) GetSessionId() int64 {
-	return obj.SessionId
+	return obj.sessionId
 }
 
 // IsChannelPingable checks whether the channel is pingable or not
 func (obj *AbstractChannel) IsChannelPingable() bool {
-	return obj.NeedsPing
+	return obj.needsPing
 }
 
 // IsClosed checks whether channel is open or closed
@@ -881,27 +887,27 @@ func (obj *AbstractChannel) SendRequest(msg types.TGMessage, response types.TGCh
 
 // SetChannelLinkState sets the Link/Channel State
 func (obj *AbstractChannel) SetChannelLinkState(state types.LinkState) {
-	obj.LinkState = state
+	obj.channelLinkState = state
 }
 
 // SetChannelURL sets the channel URL
 func (obj *AbstractChannel) SetChannelURL(url types.TGChannelUrl) {
-	obj.ChannelUrl = url.(*LinkUrl)
+	obj.channelUrl = url.(*LinkUrl)
 }
 
 // SetConnectionIndex sets the connection index
 func (obj *AbstractChannel) SetConnectionIndex(index int) {
-	obj.ConnectionIndex = index
+	obj.connectionIndex = index
 }
 
 // SetNoOfConnections sets number of connections
 func (obj *AbstractChannel) SetNoOfConnections(count int32) {
-	obj.NumOfConnections = count
+	obj.numOfConnections = count
 }
 
 // SetResponse sets the ChannelResponse Map
 func (obj *AbstractChannel) SetResponse(reqId int64, response types.TGChannelResponse) {
-	obj.Responses[reqId] = response
+	obj.responses[reqId] = response
 }
 
 // Start starts the channel so that it can send and receive messages

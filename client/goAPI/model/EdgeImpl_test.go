@@ -42,7 +42,7 @@ func CreateTestEdgeEntity() *Edge {
 	attrMap["Bool"] = boolAttr
 	attrMap["Integer"] = intAttr
 	attrMap["String"] = strAttr
-	newEdgeEntity.Attributes = attrMap
+	newEdgeEntity.attributes = attrMap
 	fromNode := CreateTestNodeEntity()
 	newEdgeEntity.fromNode = fromNode
 	toNode := CreateTestNodeEntity()

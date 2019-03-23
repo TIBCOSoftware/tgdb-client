@@ -61,7 +61,7 @@ func DefaultHandShakeResponseMessage() *HandShakeResponseMessage {
 	newMsg.challenge = 0
 	newMsg.version = 0
 	newMsg.responseStatus = ResponseInvalid
-	newMsg.VerbId = VerbHandShakeResponse
+	newMsg.verbId = VerbHandShakeResponse
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -69,8 +69,8 @@ func DefaultHandShakeResponseMessage() *HandShakeResponseMessage {
 // Create New Message Instance
 func NewHandShakeResponseMessage(authToken, sessionId int64) *HandShakeResponseMessage {
 	newMsg := DefaultHandShakeResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -324,8 +324,8 @@ func (msg *HandShakeResponseMessage) WritePayload(os types.TGOutputStream) types
 func (msg *HandShakeResponseMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.challenge, msg.responseStatus,
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.challenge, msg.responseStatus,
 		msg.version, msg.errorMessage)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning HandShakeResponseMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -342,8 +342,8 @@ func (msg *HandShakeResponseMessage) MarshalBinary() ([]byte, error) {
 func (msg *HandShakeResponseMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.challenge, &msg.responseStatus, &msg.version, &msg.errorMessage)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning HandShakeResponseMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

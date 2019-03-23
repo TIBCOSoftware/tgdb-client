@@ -45,7 +45,7 @@ func DefaultBeginTransactionRequestMessage() *BeginTransactionRequestMessage {
 	newMsg := BeginTransactionRequestMessage{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.VerbId = VerbBeginTransactionRequest
+	newMsg.verbId = VerbBeginTransactionRequest
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -53,8 +53,8 @@ func DefaultBeginTransactionRequestMessage() *BeginTransactionRequestMessage {
 // Create New Message Instance
 func NewBeginTransactionRequestMessage(authToken, sessionId int64) *BeginTransactionRequestMessage {
 	newMsg := DefaultBeginTransactionRequestMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -236,8 +236,8 @@ func (msg *BeginTransactionRequestMessage) WritePayload(os types.TGOutputStream)
 func (msg *BeginTransactionRequestMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.AuthToken, msg.SessionId, msg.DataOffset, msg.IsUpdatable)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning BeginTransactionRequestMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -253,8 +253,8 @@ func (msg *BeginTransactionRequestMessage) MarshalBinary() ([]byte, error) {
 func (msg *BeginTransactionRequestMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.AuthToken, &msg.SessionId, &msg.DataOffset, &msg.IsUpdatable)
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.authToken, &msg.sessionId, &msg.dataOffset, &msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning BeginTransactionRequestMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

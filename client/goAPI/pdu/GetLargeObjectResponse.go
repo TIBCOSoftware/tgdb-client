@@ -47,10 +47,10 @@ func DefaultGetLargeObjectResponseMessage() *GetLargeObjectResponseMessage {
 	newMsg := GetLargeObjectResponseMessage{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.IsUpdatable = true
+	newMsg.isUpdatable = true
 	newMsg.entityId = 0
 	//newMsg.boStream = new(bytes.Buffer)
-	newMsg.VerbId = VerbGetLargeObjectResponse
+	newMsg.verbId = VerbGetLargeObjectResponse
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -58,8 +58,8 @@ func DefaultGetLargeObjectResponseMessage() *GetLargeObjectResponseMessage {
 // Create New Message Instance
 func NewGetLargeObjectResponseMessage(authToken, sessionId int64) *GetLargeObjectResponseMessage {
 	newMsg := DefaultGetLargeObjectResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -305,8 +305,8 @@ func (msg *GetLargeObjectResponseMessage) WritePayload(os types.TGOutputStream) 
 func (msg *GetLargeObjectResponseMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.entityId)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.entityId)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GetLargeObjectResponseMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -322,8 +322,8 @@ func (msg *GetLargeObjectResponseMessage) MarshalBinary() ([]byte, error) {
 func (msg *GetLargeObjectResponseMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.entityId)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GetLargeObjectResponseMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

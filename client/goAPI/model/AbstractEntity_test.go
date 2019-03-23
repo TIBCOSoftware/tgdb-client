@@ -35,14 +35,14 @@ func CreateTestAttributeDescriptor(name string, attributeType int) *AttributeDes
 
 func CreateTestAbstractEntity() *AbstractEntity {
 	newAbstractEntity := AbstractEntity{
-		IsNew:              true,
+		isNew:              true,
 		EntityKind:         0,
-		Version:            0,
-		EntityId:           -1,
-		IsDeleted:          false,
-		IsInitialized:      true,
-		Attributes:         make(map[string]types.TGAttribute, 0),
-		ModifiedAttributes: make([]types.TGAttribute, 0),
+		version:            0,
+		entityId:           -1,
+		isDeleted:          false,
+		isInitialized:      true,
+		attributes:         make(map[string]types.TGAttribute, 0),
+		modifiedAttributes: make([]types.TGAttribute, 0),
 	}
 	newAbstractEntity.virtualId = atomic.AddInt64(&EntitySequencer, 1)
 	bAttrDesc := CreateTestAttributeDescriptor("Bool", types.AttributeTypeBoolean)
@@ -55,9 +55,9 @@ func CreateTestAbstractEntity() *AbstractEntity {
 	attrMap["Bool"] = boolAttr
 	attrMap["Integer"] = intAttr
 	attrMap["String"] = strAttr
-	newAbstractEntity.Attributes = attrMap
+	newAbstractEntity.attributes = attrMap
 	gmd := CreateTestGraphMetadata()
-	newAbstractEntity.GraphMetadata = gmd
+	newAbstractEntity.graphMetadata = gmd
 	return &newAbstractEntity
 }
 

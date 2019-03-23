@@ -43,9 +43,9 @@ func CreateTestGraphMetadata() *GraphMetadata {
 	descMap["LongDesc"] = lAttrDesc
 	descMap["NumberDesc"] = nAttrDesc
 	descMap["TimeDesc"] = tAttrDesc
-	newGraphMetadata.Descriptors = descMap
+	newGraphMetadata.descriptors = descMap
 	for _, attrDesc := range descMap {
-		newGraphMetadata.DescriptorsById[attrDesc.GetAttributeId()] = attrDesc
+		newGraphMetadata.descriptorsById[attrDesc.GetAttributeId()] = attrDesc
 	}
 
 	nodeType1 := CreateTestNodeType("Node-1", types.SystemTypeNode, DefaultNodeType())
@@ -55,9 +55,9 @@ func CreateTestGraphMetadata() *GraphMetadata {
 	nodeMap["Node-1"] = nodeType1
 	nodeMap["ChildNode-1"] = nodeType2
 	nodeMap["ChildNode-2"] = nodeType3
-	newGraphMetadata.NodeTypes = nodeMap
+	newGraphMetadata.nodeTypes = nodeMap
 	for _, nodeType := range nodeMap {
-		newGraphMetadata.NodeTypesById[nodeType.GetEntityTypeId()] = nodeType
+		newGraphMetadata.nodeTypesById[nodeType.GetEntityTypeId()] = nodeType
 	}
 
 	edgeType1 := CreateTestEdgeType("Edge-1", types.DirectionTypeBiDirectional, types.SystemTypeNode, DefaultEntityType())
@@ -67,16 +67,16 @@ func CreateTestGraphMetadata() *GraphMetadata {
 	edgeMap["Edge-1"] = edgeType1
 	edgeMap["Edge-2"] = edgeType2
 	edgeMap["Edge-3"] = edgeType3
-	newGraphMetadata.EdgeTypes = edgeMap
+	newGraphMetadata.edgeTypes = edgeMap
 	for _, edgeType := range edgeMap {
-		newGraphMetadata.EdgeTypesById[edgeType.GetEntityTypeId()] = edgeType
+		newGraphMetadata.edgeTypesById[edgeType.GetEntityTypeId()] = edgeType
 	}
 	return newGraphMetadata
 }
 
 func TestMetadataCreateAttributeDescriptor(t *testing.T) {
 	testGmd := CreateTestGraphMetadata()
-	t.Logf("TestGraphMetadata has following %d descriptors", len(testGmd.Descriptors))
+	t.Logf("TestGraphMetadata has following %d descriptors", len(testGmd.descriptors))
 	dAttrDesc := testGmd.CreateAttributeDescriptor("First", types.AttributeTypeString, false)
 	t.Logf("TestGraphMetadata has added descriptor: '%+v'", dAttrDesc)
 	descList, err := testGmd.GetAttributeDescriptors()
@@ -131,7 +131,7 @@ func TestMetadataCreateCompositeKey(t *testing.T) {
 
 func TestMetadataCreateEdgeType(t *testing.T) {
 	testGmd := CreateTestGraphMetadata()
-	t.Logf("TestGraphMetadata has following %d edges", len(testGmd.EdgeTypes))
+	t.Logf("TestGraphMetadata has following %d edges", len(testGmd.edgeTypes))
 	pEdge, err := testGmd.GetEdgeType("Edge-3")
 	if err != nil {
 		errMsg := "Error retrieving edge of TestMetadata"
@@ -190,7 +190,7 @@ func TestMetadataGetEdgeTypes(t *testing.T) {
 
 func TestMetadataCreateNodeType(t *testing.T) {
 	testGmd := CreateTestGraphMetadata()
-	t.Logf("TestGraphMetadata has following %d nodes", len(testGmd.NodeTypes))
+	t.Logf("TestGraphMetadata has following %d nodes", len(testGmd.nodeTypes))
 	pNode, err := testGmd.GetNodeType("Node-1")
 	if err != nil {
 		errMsg := "Error retrieving node of TestMetadata"

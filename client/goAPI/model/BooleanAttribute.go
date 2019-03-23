@@ -47,26 +47,26 @@ func DefaultBooleanAttribute() *BooleanAttribute {
 	newAttribute := BooleanAttribute{
 		AbstractAttribute: defaultNewAbstractAttribute(),
 	}
-	newAttribute.AttrValue = false
+	newAttribute.attrValue = false
 	return &newAttribute
 }
 
 func NewBooleanAttributeWithOwner(ownerEntity types.TGEntity) *BooleanAttribute {
 	newAttribute := DefaultBooleanAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewBooleanAttribute(attrDesc *AttributeDescriptor) *BooleanAttribute {
 	newAttribute := DefaultBooleanAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewBooleanAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *BooleanAttribute {
 	newAttribute := NewBooleanAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -75,10 +75,10 @@ func NewBooleanAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *Attribute
 /////////////////////////////////////////////////////////////////
 
 func (obj *BooleanAttribute) SetBoolean(b bool) {
-	if !obj.IsNull() && obj.AttrValue.(bool) == b {
+	if !obj.IsNull() && obj.attrValue.(bool) == b {
 		return
 	}
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
@@ -130,11 +130,11 @@ func (obj *BooleanAttribute) SetOwner(ownerEntity types.TGEntity) {
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *BooleanAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 	if reflect.TypeOf(value).Kind() != reflect.Bool &&
@@ -166,18 +166,18 @@ func (obj *BooleanAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("BooleanAttribute::ReadValue - read value: '%+v'", value))
-	obj.AttrValue = value
+	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *BooleanAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	if obj.AttrValue == nil {
+	if obj.attrValue == nil {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(false)
 	} else {
 		var network bytes.Buffer
 		enc := gob.NewEncoder(&network)
-		err := enc.Encode(obj.AttrValue)
+		err := enc.Encode(obj.attrValue)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning BooleanAttribute:WriteValue - unable to encode attribute value w/ '%s'", err.Error()))
 			errMsg := "AbstractAttribute::WriteExternal - Unable to encode attribute value"
@@ -225,7 +225,7 @@ func (obj *BooleanAttribute) WriteExternal(os types.TGOutputStream) types.TGErro
 func (obj *BooleanAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning BooleanAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -240,7 +240,7 @@ func (obj *BooleanAttribute) MarshalBinary() ([]byte, error) {
 func (obj *BooleanAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning BooleanAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

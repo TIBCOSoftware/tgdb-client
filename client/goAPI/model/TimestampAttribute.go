@@ -53,20 +53,20 @@ func DefaultTimestampAttribute() *TimestampAttribute {
 
 func NewTimestampAttributeWithOwner(ownerEntity types.TGEntity) *TimestampAttribute {
 	newAttribute := DefaultTimestampAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewTimestampAttribute(attrDesc *AttributeDescriptor) *TimestampAttribute {
 	newAttribute := DefaultTimestampAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewTimestampAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *TimestampAttribute {
 	newAttribute := NewTimestampAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -78,7 +78,7 @@ func (obj *TimestampAttribute) SetCalendar(b time.Time) {
 	if ! obj.IsNull() {
 		return
 	}
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
@@ -130,11 +130,11 @@ func (obj *TimestampAttribute) SetOwner(ownerEntity types.TGEntity) {
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 
@@ -164,7 +164,7 @@ func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 		obj.SetCalendar(v)
 		return nil
 	} else {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 	}
 	return nil
@@ -254,8 +254,8 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read tzId: '%+v'", tzId))
 	}
 
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - attribute type: '%+v'", obj.AttrDesc.GetAttrType()))
-	switch obj.AttrDesc.GetAttrType() {
+	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - attribute type: '%+v'", obj.attrDesc.GetAttrType()))
+	switch obj.attrDesc.GetAttrType() {
 	case types.AttributeTypeDate:
 		v = time.Date(year, time.Month(mon), dom, 0, 0, 0, 0, time.Local)
 		break
@@ -266,13 +266,13 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		v = time.Date(year, time.Month(mon), dom, hr, min, sec, ms*1000, time.Local)
 		break
 	default:
-		errMsg := fmt.Sprintf("Bad Descriptor: %s", string(obj.AttrDesc.GetAttrType()))
+		errMsg := fmt.Sprintf("Bad Descriptor: %s", string(obj.attrDesc.GetAttrType()))
 		return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, "")
 	}
 	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read v: '%+v'", v))
 
 	//obj.AttrValue = v.In(loc)		// TODO: Revisit later to use this once location/zone information is available
-	obj.AttrValue = v
+	obj.attrValue = v
 	return nil
 }
 
@@ -286,7 +286,7 @@ func (obj *TimestampAttribute) WriteValue(os types.TGOutputStream) types.TGError
 	min := v.Minute()
 	sec := v.Second()
 	msec := v.Nanosecond() / 1000
-	switch obj.AttrDesc.GetAttrType() {
+	switch obj.attrDesc.GetAttrType() {
 	case types.AttributeTypeDate:
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(era)
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(yr)
@@ -321,7 +321,7 @@ func (obj *TimestampAttribute) WriteValue(os types.TGOutputStream) types.TGError
 		os.(*iostream.ProtocolDataOutputStream).WriteByte(TGNoZone)
 		break
 	default:
-		errMsg := fmt.Sprintf("Bad Descriptor: %s", string(obj.AttrDesc.GetAttrType()))
+		errMsg := fmt.Sprintf("Bad Descriptor: %s", string(obj.attrDesc.GetAttrType()))
 		return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, "")
 	}
 	return nil
@@ -356,7 +356,7 @@ func (obj *TimestampAttribute) WriteExternal(os types.TGOutputStream) types.TGEr
 func (obj *TimestampAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TimestampAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -371,7 +371,7 @@ func (obj *TimestampAttribute) MarshalBinary() ([]byte, error) {
 func (obj *TimestampAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TimestampAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

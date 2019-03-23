@@ -49,7 +49,7 @@ func DefaultMetadataResponseMessage() *MetadataResponse {
 	newMsg := MetadataResponse{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.VerbId = VerbMetadataResponse
+	newMsg.verbId = VerbMetadataResponse
 	newMsg.attrDescList = make([]types.TGAttributeDescriptor, 0)
 	newMsg.nodeTypeList = make([]types.TGNodeType, 0)
 	newMsg.edgeTypeList = make([]types.TGEdgeType, 0)
@@ -60,8 +60,8 @@ func DefaultMetadataResponseMessage() *MetadataResponse {
 // Create New Message Instance
 func NewMetadataResponseMessage(authToken, sessionId int64) *MetadataResponse {
 	newMsg := DefaultMetadataResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -358,8 +358,8 @@ func (msg *MetadataResponse) WritePayload(os types.TGOutputStream) types.TGError
 func (msg *MetadataResponse) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.attrDescList,
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.attrDescList,
 		msg.nodeTypeList, msg.edgeTypeList)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning MetadataResponse:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -376,8 +376,8 @@ func (msg *MetadataResponse) MarshalBinary() ([]byte, error) {
 func (msg *MetadataResponse) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.attrDescList, &msg.nodeTypeList, &msg.edgeTypeList)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning MetadataResponse:UnmarshalBinary w/ Error: '%+v'", err.Error()))

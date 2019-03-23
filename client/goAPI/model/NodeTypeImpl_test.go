@@ -30,7 +30,7 @@ import (
 func CreateTestNodeType(name string, entityType types.TGSystemType, parent types.TGEntityType) *NodeType {
 	newNodeType := DefaultNodeType()
 	newNodeType.name = name
-	newNodeType.SysType = entityType
+	newNodeType.sysType = entityType
 	attributes := make(map[string]*AttributeDescriptor, 3)
 	bAttrDesc := CreateTestAttributeDescriptor("BoolDesc", types.AttributeTypeBoolean)
 	iAttrDesc := CreateTestAttributeDescriptor("IntegerDesc", types.AttributeTypeInteger)
@@ -43,7 +43,7 @@ func CreateTestNodeType(name string, entityType types.TGSystemType, parent types
 	iPkAttrDesc := CreateTestAttributeDescriptor("IntegerPkDesc", types.AttributeTypeInteger)
 	sPkAttrDesc := CreateTestAttributeDescriptor("StringPkDesc", types.AttributeTypeString)
 	pKeys := []*AttributeDescriptor{bPkAttrDesc, iPkAttrDesc, sPkAttrDesc}
-	newNodeType.PKeys = pKeys
+	newNodeType.SetPKeyAttributeDescriptors(pKeys)
 	newNodeType.parent = parent
 	return newNodeType
 }

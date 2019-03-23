@@ -42,9 +42,9 @@ type CommitTransactionResponse struct {
 	removedCount   int
 	attrDescIdList []int64
 	attrDescCount  int
-	GraphObjFact   types.TGGraphObjectFactory
-	Exception      *exception.TransactionException
-	EntityStream   types.TGInputStream
+	graphObjFact   types.TGGraphObjectFactory
+	exception      *exception.TransactionException
+	entityStream   types.TGInputStream
 }
 
 func DefaultCommitTransactionResponseMessage() *CommitTransactionResponse {
@@ -56,7 +56,7 @@ func DefaultCommitTransactionResponseMessage() *CommitTransactionResponse {
 	newMsg := CommitTransactionResponse{
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 	}
-	newMsg.VerbId = VerbCommitTransactionResponse
+	newMsg.verbId = VerbCommitTransactionResponse
 	newMsg.addedIdList = make([]int64, 0)
 	newMsg.addedCount = 0
 	newMsg.updatedIdList = make([]int64, 0)
@@ -65,9 +65,9 @@ func DefaultCommitTransactionResponseMessage() *CommitTransactionResponse {
 	newMsg.removedCount = 0
 	newMsg.attrDescIdList = make([]int64, 0)
 	newMsg.attrDescCount = 0
-	newMsg.GraphObjFact = nil
+	newMsg.graphObjFact = nil
 	//newMsg.entityStream = nil
-	newMsg.Exception = nil
+	newMsg.exception = nil
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -75,8 +75,8 @@ func DefaultCommitTransactionResponseMessage() *CommitTransactionResponse {
 // Create New Message Instance
 func NewCommitTransactionResponseMessage(authToken, sessionId int64) *CommitTransactionResponse {
 	newMsg := DefaultCommitTransactionResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -162,11 +162,11 @@ func (msg *CommitTransactionResponse) GetAttrDescIdList() []int64 {
 }
 
 func (msg *CommitTransactionResponse) HasException() bool {
-	return msg.Exception != nil
+	return msg.exception != nil
 }
 
 func (msg *CommitTransactionResponse) GetException() *exception.TransactionException {
-	return msg.Exception
+	return msg.exception
 }
 
 func (msg *CommitTransactionResponse) SetAttrDescCount(count int) {
@@ -345,19 +345,19 @@ func (msg *CommitTransactionResponse) String() string {
 	//}
 	buffer.WriteString("}")
 	buffer.WriteString(fmt.Sprintf(", AddedListCount: %d", msg.addedCount))
-	buffer.WriteString(fmt.Sprint(", AddedList:{"))
+	buffer.WriteString(fmt.Sprint(", AddedIdList:{"))
 	for _, v := range msg.addedIdList {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d ", v))
 	}
 	buffer.WriteString("}")
 	buffer.WriteString(fmt.Sprintf(", UpdatedListCount: %d", msg.updatedCount))
-	buffer.WriteString(fmt.Sprint(", UpdatedList:{"))
+	buffer.WriteString(fmt.Sprint(", UpdatedIdList:{"))
 	for _, v := range msg.updatedIdList {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d ", v))
 	}
 	buffer.WriteString("}")
 	buffer.WriteString(fmt.Sprintf(", RemovedListCount: %d", msg.removedCount))
-	buffer.WriteString(fmt.Sprint(", RemovedList:{"))
+	buffer.WriteString(fmt.Sprint(", RemovedIdList:{"))
 	for _, v := range msg.removedIdList {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d ", v))
 	}
@@ -504,7 +504,7 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 			}
 			break
 		case 0x6789:
-			msg.EntityStream = is
+			msg.entityStream = is
 			pos := is.(*iostream.ProtocolDataInputStream).GetPosition()
 			logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read pos for opCode=0x6789 as '%+v'", pos))
 			count, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
@@ -536,10 +536,10 @@ func (msg *CommitTransactionResponse) WritePayload(os types.TGOutputStream) type
 func (msg *CommitTransactionResponse) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.AuthToken, msg.SessionId, msg.DataOffset, msg.IsUpdatable, msg.addedIdList, msg.addedCount,
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable, msg.addedIdList, msg.addedCount,
 		msg.updatedIdList, msg.updatedCount, msg.removedIdList, msg.removedCount, msg.attrDescIdList, msg.attrDescCount,
-		msg.GraphObjFact, msg.Exception)
+		msg.graphObjFact, msg.exception)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CommitTransactionResponse:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -555,10 +555,10 @@ func (msg *CommitTransactionResponse) MarshalBinary() ([]byte, error) {
 func (msg *CommitTransactionResponse) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.AuthToken, &msg.SessionId, &msg.DataOffset, &msg.IsUpdatable, &msg.addedIdList,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.authToken, &msg.sessionId, &msg.dataOffset, &msg.isUpdatable, &msg.addedIdList,
 		&msg.addedCount, &msg.updatedIdList, &msg.updatedCount, &msg.removedIdList, &msg.removedCount, &msg.attrDescIdList,
-		&msg.attrDescCount, &msg.GraphObjFact, &msg.Exception)
+		&msg.attrDescCount, &msg.graphObjFact, &msg.exception)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CommitTransactionResponse:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

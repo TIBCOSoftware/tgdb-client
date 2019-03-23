@@ -53,7 +53,7 @@ func DefaultEdge() *Edge {
 
 func NewEdge(gmd *GraphMetadata) *Edge {
 	newEdge := DefaultEdge()
-	newEdge.GraphMetadata = gmd
+	newEdge.graphMetadata = gmd
 	return newEdge
 }
 
@@ -83,7 +83,7 @@ func (obj *Edge) GetFromNode() types.TGNode {
 }
 
 func (obj *Edge) GetIsInitialized() bool {
-	return obj.IsInitialized
+	return obj.isInitialized
 }
 
 func (obj *Edge) GetModifiedAttributes() []types.TGAttribute {
@@ -155,12 +155,12 @@ func (obj *Edge) GetGraphMetadata() types.TGGraphMetadata {
 
 // GetIsDeleted checks whether this entity is already deleted in the system or not
 func (obj *Edge) GetIsDeleted() bool {
-	return obj.isDeleted()
+	return obj.getIsDeleted()
 }
 
 // GetIsNew checks whether this entity that is currently being added to the system is new or not
 func (obj *Edge) GetIsNew() bool {
-	return obj.isNew()
+	return obj.getIsNew()
 }
 
 // GetVersion gets the version of the Entity
@@ -284,7 +284,7 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 		fromEntity = refMap[fromNodeId]
 	}
 	if fromEntity == nil {
-		fNode := NewNode(obj.GraphMetadata)
+		fNode := NewNode(obj.graphMetadata)
 		fNode.SetEntityId(fromNodeId)
 		fNode.SetIsInitialized(false)
 		if refMap != nil {
@@ -307,7 +307,7 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 		toEntity = refMap[toNodeId]
 	}
 	if toEntity == nil {
-		tNode := NewNode(obj.GraphMetadata)
+		tNode := NewNode(obj.graphMetadata)
 		tNode.SetEntityId(toNodeId)
 		tNode.SetIsInitialized(false)
 		if refMap != nil {
@@ -364,8 +364,8 @@ func (obj *Edge) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *Edge) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.IsNew, obj.EntityKind, obj.virtualId, obj.Version, obj.EntityId, obj.EntityType,
-		obj.IsDeleted, obj.IsInitialized, obj.GraphMetadata, obj.Attributes, obj.ModifiedAttributes,
+	_, err := fmt.Fprintln(&b, obj.isNew, obj.EntityKind, obj.virtualId, obj.version, obj.entityId, obj.EntityType,
+		obj.isDeleted, obj.isInitialized, obj.graphMetadata, obj.attributes, obj.modifiedAttributes,
 		obj.directionType, obj.fromNode, obj.toNode)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Edge:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -381,8 +381,8 @@ func (obj *Edge) MarshalBinary() ([]byte, error) {
 func (obj *Edge) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.IsNew, &obj.EntityKind, &obj.virtualId, &obj.Version, &obj.EntityId, &obj.EntityType,
-		&obj.IsDeleted, &obj.IsInitialized, &obj.GraphMetadata, &obj.Attributes, &obj.ModifiedAttributes,
+	_, err := fmt.Fscanln(b, &obj.isNew, &obj.EntityKind, &obj.virtualId, &obj.version, &obj.entityId, &obj.EntityType,
+		&obj.isDeleted, &obj.isInitialized, &obj.graphMetadata, &obj.attributes, &obj.modifiedAttributes,
 		&obj.directionType, &obj.fromNode, &obj.toNode)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Edge:UnmarshalBinary w/ Error: '%+v'", err.Error()))

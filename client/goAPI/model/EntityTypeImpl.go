@@ -30,7 +30,7 @@ import (
  */
 
 type EntityType struct {
-	SysType    types.TGSystemType
+	sysType    types.TGSystemType
 	id         int // Issued only for creation and not valid later
 	name       string
 	parent     types.TGEntityType
@@ -163,7 +163,7 @@ func EntityTypeUpdateMetadata(obj types.TGEntityType, gmd *GraphMetadata) types.
 func (obj *EntityType) entityTypeToString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("EntityType:{")
-	buffer.WriteString(fmt.Sprintf("SysType: %d", obj.SysType))
+	buffer.WriteString(fmt.Sprintf("SysType: %d", obj.sysType))
 	buffer.WriteString(fmt.Sprintf(", Id: %+v", obj.id))
 	buffer.WriteString(fmt.Sprintf(", Name: %+v", obj.name))
 	//buffer.WriteString(fmt.Sprintf(", Parent: %+v", obj.parent))
@@ -220,7 +220,7 @@ func (obj *EntityType) SetName(eTypeName string) {
 
 // SetSystemType sets system object's type
 func (obj *EntityType) SetSystemType(eSysType types.TGSystemType) {
-	obj.SysType = eSysType
+	obj.sysType = eSysType
 }
 
 func (obj *EntityType) String() string {
@@ -237,7 +237,7 @@ func (obj *EntityType) GetName() string {
 }
 
 func (obj *EntityType) GetSystemType() types.TGSystemType {
-	return obj.SysType
+	return obj.sysType
 }
 
 /////////////////////////////////////////////////////////////////
@@ -264,7 +264,7 @@ func (obj *EntityType) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *EntityType) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.SysType, obj.id, obj.name, obj.parent, obj.attributes)
+	_, err := fmt.Fprintln(&b, obj.sysType, obj.id, obj.name, obj.parent, obj.attributes)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EntityType:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -279,7 +279,7 @@ func (obj *EntityType) MarshalBinary() ([]byte, error) {
 func (obj *EntityType) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.SysType, &obj.id, &obj.name, &obj.parent, &obj.attributes)
+	_, err := fmt.Fscanln(b, &obj.sysType, &obj.id, &obj.name, &obj.parent, &obj.attributes)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EntityType:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

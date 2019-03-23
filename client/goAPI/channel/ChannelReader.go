@@ -120,7 +120,7 @@ func (obj *ChannelReader) readAndProcessLoop() {
 			continue
 		}
 
-		logger.Log(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop - Read Message '%+v'", msg.String()))
+		logger.Log(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop - Read Message of type '%+v'", msg.GetVerbId()))
 		if msg.GetVerbId() == pdu.VerbPingMessage {
 			logger.Log(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop Trying to Read Message Again since MSG is PingMessage"))
 			continue
@@ -134,7 +134,7 @@ func (obj *ChannelReader) readAndProcessLoop() {
 			break
 		}
 
-		logger.Log(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop Processing Message '%+v'", msg.String()))
+		logger.Log(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop Processing Message of type '%+v'", msg.GetVerbId()))
 		err = channelProcessMessage(obj.channel, msg)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop Error in channelProcessMessage() w/ '%+v'", err.Error()))

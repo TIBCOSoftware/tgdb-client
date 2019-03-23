@@ -82,44 +82,44 @@ const (
 )
 
 type CommandVerbs struct {
-	Id          int
-	Name        string
-	Implementor string
+	id          int
+	name        string
+	implementor string
 }
 
 var PreDefinedVerbs = map[int]CommandVerbs{
-	VerbPingMessage:                 {Id: VerbPingMessage, Name: "VerbPingMessage", Implementor: "pdu.VerbPingMessage"},
-	VerbHandShakeRequest:            {Id: VerbHandShakeRequest, Name: "VerbHandShakeRequest", Implementor: "pdu.HandshakeRequest"},
-	VerbHandShakeResponse:           {Id: VerbHandShakeResponse, Name: "VerbHandShakeResponse", Implementor: "pdu.HandshakeResponse"},
-	VerbAuthenticateRequest:         {Id: VerbAuthenticateRequest, Name: "VerbAuthenticateRequest", Implementor: "pdu.VerbAuthenticateRequest"},
-	VerbAuthenticateResponse:        {Id: VerbAuthenticateResponse, Name: "VerbAuthenticateResponse", Implementor: "pdu.VerbAuthenticateResponse"},
-	VerbBeginTransactionRequest:     {Id: VerbBeginTransactionRequest, Name: "VerbBeginTransactionRequest", Implementor: "pdu.VerbBeginTransactionRequest"},
-	VerbBeginTransactionResponse:    {Id: VerbBeginTransactionResponse, Name: "VerbBeginTransactionResponse", Implementor: "pdu.VerbBeginTransactionResponse"},
-	VerbCommitTransactionRequest:    {Id: VerbCommitTransactionRequest, Name: "VerbCommitTransactionRequest", Implementor: "pdu.VerbCommitTransactionRequest"},
-	VerbCommitTransactionResponse:   {Id: VerbCommitTransactionResponse, Name: "VerbCommitTransactionResponse", Implementor: "pdu.VerbCommitTransactionResponse"},
-	VerbRollbackTransactionRequest:  {Id: VerbRollbackTransactionRequest, Name: "VerbRollbackTransactionRequest", Implementor: "pdu.VerbRollbackTransactionRequest"},
-	VerbRollbackTransactionResponse: {Id: VerbRollbackTransactionResponse, Name: "VerbRollbackTransactionResponse", Implementor: "pdu.VerbRollbackTransactionResponse"},
-	VerbQueryRequest:                {Id: VerbQueryRequest, Name: "VerbQueryRequest", Implementor: "pdu.VerbQueryRequest"},
-	VerbQueryResponse:               {Id: VerbQueryResponse, Name: "VerbQueryResponse", Implementor: "pdu.VerbQueryResponse"},
-	VerbTraverseRequest:             {Id: VerbTraverseRequest, Name: "VerbTraverseRequest", Implementor: "pdu.VerbTraverseRequest"},
-	VerbTraverseResponse:            {Id: VerbTraverseResponse, Name: "VerbTraverseResponse", Implementor: "pdu.VerbTraverseResponse"},
-	VerbAdminRequest:                {Id: VerbAdminRequest, Name: "VerbAdminRequest", Implementor: "pdu.VerbAdminRequest"},
-	VerbAdminResponse:               {Id: VerbAdminResponse, Name: "VerbAdminResponse", Implementor: "pdu.VerbAdminResponse"},
-	VerbMetadataRequest:             {Id: VerbMetadataRequest, Name: "VerbMetadataRequest", Implementor: "pdu.VerbMetadataRequest"},
-	VerbMetadataResponse:            {Id: VerbMetadataResponse, Name: "VerbMetadataResponse", Implementor: "pdu.VerbMetadataResponse"},
-	VerbGetEntityRequest:            {Id: VerbGetEntityRequest, Name: "VerbGetEntityRequest", Implementor: "pdu.VerbGetEntityRequest"},    //0 = mean immediate, AttributeTypeInteger Max for indefinite
-	VerbGetEntityResponse:           {Id: VerbGetEntityResponse, Name: "VerbGetEntityResponse", Implementor: "pdu.VerbGetEntityResponse"}, //Represented in ms. Default Value is 10sec
-	VerbGetLargeObjectRequest:       {Id: VerbGetLargeObjectRequest, Name: "VerbGetLargeObjectRequest", Implementor: "pdu.VerbGetLargeObjectRequest"},
-	VerbGetLargeObjectResponse:      {Id: VerbGetLargeObjectResponse, Name: "VerbGetLargeObjectResponse", Implementor: "pdu.VerbGetLargeObjectResponse"},
-	VerbDumpStacktraceRequest:       {Id: VerbDumpStacktraceRequest, Name: "VerbDumpStacktraceRequest", Implementor: "pdu.VerbDumpStacktraceRequest"},
-	VerbDisconnectChannelRequest:    {Id: VerbDisconnectChannelRequest, Name: "VerbDisconnectChannelRequest", Implementor: "pdu.VerbDisconnectChannelRequest"},
-	VerbSessionForcefullyTerminated: {Id: VerbSessionForcefullyTerminated, Name: "VerbSessionForcefullyTerminated", Implementor: "pdu.VerbSessionForcefullyTerminated"},
-	VerbExceptionMessage:            {Id: VerbExceptionMessage, Name: "VerbExceptionMessage", Implementor: "pdu.VerbExceptionMessage"},
-	VerbInvalidMessage:              {Id: VerbInvalidMessage, Name: "VerbInvalidMessage", Implementor: "pdu.VerbInvalidMessage"},
+	VerbPingMessage:                 {id: VerbPingMessage, name: "VerbPingMessage", implementor: "pdu.VerbPingMessage"},
+	VerbHandShakeRequest:            {id: VerbHandShakeRequest, name: "VerbHandShakeRequest", implementor: "pdu.HandshakeRequest"},
+	VerbHandShakeResponse:           {id: VerbHandShakeResponse, name: "VerbHandShakeResponse", implementor: "pdu.HandshakeResponse"},
+	VerbAuthenticateRequest:         {id: VerbAuthenticateRequest, name: "VerbAuthenticateRequest", implementor: "pdu.VerbAuthenticateRequest"},
+	VerbAuthenticateResponse:        {id: VerbAuthenticateResponse, name: "VerbAuthenticateResponse", implementor: "pdu.VerbAuthenticateResponse"},
+	VerbBeginTransactionRequest:     {id: VerbBeginTransactionRequest, name: "VerbBeginTransactionRequest", implementor: "pdu.VerbBeginTransactionRequest"},
+	VerbBeginTransactionResponse:    {id: VerbBeginTransactionResponse, name: "VerbBeginTransactionResponse", implementor: "pdu.VerbBeginTransactionResponse"},
+	VerbCommitTransactionRequest:    {id: VerbCommitTransactionRequest, name: "VerbCommitTransactionRequest", implementor: "pdu.VerbCommitTransactionRequest"},
+	VerbCommitTransactionResponse:   {id: VerbCommitTransactionResponse, name: "VerbCommitTransactionResponse", implementor: "pdu.VerbCommitTransactionResponse"},
+	VerbRollbackTransactionRequest:  {id: VerbRollbackTransactionRequest, name: "VerbRollbackTransactionRequest", implementor: "pdu.VerbRollbackTransactionRequest"},
+	VerbRollbackTransactionResponse: {id: VerbRollbackTransactionResponse, name: "VerbRollbackTransactionResponse", implementor: "pdu.VerbRollbackTransactionResponse"},
+	VerbQueryRequest:                {id: VerbQueryRequest, name: "VerbQueryRequest", implementor: "pdu.VerbQueryRequest"},
+	VerbQueryResponse:               {id: VerbQueryResponse, name: "VerbQueryResponse", implementor: "pdu.VerbQueryResponse"},
+	VerbTraverseRequest:             {id: VerbTraverseRequest, name: "VerbTraverseRequest", implementor: "pdu.VerbTraverseRequest"},
+	VerbTraverseResponse:            {id: VerbTraverseResponse, name: "VerbTraverseResponse", implementor: "pdu.VerbTraverseResponse"},
+	VerbAdminRequest:                {id: VerbAdminRequest, name: "VerbAdminRequest", implementor: "pdu.VerbAdminRequest"},
+	VerbAdminResponse:               {id: VerbAdminResponse, name: "VerbAdminResponse", implementor: "pdu.VerbAdminResponse"},
+	VerbMetadataRequest:             {id: VerbMetadataRequest, name: "VerbMetadataRequest", implementor: "pdu.VerbMetadataRequest"},
+	VerbMetadataResponse:            {id: VerbMetadataResponse, name: "VerbMetadataResponse", implementor: "pdu.VerbMetadataResponse"},
+	VerbGetEntityRequest:            {id: VerbGetEntityRequest, name: "VerbGetEntityRequest", implementor: "pdu.VerbGetEntityRequest"},    //0 = mean immediate, AttributeTypeInteger Max for indefinite
+	VerbGetEntityResponse:           {id: VerbGetEntityResponse, name: "VerbGetEntityResponse", implementor: "pdu.VerbGetEntityResponse"}, //Represented in ms. Default Value is 10sec
+	VerbGetLargeObjectRequest:       {id: VerbGetLargeObjectRequest, name: "VerbGetLargeObjectRequest", implementor: "pdu.VerbGetLargeObjectRequest"},
+	VerbGetLargeObjectResponse:      {id: VerbGetLargeObjectResponse, name: "VerbGetLargeObjectResponse", implementor: "pdu.VerbGetLargeObjectResponse"},
+	VerbDumpStacktraceRequest:       {id: VerbDumpStacktraceRequest, name: "VerbDumpStacktraceRequest", implementor: "pdu.VerbDumpStacktraceRequest"},
+	VerbDisconnectChannelRequest:    {id: VerbDisconnectChannelRequest, name: "VerbDisconnectChannelRequest", implementor: "pdu.VerbDisconnectChannelRequest"},
+	VerbSessionForcefullyTerminated: {id: VerbSessionForcefullyTerminated, name: "VerbSessionForcefullyTerminated", implementor: "pdu.VerbSessionForcefullyTerminated"},
+	VerbExceptionMessage:            {id: VerbExceptionMessage, name: "VerbExceptionMessage", implementor: "pdu.VerbExceptionMessage"},
+	VerbInvalidMessage:              {id: VerbInvalidMessage, name: "VerbInvalidMessage", implementor: "pdu.VerbInvalidMessage"},
 }
 
 func NewVerbId(id int, name, impl string) *CommandVerbs {
-	newConfig := &CommandVerbs{Id: id, Name: name, Implementor: impl}
+	newConfig := &CommandVerbs{id: id, name: name, implementor: impl}
 	return newConfig
 }
 
@@ -134,4 +134,20 @@ func GetVerb(id int) *CommandVerbs {
 		invalid := PreDefinedVerbs[VerbInvalidMessage]
 		return &invalid
 	}
+}
+
+/////////////////////////////////////////////
+// Helper Public functions for CommonVerbs //
+/////////////////////////////////////////////
+
+func (obj *CommandVerbs) GetID() int {
+	return obj.id
+}
+
+func (obj *CommandVerbs) GetName() string {
+	return obj.name
+}
+
+func (obj *CommandVerbs) GetImplementor() string {
+	return obj.implementor
 }

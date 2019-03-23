@@ -318,7 +318,7 @@ func (obj *TGConnectionFactory) CreateConnectionPoolWithType(url, user, pwd stri
 	props := utils.NewSortedProperties()
 	// Add system default environment properties
 	defEnvProperties := utils.NewTGEnvironment().GetAsSortedProperties()
-	for _, kvp := range defEnvProperties.(*utils.SortedProperties).Properties {
+	for _, kvp := range defEnvProperties.(*utils.SortedProperties).GetAllProperties() {
 		props.AddProperty(kvp.KeyName, kvp.KeyValue)
 	}
 	// Add supplied environment values
@@ -332,7 +332,7 @@ func (obj *TGConnectionFactory) CreateConnectionPoolWithType(url, user, pwd stri
 	channelProps := channelUrl.GetProperties()
 	// Add channel properties to the consolidated property set
 	if channelProps != nil {
-		for _, kvp := range channelProps.(*utils.SortedProperties).Properties {
+		for _, kvp := range channelProps.(*utils.SortedProperties).GetAllProperties() {
 			props.AddProperty(kvp.KeyName, kvp.KeyValue)
 		}
 	}

@@ -61,49 +61,49 @@ const (
 )
 
 type ConfigName struct {
-	PropName     string
-	AliasName    string
-	DefaultValue string
-	Desc         string
+	configPropName string
+	aliasName      string
+	defaultValue   string
+	description    string
 }
 
 var PreDefinedConfigurations = map[int]ConfigName{
-	ChannelDefaultHost:                             {PropName: "tgdb.channel.defaultHost", AliasName: "defaultHost", DefaultValue: "localhost", Desc: "The default host specifier"},
-	ChannelDefaultPort:                             {PropName: "tgdb.channel.defaultPort", AliasName: "defaultPort", DefaultValue: "8700", Desc: "The default port specifier"},
-	ChannelDefaultProtocol:                         {PropName: "tgdb.channel.defaultProtocol", AliasName: "defaultProtocol", DefaultValue: "tcp", Desc: "The default protocol"},
-	ChannelSendSize:                                {PropName: "tgdb.channel.sendSize", AliasName: "sendSize", DefaultValue: "122", Desc: "TCP send packet size in KBs"},
-	ChannelRecvSize:                                {PropName: "tgdb.channel.recvSize", AliasName: "recvSize", DefaultValue: "128", Desc: "TCP recv packet size in KB"},
-	ChannelPingInterval:                            {PropName: "tgdb.channel.pingInterval", AliasName: "pingInterval", DefaultValue: "30", Desc: "Keep alive ping intervals"},
-	ChannelConnectTimeout:                          {PropName: "tgdb.channel.connectTimeout", AliasName: "connectTimeout", DefaultValue: "1000", Desc: "Timeout for connection to establish, before it gives up and tries the ftUrls if specified"}, //1 sec timeout
-	ChannelFTHosts:                                 {PropName: "tgdb.channel.ftHosts", AliasName: "ftHosts", DefaultValue: "", Desc: "Alternate fault tolerant list of &lt;host:port&gt; pair separated by comma"},
-	ChannelFTRetryIntervalSeconds:                  {PropName: "tgdb.channel.ftRetryIntervalSeconds", AliasName: "ftRetryIntervalSeconds", DefaultValue: "10", Desc: "The connect retry interval to ftHosts"},
-	ChannelFTRetryCount:                            {PropName: "tgdb.channel.ftRetryCount", AliasName: "ftRetryCount", DefaultValue: "3", Desc: "The number of times ro retry"},
-	ChannelDefaultUserID:                           {PropName: "tgdb.channel.defaultUserID", AliasName: "defaultUserID", DefaultValue: "", Desc: "The default user id for the connection"},
-	ChannelUserID:                                  {PropName: "tgdb.channel.userID", AliasName: "userID", DefaultValue: "", Desc: "The user id for the connection if it is not specified in the API. See the rules for picking the user name"},
-	ChannelPassword:                                {PropName: "tgdb.channel.password", AliasName: "password", DefaultValue: "", Desc: "The password for the username"},
-	ChannelClientId:                                {PropName: "tgdb.channel.clientId", AliasName: "clientId", DefaultValue: "tgdb.go-api.client", Desc: "The client id to be used for the connection"},
-	ConnectionDatabaseName:                         {PropName: "tgdb.connection.dbName", AliasName: "dbName", DefaultValue: "", Desc: "The database name the client is connecting to. It is used as part of verification for ssl channels"},
-	ConnectionPoolUseDedicatedChannelPerConnection: {PropName: "tgdb.connectionpool.useDedicatedChannelPerConnection", AliasName: "useDedicatedChannelPerConnection", DefaultValue: "false", Desc: ""},
-	ConnectionPoolDefaultPoolSize:                  {PropName: "tgdb.connectionpool.defaultPoolSize", AliasName: "defaultPoolSize", DefaultValue: "10", Desc: "The default connection pool size to use when creating a ConnectionPool"},
+	ChannelDefaultHost:                             {configPropName: "tgdb.channel.defaultHost", aliasName: "defaultHost", defaultValue: "localhost", description: "The default host specifier"},
+	ChannelDefaultPort:                             {configPropName: "tgdb.channel.defaultPort", aliasName: "defaultPort", defaultValue: "8700", description: "The default port specifier"},
+	ChannelDefaultProtocol:                         {configPropName: "tgdb.channel.defaultProtocol", aliasName: "defaultProtocol", defaultValue: "tcp", description: "The default protocol"},
+	ChannelSendSize:                                {configPropName: "tgdb.channel.sendSize", aliasName: "sendSize", defaultValue: "122", description: "TCP send packet size in KBs"},
+	ChannelRecvSize:                                {configPropName: "tgdb.channel.recvSize", aliasName: "recvSize", defaultValue: "128", description: "TCP recv packet size in KB"},
+	ChannelPingInterval:                            {configPropName: "tgdb.channel.pingInterval", aliasName: "pingInterval", defaultValue: "30", description: "Keep alive ping intervals"},
+	ChannelConnectTimeout:                          {configPropName: "tgdb.channel.connectTimeout", aliasName: "connectTimeout", defaultValue: "1000", description: "Timeout for connection to establish, before it gives up and tries the ftUrls if specified"}, //1 sec timeout
+	ChannelFTHosts:                                 {configPropName: "tgdb.channel.ftHosts", aliasName: "ftHosts", defaultValue: "", description: "Alternate fault tolerant list of &lt;host:port&gt; pair separated by comma"},
+	ChannelFTRetryIntervalSeconds:                  {configPropName: "tgdb.channel.ftRetryIntervalSeconds", aliasName: "ftRetryIntervalSeconds", defaultValue: "10", description: "The connect retry interval to ftHosts"},
+	ChannelFTRetryCount:                            {configPropName: "tgdb.channel.ftRetryCount", aliasName: "ftRetryCount", defaultValue: "3", description: "The number of times ro retry"},
+	ChannelDefaultUserID:                           {configPropName: "tgdb.channel.defaultUserID", aliasName: "defaultUserID", defaultValue: "", description: "The default user id for the connection"},
+	ChannelUserID:                                  {configPropName: "tgdb.channel.userID", aliasName: "userID", defaultValue: "", description: "The user id for the connection if it is not specified in the API. See the rules for picking the user name"},
+	ChannelPassword:                                {configPropName: "tgdb.channel.password", aliasName: "password", defaultValue: "", description: "The password for the username"},
+	ChannelClientId:                                {configPropName: "tgdb.channel.clientId", aliasName: "clientId", defaultValue: "tgdb.go-api.client", description: "The client id to be used for the connection"},
+	ConnectionDatabaseName:                         {configPropName: "tgdb.connection.dbName", aliasName: "dbName", defaultValue: "", description: "The database name the client is connecting to. It is used as part of verification for ssl channels"},
+	ConnectionPoolUseDedicatedChannelPerConnection: {configPropName: "tgdb.connectionpool.useDedicatedChannelPerConnection", aliasName: "useDedicatedChannelPerConnection", defaultValue: "false", description: ""},
+	ConnectionPoolDefaultPoolSize:                  {configPropName: "tgdb.connectionpool.defaultPoolSize", aliasName: "defaultPoolSize", defaultValue: "10", description: "The default connection pool size to use when creating a ConnectionPool"},
 	//0 = mean immediate, Integer Max for indefinite
-	ConnectionReserveTimeoutSeconds:                {PropName: "tgdb.connectionpool.connectionReserveTimeoutSeconds", AliasName: "connectionReserveTimeoutSeconds", DefaultValue: "10", Desc: "A timeout parameter indicating how long to wait before getting a connection from the pool"},
+	ConnectionReserveTimeoutSeconds:                {configPropName: "tgdb.connectionpool.connectionReserveTimeoutSeconds", aliasName: "connectionReserveTimeoutSeconds", defaultValue: "10", description: "A timeout parameter indicating how long to wait before getting a connection from the pool"},
 	//Represented in ms. Default Value is 10sec
-	ConnectionOperationTimeoutSeconds:              {PropName: "tgdb.connection.operationTimeoutSeconds", AliasName: "connectionOperationTimeoutSeconds", DefaultValue: "10", Desc: "A timeout parameter indicating how long to wait for a operation before giving up. Some queries are long running, and may override this behavior"},
+	ConnectionOperationTimeoutSeconds:              {configPropName: "tgdb.connection.operationTimeoutSeconds", aliasName: "connectionOperationTimeoutSeconds", defaultValue: "10", description: "A timeout parameter indicating how long to wait for a operation before giving up. Some queries are long running, and may override this behavior"},
 	// TODO: Ask TGDB Engineering Team
-	TlsProviderName:                                {PropName: "tgdb.tls.provider.name", AliasName: "tlsProviderName", DefaultValue: "SunJSSE", Desc: "Transport level Security provider. Work with your InfoSec team to change this value"},
+	TlsProviderName:                                {configPropName: "tgdb.tls.provider.name", aliasName: "tlsProviderName", defaultValue: "SunJSSE", description: "Transport level Security provider. Work with your InfoSec team to change this value"},
 	// TODO: Ask TGDB Engineering Team - The default is the Sun JSSE. One can specify the tibco wrapper class for FIPS
-	TlsProviderClassName:                           {PropName: "tgdb.tls.provider.className", AliasName: "tlsProviderClassName", DefaultValue: "com.sun.net.ssl.internal.ssl.Provider", Desc: "The underlying Provider implementation. Work with your InfoSec team to change this value"},
-	TlsProviderConfigFile:                          {PropName: "tgdb.tls.provider.configFile", AliasName: "tlsProviderConfigFile", DefaultValue: "", Desc: "Some providers require extra configuration paramters, and it can be passed as a file"},
-	TlsProtocol:                                    {PropName: "tgdb.tls.protocol", AliasName: "tlsProtocol", DefaultValue: "TLSv1.2", Desc: "TLSProtocol version. The system only supports 1.2+"},
+	TlsProviderClassName:                           {configPropName: "tgdb.tls.provider.className", aliasName: "tlsProviderClassName", defaultValue: "com.sun.net.ssl.internal.ssl.Provider", description: "The underlying Provider implementation. Work with your InfoSec team to change this value"},
+	TlsProviderConfigFile:                          {configPropName: "tgdb.tls.provider.configFile", aliasName: "tlsProviderConfigFile", defaultValue: "", description: "Some providers require extra configuration paramters, and it can be passed as a file"},
+	TlsProtocol:                                    {configPropName: "tgdb.tls.protocol", aliasName: "tlsProtocol", defaultValue: "TLSv1.2", description: "TLSProtocol version. The system only supports 1.2+"},
 	//Use the Default Cipher Suites
-	TlsCipherSuites:                                {PropName: "tgdb.tls.cipherSuites", AliasName: "cipherSuites", DefaultValue: "", Desc: "A list cipher suites that the InfoSec team has cleared. The default list is a common list of JSSE's cipher list and Openssl list that supports 1.2 protocol"},
-	TlsVerifyDatabaseName:                          {PropName: "tgdb.tls.verifyDBName", AliasName: "verifyDBName", DefaultValue: "false", Desc: "Verify the Database name in the certificate. TGDB provides self signed certificate for easy-to-use SSL"},
-	TlsExpectedHostName:                            {PropName: "tgdb.tls.expectedHostName", AliasName: "expectedHostName", DefaultValue: "", Desc: "The expected hostName for the certificate. This is for future use"},
-	TlsTrustedCertificates:                         {PropName: "tgdb.tls.trustedCertificates", AliasName: "trustedCertificates", DefaultValue: "", Desc: "The list of trusted Certificates"},
-	KeyStorePassword:                               {PropName: "tgdb.security.keyStorePassword", AliasName: "keyStorePassword", DefaultValue: "", Desc: "The Keystore for the password"},
-	EnableConnectionTrace:                          {PropName: "tgdb.connection.enableTrace", AliasName: "enableTrace", DefaultValue: "false", Desc: "The flag for debugging purpose, to enable the commit trace"},
-	ConnectionTraceDir:                             {PropName: "tgdb.connection.enableTraceDir", AliasName: "enableTraceDir", DefaultValue: ".", Desc: "The base directory to hold commit trace log"},
-	InvalidName:                                    {PropName: "", AliasName: "", DefaultValue: "", Desc: ""},
+	TlsCipherSuites:                                {configPropName: "tgdb.tls.cipherSuites", aliasName: "cipherSuites", defaultValue: "", description: "A list cipher suites that the InfoSec team has cleared. The default list is a common list of JSSE's cipher list and Openssl list that supports 1.2 protocol"},
+	TlsVerifyDatabaseName:                          {configPropName: "tgdb.tls.verifyDBName", aliasName: "verifyDBName", defaultValue: "false", description: "Verify the Database name in the certificate. TGDB provides self signed certificate for easy-to-use SSL"},
+	TlsExpectedHostName:                            {configPropName: "tgdb.tls.expectedHostName", aliasName: "expectedHostName", defaultValue: "", description: "The expected hostName for the certificate. This is for future use"},
+	TlsTrustedCertificates:                         {configPropName: "tgdb.tls.trustedCertificates", aliasName: "trustedCertificates", defaultValue: "", description: "The list of trusted Certificates"},
+	KeyStorePassword:                               {configPropName: "tgdb.security.keyStorePassword", aliasName: "keyStorePassword", defaultValue: "", description: "The Keystore for the password"},
+	EnableConnectionTrace:                          {configPropName: "tgdb.connection.enableTrace", aliasName: "enableTrace", defaultValue: "false", description: "The flag for debugging purpose, to enable the commit trace"},
+	ConnectionTraceDir:                             {configPropName: "tgdb.connection.enableTraceDir", aliasName: "enableTraceDir", defaultValue: ".", description: "The base directory to hold commit trace log"},
+	InvalidName:                                    {configPropName: "", aliasName: "", defaultValue: "", description: ""},
 }
 
 // Make sure that the ConfigName implements the TGConfigName interface
@@ -111,10 +111,10 @@ var _ types.TGConfigName = (*ConfigName)(nil)
 
 func NewConfigName(name, alias string, value string) *ConfigName {
 	existingConfig := GetConfigFromName(name)
-	if existingConfig.PropName != "" && existingConfig.AliasName != "" {
+	if existingConfig.configPropName != "" && existingConfig.aliasName != "" {
 		return existingConfig
 	}
-	return &ConfigName{PropName: name, AliasName: alias, DefaultValue: value}
+	return &ConfigName{configPropName: name, aliasName: alias, defaultValue: value}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -133,10 +133,10 @@ func GetConfigFromKey(key int) *ConfigName {
 // GetConfigFromKey returns the TGConfigName for specified name
 func GetConfigFromName(name string) *ConfigName {
 	for _, config := range PreDefinedConfigurations {
-		if strings.ToLower(config.PropName) == strings.ToLower(name) {
+		if strings.ToLower(config.configPropName) == strings.ToLower(name) {
 			return &config
 		}
-		if (config.AliasName != "") && (strings.ToLower(config.AliasName) == strings.ToLower(name)) {
+		if (config.aliasName != "") && (strings.ToLower(config.aliasName) == strings.ToLower(name)) {
 			return &config
 		}
 	}
@@ -150,15 +150,25 @@ func GetConfigFromName(name string) *ConfigName {
 
 // GetAlias gets configuration Alias
 func (c *ConfigName) GetAlias() string {
-	return c.AliasName
+	return c.aliasName
 }
 
 // GetDefaultValue gets configuration Default Value
 func (c *ConfigName) GetDefaultValue() string {
-	return c.DefaultValue
+	return c.defaultValue
 }
 
 // GetName gets configuration name
 func (c *ConfigName) GetName() string {
-	return c.PropName
+	return c.configPropName
+}
+
+// GetDesc gets configuration description
+func (c *ConfigName) GetDesc() string {
+	return c.description
+}
+
+// SetDesc sets configuration description
+func (c *ConfigName) SetDesc(desc string) {
+	c.description = desc
 }

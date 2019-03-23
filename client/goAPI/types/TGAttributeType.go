@@ -114,28 +114,56 @@ const (
 )
 
 type AttributeType struct {
-	TypeId      int
-	TypeName    string
-	Implementor string
+	typeId      int
+	typeName    string
+	implementor string
 }
 
 var PreDefinedAttributeTypes = map[int]AttributeType{
-	AttributeTypeInvalid:   {TypeId: AttributeTypeInvalid, TypeName: "", Implementor: ""},
-	AttributeTypeBoolean:   {TypeId: AttributeTypeBoolean, TypeName: "bool", Implementor: "BooleanAttribute"},
-	AttributeTypeByte:      {TypeId: AttributeTypeByte, TypeName: "uint8", Implementor: "ByteAttribute"},
-	AttributeTypeChar:      {TypeId: AttributeTypeChar, TypeName: "byte", Implementor: "CharAttribute"},
-	AttributeTypeShort:     {TypeId: AttributeTypeShort, TypeName: "int16", Implementor: "ShortAttribute"},
-	AttributeTypeInteger:   {TypeId: AttributeTypeInteger, TypeName: "int", Implementor: "IntegerAttribute"},
-	AttributeTypeLong:      {TypeId: AttributeTypeLong, TypeName: "int64", Implementor: "LongAttribute"},
-	AttributeTypeFloat:     {TypeId: AttributeTypeFloat, TypeName: "float32", Implementor: "FloatAttribute"},
-	AttributeTypeDouble:    {TypeId: AttributeTypeDouble, TypeName: "float64", Implementor: "DoubleAttribute"},
-	AttributeTypeNumber:    {TypeId: AttributeTypeNumber, TypeName: "big.Int", Implementor: "NumberAttribute"},
-	AttributeTypeString:    {TypeId: AttributeTypeString, TypeName: "string", Implementor: "StringAttribute"},
-	AttributeTypeDate:      {TypeId: AttributeTypeDate, TypeName: "date", Implementor: "TimestampAttribute"},
-	AttributeTypeTime:      {TypeId: AttributeTypeTime, TypeName: "time", Implementor: "TimestampAttribute"},
-	AttributeTypeTimeStamp: {TypeId: AttributeTypeTimeStamp, TypeName: "time.Time", Implementor: "TimestampAttribute"},
-	AttributeTypeBlob:      {TypeId: AttributeTypeBlob, TypeName: "[]uint8", Implementor: "BlobAttribute"},
-	AttributeTypeClob:      {TypeId: AttributeTypeClob, TypeName: "[]rune", Implementor: "ClobAttribute"},
+	AttributeTypeInvalid:   {typeId: AttributeTypeInvalid, typeName: "", implementor: ""},
+	AttributeTypeBoolean:   {typeId: AttributeTypeBoolean, typeName: "bool", implementor: "BooleanAttribute"},
+	AttributeTypeByte:      {typeId: AttributeTypeByte, typeName: "uint8", implementor: "ByteAttribute"},
+	AttributeTypeChar:      {typeId: AttributeTypeChar, typeName: "byte", implementor: "CharAttribute"},
+	AttributeTypeShort:     {typeId: AttributeTypeShort, typeName: "int16", implementor: "ShortAttribute"},
+	AttributeTypeInteger:   {typeId: AttributeTypeInteger, typeName: "int", implementor: "IntegerAttribute"},
+	AttributeTypeLong:      {typeId: AttributeTypeLong, typeName: "int64", implementor: "LongAttribute"},
+	AttributeTypeFloat:     {typeId: AttributeTypeFloat, typeName: "float32", implementor: "FloatAttribute"},
+	AttributeTypeDouble:    {typeId: AttributeTypeDouble, typeName: "float64", implementor: "DoubleAttribute"},
+	AttributeTypeNumber:    {typeId: AttributeTypeNumber, typeName: "big.Int", implementor: "NumberAttribute"},
+	AttributeTypeString:    {typeId: AttributeTypeString, typeName: "string", implementor: "StringAttribute"},
+	AttributeTypeDate:      {typeId: AttributeTypeDate, typeName: "date", implementor: "TimestampAttribute"},
+	AttributeTypeTime:      {typeId: AttributeTypeTime, typeName: "time", implementor: "TimestampAttribute"},
+	AttributeTypeTimeStamp: {typeId: AttributeTypeTimeStamp, typeName: "time.Time", implementor: "TimestampAttribute"},
+	AttributeTypeBlob:      {typeId: AttributeTypeBlob, typeName: "[]uint8", implementor: "BlobAttribute"},
+	AttributeTypeClob:      {typeId: AttributeTypeClob, typeName: "[]rune", implementor: "ClobAttribute"},
+}
+
+////////////////////////////////////////
+// Helper functions for AttributeType //
+////////////////////////////////////////
+
+func (obj *AttributeType) GetTypeId() int {
+	return obj.typeId
+}
+
+func (obj *AttributeType) GetTypeName() string {
+	return obj.typeName
+}
+
+func (obj *AttributeType) GetImplementor() string {
+	return obj.implementor
+}
+
+func (obj *AttributeType) SetTypeId(id int) {
+	obj.typeId = id
+}
+
+func (obj *AttributeType) SetTypeName(name string) {
+	obj.typeName = name
+}
+
+func (obj *AttributeType) SetImplementor(impl string) {
+	obj.implementor = impl
 }
 
 // GetAttributeTypeFromId returns the TGAttributeType given its id
@@ -152,10 +180,11 @@ func GetAttributeTypeFromId(aType int) *AttributeType {
 // GetAttributeTypeFromName returns the TGAttributeType given its name
 func GetAttributeTypeFromName(aName string) *AttributeType {
 	for _, aType := range PreDefinedAttributeTypes {
-		if strings.ToLower(aType.TypeName) == strings.ToLower(aName) {
+		if strings.ToLower(aType.typeName) == strings.ToLower(aName) {
 			return &aType
 		}
 	}
 	invalid := PreDefinedAttributeTypes[AttributeTypeInvalid]
 	return &invalid
 }
+

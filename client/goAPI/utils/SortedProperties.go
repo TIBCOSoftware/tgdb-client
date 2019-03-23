@@ -110,7 +110,7 @@ type KvPair struct {
 type sortFunc func(p1, p2 *KvPair) bool
 
 type SortedProperties struct {
-	Properties   []*KvPair
+	properties   []*KvPair
 	sortHandlers []sortFunc // Intentionally kept Private
 	mutex        sync.Mutex // rw-lock for synchronizing read-n-update of env configuration
 }
@@ -130,7 +130,7 @@ var _ types.TGProperties = (*SortedProperties)(nil)
 
 func defaultSortedProperties() *SortedProperties {
 	return &SortedProperties{
-		Properties:   make([]*KvPair, 0),
+		properties:   make([]*KvPair, 0),
 		sortHandlers: make([]sortFunc, 0),
 	}
 }
@@ -161,7 +161,7 @@ func addProperty(obj *SortedProperties, name, value string) {
 	}
 	// NewTGDecimal Property
 	newKVPair := KvPair{KeyName: name, KeyValue: value}
-	obj.Properties = append(obj.Properties, &newKVPair)
+	obj.properties = append(obj.properties, &newKVPair)
 	//logger.Log(fmt.Sprintf("Returning SortedProperties:addProperty has properties as '%+v'", obj.Properties))
 }
 
@@ -174,9 +174,9 @@ func getProperty(obj *SortedProperties, conf types.TGConfigName, value string) s
 	}
 	//logger.Log(fmt.Sprintf("Inside SortedProperties:getProperty obj has properties as '%+v'\n", obj.Properties))
 	// Search whether incoming configName has an associated value in existing NV pairs or not
-	for _, kvp := range obj.Properties {
+	for _, kvp := range obj.properties {
 		//logger.Log(fmt.Sprintf("Inside SortedProperties:getProperty kvp as '%+v'\n", kvp)
-		if kvp.KeyName == cn.PropName || kvp.KeyName == cn.AliasName {
+		if kvp.KeyName == cn.GetName() || kvp.KeyName == cn.aliasName {
 			logger.Log(fmt.Sprintf("Inside SortedProperties:getProperty FOUND a config MATCH w/ kvp as '%+v'", kvp))
 			propVal = kvp.KeyValue
 			break
@@ -195,7 +195,7 @@ func setProperty(obj *SortedProperties, name, value string) {
 	// Check if the property already exists, if it does, just update the value, else insert it into the set
 	if DoesPropertyExist(obj, name) {
 		// Existing property - so set the new value
-		for _, kvp := range obj.Properties {
+		for _, kvp := range obj.properties {
 			if strings.ToLower(kvp.KeyName) != strings.ToLower(name) {
 				continue
 			}
@@ -211,7 +211,7 @@ func setProperty(obj *SortedProperties, name, value string) {
 
 func DoesPropertyExist(obj *SortedProperties, name string) bool {
 	//flogger.Log(fmt.Sprintf("Entering SortedProperties:DoesPropertyExist searching '%+v' in properties as '%+v'", name, obj.Properties))
-	for _, kvp := range obj.Properties {
+	for _, kvp := range obj.properties {
 		if strings.ToLower(kvp.KeyName) == strings.ToLower(name) {
 			//logger.Log(fmt.Sprintf("Returning SortedProperties:DoesPropertyExist as Property '%+v' Exists in properties as '%+v'", name, obj.Properties))
 			return true
@@ -234,7 +234,7 @@ func SetUserAndPassword(obj *SortedProperties, user, pwd string) types.TGError {
 }
 
 func (obj *SortedProperties) GetAllProperties() []*KvPair {
-	return obj.Properties
+	return obj.properties
 }
 
 func (obj *SortedProperties) SetUser(user string) types.TGError {
@@ -247,7 +247,7 @@ func (obj *SortedProperties) SetUser(user string) types.TGError {
 		user = u
 	}
 	// AddProperty either sets the property or adds it
-	obj.AddProperty(userConfig.PropName, user)
+	obj.AddProperty(userConfig.GetName(), user)
 	return nil
 }
 
@@ -258,7 +258,7 @@ func (obj *SortedProperties) SetPassword(pwd string) types.TGError {
 		pwd = p
 	}
 	// AddProperty either sets the property or adds it
-	obj.AddProperty(pwdConfig.PropName, pwd)
+	obj.AddProperty(pwdConfig.GetName(), pwd)
 	return nil
 }
 
@@ -280,11 +280,11 @@ func (obj *SortedProperties) SetPassword(pwd string) types.TGError {
 //}
 
 func (obj *SortedProperties) Len() int {
-	return len(obj.Properties)
+	return len(obj.properties)
 }
 
 func (obj *SortedProperties) Less(i, j int) bool {
-	p, q := obj.Properties[i], obj.Properties[j]
+	p, q := obj.properties[i], obj.properties[j]
 	// Try all but the last comparison.
 	var k int
 	for k = 0; k < len(obj.sortHandlers)-1; k++ {
@@ -307,12 +307,12 @@ func (obj *SortedProperties) Less(i, j int) bool {
 func (obj *SortedProperties) Sort(props []*KvPair) {
 	obj.mutex.Lock()
 	defer obj.mutex.Unlock()
-	obj.Properties = props
+	obj.properties = props
 	sort.Sort(obj)
 }
 
 func (obj *SortedProperties) Swap(i, j int) {
-	obj.Properties[i], obj.Properties[j] = obj.Properties[j], obj.Properties[i]
+	obj.properties[i], obj.properties[j] = obj.properties[j], obj.properties[i]
 }
 
 /////////////////////////////////////////////////////////////////
@@ -323,7 +323,7 @@ func (obj *SortedProperties) Swap(i, j int) {
 func (obj *SortedProperties) AddProperty(name, value string) {
 	addProperty(obj, name, value)
 	// Always return a sorted array of properties
-	orderedBy(obj, kvKey).Sort(obj.Properties)
+	orderedBy(obj, kvKey).Sort(obj.properties)
 	//logger.Log(fmt.Sprintf("Returning SortedProperties:AddProperty has properties as '%+v'", obj.Properties))
 }
 
@@ -370,5 +370,5 @@ func (obj *SortedProperties) GetPropertyAsLong(conf types.TGConfigName) int64 {
 func (obj *SortedProperties) SetProperty(name, value string) {
 	setProperty(obj, name, value)
 	// Always return a sorted array of properties
-	orderedBy(obj, kvKey).Sort(obj.Properties)
+	orderedBy(obj, kvKey).Sort(obj.properties)
 }

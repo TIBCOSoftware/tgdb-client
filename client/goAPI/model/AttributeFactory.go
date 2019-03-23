@@ -76,7 +76,7 @@ func CreateAttributeByType(attrTypeId int) (types.TGAttribute, types.TGError) {
 		fallthrough
 	default:
 		//if type is invalid, return an error
-		errMsg := fmt.Sprintf("AttributeTypeInvalid Attribute Type '%s'", types.GetAttributeTypeFromId(inputAttrTypeId).TypeName)
+		errMsg := fmt.Sprintf("AttributeTypeInvalid Attribute Type '%s'", types.GetAttributeTypeFromId(inputAttrTypeId).GetTypeName())
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	return nil, nil
@@ -139,7 +139,7 @@ func CreateAttribute(attrDesc *AttributeDescriptor) (types.TGAttribute, types.TG
 		fallthrough
 	default:
 		//if type is invalid, return an error
-		errMsg := fmt.Sprintf("AttributeTypeInvalid Attribute Type '%s'", types.GetAttributeTypeFromId(inputAttrTypeId).TypeName)
+		errMsg := fmt.Sprintf("AttributeTypeInvalid Attribute Type '%s'", types.GetAttributeTypeFromId(inputAttrTypeId).GetTypeName())
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	return newAttribute, nil
@@ -202,7 +202,7 @@ func CreateAttributeWithDesc(attrOwner types.TGEntity, attrDesc *AttributeDescri
 		fallthrough
 	default:
 		//if type is invalid, return an error
-		errMsg := fmt.Sprintf("AttributeTypeInvalid Attribute Type '%s'", types.GetAttributeTypeFromId(inputAttrTypeId).TypeName)
+		errMsg := fmt.Sprintf("AttributeTypeInvalid Attribute Type '%s'", types.GetAttributeTypeFromId(inputAttrTypeId).GetTypeName())
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	return newAttribute, nil

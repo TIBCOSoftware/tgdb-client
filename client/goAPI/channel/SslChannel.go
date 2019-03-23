@@ -60,16 +60,16 @@ func DefaultSSLChannel() *SSLChannel {
 	newChannel.output = iostream.NewProtocolDataOutputStream(0)
 	//newChannel.reconnecting = false
 	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
-	newChannel.Reader = NewChannelReader(&newChannel)
+	newChannel.reader = NewChannelReader(&newChannel)
 	return &newChannel
 }
 
 func NewSSLChannel(linkUrl *LinkUrl, props *utils.SortedProperties) (*SSLChannel, types.TGError) {
 	//logger.Log(fmt.Sprintf("======> Entering SSLChannel:NewSSLChannel w/ linkUrl: '%s'", linkUrl.String()))
 	newChannel := DefaultSSLChannel()
-	newChannel.ChannelUrl = linkUrl
-	newChannel.PrimaryUrl = linkUrl
-	newChannel.ChannelProperties = props
+	newChannel.channelUrl = linkUrl
+	newChannel.primaryUrl = linkUrl
+	newChannel.channelProperties = props
 	config, err := initTLSConfig(props)
 	if err != nil {
 		return nil, err
@@ -221,8 +221,8 @@ func (obj *SSLChannel) doAuthenticate() types.TGError {
 		return err
 	}
 
-	msgRequest.(*pdu.AuthenticateRequestMessage).SetClientId(obj.ClientId)
-	msgRequest.(*pdu.AuthenticateRequestMessage).SetInboxAddr(obj.InboxAddress)
+	msgRequest.(*pdu.AuthenticateRequestMessage).SetClientId(obj.clientId)
+	msgRequest.(*pdu.AuthenticateRequestMessage).SetInboxAddr(obj.inboxAddress)
 	msgRequest.(*pdu.AuthenticateRequestMessage).SetUserName(obj.getChannelUserName())
 	msgRequest.(*pdu.AuthenticateRequestMessage).SetPassword(obj.getChannelPassword())
 
@@ -239,7 +239,9 @@ func (obj *SSLChannel) doAuthenticate() types.TGError {
 	}
 
 	obj.setChannelAuthToken(msgResponse.GetAuthToken())
+	// TODO: Uncomment once DataCryptoGrapher is implemented
 	obj.setChannelSessionId(msgResponse.GetSessionId())
+	//obj.setDataCryptographer(NewDataCryptoGrapher(msgResponse.GetSessionId(), msgResponse.(*pdu.AuthenticateResponseMessage).GetServerCertBuffer()))
 	logger.Log(fmt.Sprintf("======> Returning SSLChannel:doAuthenticate Successfully authenticated for user: '%s'", obj.getChannelUserName()))
 	return nil
 }
@@ -268,14 +270,14 @@ func (obj *SSLChannel) performHandshake(sslMode bool) types.TGError {
 			errMsg := msgResponse.(*pdu.SessionForcefullyTerminatedMessage).GetKillString()
 			return exception.NewTGChannelDisconnectedWithMsg(errMsg)
 		}
-		errMsg := fmt.Sprintf("Expecting a HandshakeResponse message, and received: '%d'. Cannot connect to the server at: '%s'", msgResponse.GetVerbId(), obj.ChannelUrl.GetUrlAsString())
+		errMsg := fmt.Sprintf("Expecting a HandshakeResponse message, and received: '%d'. Cannot connect to the server at: '%s'", msgResponse.GetVerbId(), obj.channelUrl.GetUrlAsString())
 		return exception.NewTGGeneralException(types.TGDB_HNDSHKRESP_ERROR, types.TGErrorGeneralException, errMsg, "")
 	}
 
 	response := msgResponse.(*pdu.HandShakeResponseMessage)
 	if response.GetResponseStatus() != pdu.ResponseAcceptChallenge {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::performHandshake response.GetResponseStatus() is NOT pdu.ResponseAcceptChallenge"))
-		errMsg := fmt.Sprintf("'%s': Handshake Failed. Cannot connect to the server at: '%s'", types.TGDB_HNDSHKRESP_ERROR, obj.ChannelUrl.GetUrlAsString())
+		errMsg := fmt.Sprintf("'%s': Handshake Failed. Cannot connect to the server at: '%s'", types.TGDB_HNDSHKRESP_ERROR, obj.channelUrl.GetUrlAsString())
 		return exception.NewTGGeneralException(types.TGDB_HNDSHKRESP_ERROR, types.TGErrorGeneralException, errMsg, "")
 	}
 
@@ -309,14 +311,14 @@ func (obj *SSLChannel) performHandshake(sslMode bool) types.TGError {
 			errMsg := msgResponse.(*pdu.SessionForcefullyTerminatedMessage).GetKillString()
 			return exception.NewTGChannelDisconnectedWithMsg(errMsg)
 		}
-		errMsg := fmt.Sprintf("Expecting a HandshakeResponse message, and received: '%d'. Cannot connect to the server at: '%s'", msgResponse.GetVerbId(), obj.ChannelUrl.GetUrlAsString())
+		errMsg := fmt.Sprintf("Expecting a HandshakeResponse message, and received: '%d'. Cannot connect to the server at: '%s'", msgResponse.GetVerbId(), obj.channelUrl.GetUrlAsString())
 		return exception.NewTGGeneralException(types.TGDB_HNDSHKRESP_ERROR, types.TGErrorGeneralException, errMsg, "")
 	}
 
 	response = msgResponse.(*pdu.HandShakeResponseMessage)
 	if response.GetResponseStatus() != pdu.ResponseProceedWithAuthentication {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::performHandshake response.GetResponseStatus() is NOT pdu.ResponseAcceptChallenge"))
-		errMsg := fmt.Sprintf("'%s': Handshake Failed. Cannot connect to the server at: '%s'", types.TGDB_HNDSHKRESP_ERROR, obj.ChannelUrl.GetUrlAsString())
+		errMsg := fmt.Sprintf("'%s': Handshake Failed. Cannot connect to the server at: '%s'", types.TGDB_HNDSHKRESP_ERROR, obj.channelUrl.GetUrlAsString())
 		return exception.NewTGGeneralException(types.TGDB_HNDSHKRESP_ERROR, types.TGErrorGeneralException, errMsg, "")
 	}
 	logger.Log(fmt.Sprintf("======> Returning SSLChannel::performHandshake Handshake w/ Remote Server is successful."))
@@ -514,7 +516,7 @@ func (obj *SSLChannel) Connect() types.TGError {
 
 // DisablePing disables the pinging ability to the channel
 func (obj *SSLChannel) DisablePing() {
-	obj.NeedsPing = false
+	obj.needsPing = false
 }
 
 // Disconnect disconnects the channel from its URL end point
@@ -524,7 +526,7 @@ func (obj *SSLChannel) Disconnect() types.TGError {
 
 // EnablePing enables the pinging ability to the channel
 func (obj *SSLChannel) EnablePing() {
-	obj.NeedsPing = true
+	obj.needsPing = true
 }
 
 // ExceptionLock locks the communication channel between TGDB client and server in case of business exceptions
@@ -539,22 +541,22 @@ func (obj *SSLChannel) ExceptionUnlock() {
 
 // GetAuthToken gets Authorization Token
 func (obj *SSLChannel) GetAuthToken() int64 {
-	return obj.AuthToken
+	return obj.authToken
 }
 
 // GetClientId gets Client Name
 func (obj *SSLChannel) GetClientId() string {
-	return obj.ClientId
+	return obj.clientId
 }
 
 // GetChannelURL gets the Channel URL
 func (obj *SSLChannel) GetChannelURL() types.TGChannelUrl {
-	return obj.ChannelUrl
+	return obj.channelUrl
 }
 
 // GetConnectionIndex gets the Connection Index
 func (obj *SSLChannel) GetConnectionIndex() int {
-	return obj.ConnectionIndex
+	return obj.connectionIndex
 }
 
 // GetExceptionCondition gets the Exception Condition
@@ -564,42 +566,42 @@ func (obj *SSLChannel) GetExceptionCondition() *sync.Cond {
 
 // GetLinkState gets the Link/Channel State
 func (obj *SSLChannel) GetLinkState() types.LinkState {
-	return obj.LinkState
+	return obj.channelLinkState
 }
 
 // GetNoOfConnections gets number of connections this channel has
 func (obj *SSLChannel) GetNoOfConnections() int32 {
-	return obj.NumOfConnections
+	return obj.numOfConnections
 }
 
 // GetPrimaryURL gets the Primary URL
 func (obj *SSLChannel) GetPrimaryURL() types.TGChannelUrl {
-	return obj.PrimaryUrl
+	return obj.primaryUrl
 }
 
 // GetProperties gets the Channel Properties
 func (obj *SSLChannel) GetProperties() types.TGProperties {
-	return obj.ChannelProperties
+	return obj.channelProperties
 }
 
 // GetReader gets the Channel Reader
 func (obj *SSLChannel) GetReader() types.TGChannelReader {
-	return obj.Reader
+	return obj.reader
 }
 
 // GetResponses gets the Channel Response Map
 func (obj *SSLChannel) GetResponses() map[int64]types.TGChannelResponse {
-	return obj.Responses
+	return obj.responses
 }
 
 // GetSessionId gets Session id
 func (obj *SSLChannel) GetSessionId() int64 {
-	return obj.SessionId
+	return obj.sessionId
 }
 
 // IsChannelPingable checks whether the channel is pingable or not
 func (obj *SSLChannel) IsChannelPingable() bool {
-	return obj.NeedsPing
+	return obj.needsPing
 }
 
 // IsClosed checks whether channel is open or closed
@@ -618,27 +620,27 @@ func (obj *SSLChannel) SendRequest(msg types.TGMessage, response types.TGChannel
 
 // SetChannelLinkState sets the Link/Channel State
 func (obj *SSLChannel) SetChannelLinkState(state types.LinkState) {
-	obj.LinkState = state
+	obj.channelLinkState = state
 }
 
 // SetChannelURL sets the channel URL
 func (obj *SSLChannel) SetChannelURL(url types.TGChannelUrl) {
-	obj.ChannelUrl = url.(*LinkUrl)
+	obj.channelUrl = url.(*LinkUrl)
 }
 
 // SetConnectionIndex sets the connection index
 func (obj *SSLChannel) SetConnectionIndex(index int) {
-	obj.ConnectionIndex = index
+	obj.connectionIndex = index
 }
 
 // SetNoOfConnections sets number of connections
 func (obj *SSLChannel) SetNoOfConnections(count int32) {
-	obj.NumOfConnections = count
+	obj.numOfConnections = count
 }
 
 // SetResponse sets the ChannelResponse Map
 func (obj *SSLChannel) SetResponse(reqId int64, response types.TGChannelResponse) {
-	obj.Responses[reqId] = response
+	obj.responses[reqId] = response
 }
 
 // Start starts the channel so that it can send and receive messages
@@ -672,8 +674,8 @@ func (obj *SSLChannel) CreateSocket() types.TGError {
 	defer obj.shutdownLock.Unlock()
 
 	obj.SetChannelLinkState(types.LinkNotConnected)
-	host := obj.ChannelUrl.urlHost
-	port := obj.ChannelUrl.urlPort
+	host := obj.channelUrl.urlHost
+	port := obj.channelUrl.urlPort
 	serverAddr := fmt.Sprintf("%s:%d", host, port)
 	logger.Log(fmt.Sprintf("======> Inside SSLChannel:CreateSocket attempting to resolve address for '%s'", serverAddr))
 
@@ -809,7 +811,7 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 		// TODO: Revisit later - Should we not return an error?
 		return nil, nil
 	}
-	obj.LastActiveTime = time.Now()
+	obj.lastActiveTime = time.Now()
 
 	// Read the data on the socket
 	buff := make([]byte, dataBufferSize)

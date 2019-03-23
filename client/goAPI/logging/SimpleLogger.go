@@ -167,7 +167,7 @@ type Logger struct {
 
 func defaultLogger() *Logger {
 	ml := Logger{
-		level: types.DebugLog,
+		level: types.DefaultLogLevel,
 		//level: types.InfoLog,	// TODO: For Debugging Purpose Only - Delete It
 		log: log.New(os.Stdout, types.DefaultLogPrefix, types.DefaultLogFlags),
 	}

@@ -54,7 +54,7 @@ func DefaultGetEntityResponseMessage() *GetEntityResponseMessage {
 	newMsg.resultId = 0
 	newMsg.totalCount = 0
 	newMsg.resultCount = 0
-	newMsg.VerbId = VerbGetEntityResponse
+	newMsg.verbId = VerbGetEntityResponse
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -62,8 +62,8 @@ func DefaultGetEntityResponseMessage() *GetEntityResponseMessage {
 // Create a new message instance
 func NewGetEntityResponseMessage(authToken, sessionId int64) *GetEntityResponseMessage {
 	newMsg := DefaultGetEntityResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -331,8 +331,8 @@ func (msg *GetEntityResponseMessage) WritePayload(os types.TGOutputStream) types
 func (msg *GetEntityResponseMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.hasResult, msg.resultId, msg.totalCount, msg.resultCount)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.hasResult, msg.resultId, msg.totalCount, msg.resultCount)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GetEntityResponseMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -348,8 +348,8 @@ func (msg *GetEntityResponseMessage) MarshalBinary() ([]byte, error) {
 func (msg *GetEntityResponseMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.hasResult, &msg.resultId, &msg.totalCount, &msg.resultCount)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GetEntityResponseMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))

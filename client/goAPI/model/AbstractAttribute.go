@@ -44,10 +44,10 @@ const (
 //var gLogger = TGLogManager.getInstance().getLogger()
 
 type AbstractAttribute struct {
-	Owner      types.TGEntity
-	AttrDesc   *AttributeDescriptor
-	AttrValue  interface{}
-	IsModified bool
+	owner      types.TGEntity
+	attrDesc   *AttributeDescriptor
+	attrValue  interface{}
+	isModified bool
 }
 
 // Create New Attribute Instance
@@ -58,28 +58,28 @@ func defaultNewAbstractAttribute() *AbstractAttribute {
 	gob.Register(AbstractAttribute{})
 
 	newAttribute := AbstractAttribute{
-		AttrDesc:   DefaultAttributeDescriptor(),
-		IsModified: false,
+		attrDesc:   DefaultAttributeDescriptor(),
+		isModified: false,
 	}
 	return &newAttribute
 }
 
 func NewAbstractAttributeWithOwner(ownerEntity types.TGEntity) *AbstractAttribute {
 	newAttribute := defaultNewAbstractAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewAbstractAttribute(attrDesc *AttributeDescriptor) *AbstractAttribute {
 	newAttribute := defaultNewAbstractAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewAbstractAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *AbstractAttribute {
 	newAttribute := NewAbstractAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -117,11 +117,11 @@ func interfaceDecode(dec *gob.Decoder) types.TGAttribute {
 }
 
 func (obj *AbstractAttribute) getAttributeDescriptor() *AttributeDescriptor {
-	return obj.AttrDesc
+	return obj.attrDesc
 }
 
 func (obj *AbstractAttribute) getIsModified() bool {
-	return obj.IsModified
+	return obj.isModified
 }
 
 func (obj *AbstractAttribute) getName() string {
@@ -129,27 +129,27 @@ func (obj *AbstractAttribute) getName() string {
 }
 
 func (obj *AbstractAttribute) getOwner() types.TGEntity {
-	return obj.Owner
+	return obj.owner
 }
 
 func (obj *AbstractAttribute) getValue() interface{} {
-	return obj.AttrValue
+	return obj.attrValue
 }
 
 func (obj *AbstractAttribute) isNull() bool {
-	return obj.AttrValue == nil
+	return obj.attrValue == nil
 }
 
 func (obj *AbstractAttribute) resetIsModified() {
-	obj.IsModified = false
+	obj.isModified = false
 }
 
 func (obj *AbstractAttribute) setIsModified(flag bool) {
-	obj.IsModified = flag
+	obj.isModified = flag
 }
 
 func (obj *AbstractAttribute) setOwner(ownerEntity types.TGEntity) {
-	obj.Owner = ownerEntity
+	obj.owner = ownerEntity
 }
 
 func (obj *AbstractAttribute) setValue(value interface{}) types.TGError {
@@ -168,8 +168,8 @@ func (obj *AbstractAttribute) setValue(value interface{}) types.TGError {
 	//}
 	//obj.setValueWithPrecisionAndScale(value, precision, scale)
 
-	obj.AttrValue = value
-	obj.IsModified = true
+	obj.attrValue = value
+	obj.isModified = true
 	return nil
 }
 
@@ -177,9 +177,9 @@ func (obj *AbstractAttribute) attributeToString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("AbstractAttribute:{")
 	//buffer.WriteString(fmt.Sprintf("Owner: %+v ", obj.Owner))
-	buffer.WriteString(fmt.Sprintf("AttrDesc: %s", obj.AttrDesc.String()))
-	buffer.WriteString(fmt.Sprintf(", AttrValue: %+v", obj.AttrValue))
-	buffer.WriteString(fmt.Sprintf(", IsModified: %+v", obj.IsModified))
+	buffer.WriteString(fmt.Sprintf("AttrDesc: %s", obj.attrDesc.String()))
+	buffer.WriteString(fmt.Sprintf(", AttrValue: %+v", obj.attrValue))
+	buffer.WriteString(fmt.Sprintf(", IsModified: %+v", obj.isModified))
 	buffer.WriteString("}")
 	return buffer.String()
 }
@@ -237,7 +237,7 @@ func AbstractAttributeReadExternal(obj types.TGAttribute, is types.TGInputStream
 	}
 	logger.Log(fmt.Sprintf("AbstractAttribute::AbstractAttributeReadExternal - read isnull: '%+v'", isNull))
 	if isNull {
-		obj.(*AbstractAttribute).AttrValue = nil
+		obj.(*AbstractAttribute).attrValue = nil
 		return nil
 	}
 	logger.Log(fmt.Sprint("Returning AbstractAttribute::AbstractAttributeReadExternal after reading the attribute value"))
@@ -343,7 +343,7 @@ func (obj *AbstractAttribute) WriteExternal(os types.TGOutputStream) types.TGErr
 func (obj *AbstractAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -358,7 +358,7 @@ func (obj *AbstractAttribute) MarshalBinary() ([]byte, error) {
 func (obj *AbstractAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

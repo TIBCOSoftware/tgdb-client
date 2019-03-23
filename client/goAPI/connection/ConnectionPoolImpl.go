@@ -61,10 +61,10 @@ type ConnectionPoolImpl struct {
 	connectReserveTimeOut time.Duration
 	connList              []*TGDBConnection // Total Available Connections (Active + Dead/ToBeReused)
 	connType              TypeConnection
-	ConnPool              chan *TGDBConnection
+	chanPool              chan *TGDBConnection
 	poolProperties        *utils.SortedProperties
 	consumers             map[int64]*TGDBConnection           // Active/In-Use Connections
-	ExceptionListener     types.TGConnectionExceptionListener // Function Pointer
+	exceptionListener     types.TGConnectionExceptionListener // Function Pointer
 	poolSize              int
 	poolState             int
 	useDedicateChannel    bool
@@ -97,7 +97,7 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 	logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool w/ Default Connection Pool: '%s'", cp.String()))
 	cp.connType = connType
 	cp.poolProperties = props
-	cp.ConnPool = make(chan *TGDBConnection, poolSize+2)
+	cp.chanPool = make(chan *TGDBConnection, poolSize+2)
 	cp.poolSize = poolSize
 	timeoutStr := utils.GetConfigFromKey(utils.ConnectionReserveTimeoutSeconds).GetDefaultValue()
 	if timeoutStr == Immediate {
@@ -137,8 +137,8 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 		conn.SetConnectionProperties(props)
 		// Add it in the pool to initialize the pool with a set number of initialized connections
 		cp.connList = append(cp.connList, conn)
-		//logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to add Conn: '%+v' to the pool", conn.String()))
-		cp.ConnPool <- conn
+		//logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to add conn: '%+v' to the pool", conn.String()))
+		cp.chanPool <- conn
 	} // End of For loop for Pool Size
 	cp.poolState = ConnectionPoolInitialized
 	logger.Log(fmt.Sprintf("Returning ConnectionPoolImpl:NewTGConnectionPool w/ Connection Pool: '%s'", cp.String()))
@@ -198,7 +198,7 @@ func (obj *ConnectionPoolImpl) GetConnection() (types.TGConnection, types.TGErro
 	var conn *TGDBConnection
 	// Search through all available connections within the pooled set to find out which one is free to service next
 	select {
-	case conn = <-obj.ConnPool:
+	case conn = <-obj.chanPool:
 		//logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl::GetConnection about to verify the state of the connection: '%+v' pulled from obj.ConnPool:", conn))
 		// Proceed with the connection that is NOT being used already a.k.a. part of consumer connection map
 		if _, ok := obj.consumers[conn.GetConnectionId()]; !ok {
@@ -314,7 +314,7 @@ func (obj *ConnectionPoolImpl) ReleaseConnection(conn types.TGConnection) (types
 	logger.Log(fmt.Sprint("Inside ConnectionPoolImpl::ReleaseConnection Consumer Loop about to remove connection from consumer list"))
 	delete(obj.consumers, conn.(*TGDBConnection).GetConnectionId())
 	logger.Log(fmt.Sprint("Inside ConnectionPoolImpl::ReleaseConnection Consumer Loop about to return connection to obj.ConnPool"))
-	obj.ConnPool <- conn.(*TGDBConnection)
+	obj.chanPool <- conn.(*TGDBConnection)
 
 	logger.Log(fmt.Sprint("Returning ConnectionPoolImpl:ReleaseConnection"))
 	return obj, nil
@@ -322,7 +322,7 @@ func (obj *ConnectionPoolImpl) ReleaseConnection(conn types.TGConnection) (types
 
 // SetExceptionListener sets exception listener
 func (obj *ConnectionPoolImpl) SetExceptionListener(listener types.TGConnectionExceptionListener) {
-	obj.ExceptionListener = listener
+	obj.exceptionListener = listener
 }
 
 func (obj *ConnectionPoolImpl) String() string {
@@ -331,7 +331,7 @@ func (obj *ConnectionPoolImpl) String() string {
 	buffer.WriteString(fmt.Sprintf("ConnectReserveTimeOut: %+v", obj.connectReserveTimeOut))
 	buffer.WriteString(fmt.Sprintf(", ConnType: %+v", obj.connType))
 	buffer.WriteString(fmt.Sprintf(", ConnList: %+v", obj.connList))
-	buffer.WriteString(fmt.Sprintf(", ConnPool: %+v", obj.ConnPool))
+	buffer.WriteString(fmt.Sprintf(", ConnPool: %+v", obj.chanPool))
 	//buffer.WriteString(fmt.Sprintf(", PoolProperties: %+v", obj.poolProperties))
 	buffer.WriteString(fmt.Sprintf(", Consumers: %+v", obj.consumers))
 	buffer.WriteString(fmt.Sprintf(", PoolSize: %d", obj.poolSize))

@@ -42,7 +42,7 @@ func CreateTestGraphEntity() *Graph {
 	attrMap["Bool"] = boolAttr
 	attrMap["Integer"] = intAttr
 	attrMap["String"] = strAttr
-	newGraphEntity.Attributes = attrMap
+	newGraphEntity.attributes = attrMap
 	return newGraphEntity
 }
 

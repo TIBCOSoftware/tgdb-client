@@ -34,7 +34,9 @@ import (
 
 type AuthenticateResponseMessage struct {
 	*AbstractProtocolMessage
-	successFlag bool
+	successFlag      bool
+	errorStatus      int
+	serverCertBuffer []byte
 }
 
 func DefaultAuthenticateResponseMessage() *AuthenticateResponseMessage {
@@ -47,9 +49,9 @@ func DefaultAuthenticateResponseMessage() *AuthenticateResponseMessage {
 		AbstractProtocolMessage: DefaultAbstractProtocolMessage(),
 		successFlag:             false,
 	}
-	newMsg.AuthToken = -1
-	newMsg.SessionId = -1
-	newMsg.VerbId = VerbAuthenticateResponse
+	newMsg.authToken = -1
+	newMsg.sessionId = -1
+	newMsg.verbId = VerbAuthenticateResponse
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -57,8 +59,8 @@ func DefaultAuthenticateResponseMessage() *AuthenticateResponseMessage {
 // Create New Message Instance
 func NewAuthenticateResponseMessage(authToken, sessionId int64) *AuthenticateResponseMessage {
 	newMsg := DefaultAuthenticateResponseMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -67,8 +69,20 @@ func NewAuthenticateResponseMessage(authToken, sessionId int64) *AuthenticateRes
 // Helper functions for AuthenticateResponseMessage
 /////////////////////////////////////////////////////////////////
 
+func (msg *AuthenticateResponseMessage) GetServerCertBuffer() []byte {
+	return msg.serverCertBuffer
+}
+
 func (msg *AuthenticateResponseMessage) IsSuccess() bool {
 	return msg.successFlag
+}
+
+func (msg *AuthenticateResponseMessage) SetErrorStatus(status int) {
+	msg.errorStatus = status
+}
+
+func (msg *AuthenticateResponseMessage) SetServerCertBuffer(buffer []byte) {
+	msg.serverCertBuffer = buffer
 }
 
 func (msg *AuthenticateResponseMessage) SetSuccess(flag bool) {
@@ -212,6 +226,8 @@ func (msg *AuthenticateResponseMessage) String() string {
 	buffer.WriteString("AuthenticateResponseMessage:{")
 	buffer.WriteString(fmt.Sprintf("SuccessFlag: %+v", msg.successFlag))
 	buffer.WriteString(fmt.Sprintf(", BufLength: %d", msg.BufLength))
+	buffer.WriteString(fmt.Sprintf(", ErrorStatus: %+v", msg.errorStatus))
+	//buffer.WriteString(fmt.Sprintf(", ServerCertBuffer: %+v", msg.serverCertBuffer))
 	strArray := []string{buffer.String(), msg.messageToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return  msgStr
@@ -244,6 +260,16 @@ func (msg *AuthenticateResponseMessage) ReadPayload(is types.TGInputStream) type
 	}
 	logger.Log(fmt.Sprintf("AuthenticateResponseMessage:ReadPayload read bSuccess as '%+v'", bSuccess))
 
+	if !bSuccess {
+		errorStatus, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading errorStatus from message buffer"))
+			return err
+		}
+		logger.Log(fmt.Sprintf("AuthenticateResponseMessage:ReadPayload read errorStatus as '%+v'", errorStatus))
+		msg.SetErrorStatus(errorStatus)
+	}
+
 	authToken, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading authToken from message buffer"))
@@ -258,9 +284,17 @@ func (msg *AuthenticateResponseMessage) ReadPayload(is types.TGInputStream) type
 	}
 	logger.Log(fmt.Sprintf("AuthenticateResponseMessage:ReadPayload read sessionId as '%+v'", sessionId))
 
+	certBuffer, err := is.(*iostream.ProtocolDataInputStream).ReadBytes()
+	if err != nil {
+		logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading certBuffer from message buffer"))
+		return err
+	}
+	logger.Log(fmt.Sprintf("AuthenticateResponseMessage:ReadPayload read certBuffer as '%+v'", certBuffer))
+
 	msg.SetSuccess(bSuccess)
 	msg.SetAuthToken(authToken)
 	msg.SetSessionId(sessionId)
+	msg.SetServerCertBuffer(certBuffer)
 	logger.Log(fmt.Sprint("Returning AuthenticateResponseMessage:ReadPayload"))
 	return nil
 }
@@ -285,8 +319,8 @@ func (msg *AuthenticateResponseMessage) WritePayload(os types.TGOutputStream) ty
 func (msg *AuthenticateResponseMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.AuthToken, msg.SessionId, msg.DataOffset, msg.IsUpdatable, msg.successFlag)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable, msg.successFlag, msg.errorStatus, msg.serverCertBuffer)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AuthenticateResponseMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -302,8 +336,9 @@ func (msg *AuthenticateResponseMessage) MarshalBinary() ([]byte, error) {
 func (msg *AuthenticateResponseMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.AuthToken, &msg.SessionId, &msg.DataOffset, &msg.IsUpdatable, &msg.successFlag)
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.authToken, &msg.sessionId, &msg.dataOffset, &msg.isUpdatable,
+		&msg.successFlag, &msg.errorStatus, &msg.serverCertBuffer)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AuthenticateResponseMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

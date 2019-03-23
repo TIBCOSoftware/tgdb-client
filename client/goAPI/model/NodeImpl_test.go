@@ -42,7 +42,7 @@ func CreateTestNodeEntity() *Node {
 	attrMap["Bool"] = boolAttr
 	attrMap["Integer"] = intAttr
 	attrMap["String"] = strAttr
-	newNodeEntity.Attributes = attrMap
+	newNodeEntity.attributes = attrMap
 	return newNodeEntity
 }
 

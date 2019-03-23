@@ -52,20 +52,20 @@ func DefaultClobAttribute() *ClobAttribute {
 
 func NewClobAttributeWithOwner(ownerEntity types.TGEntity) *ClobAttribute {
 	newAttribute := DefaultClobAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewClobAttribute(attrDesc *AttributeDescriptor) *ClobAttribute {
 	newAttribute := DefaultClobAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewClobAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *ClobAttribute {
 	newAttribute := NewClobAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -76,7 +76,7 @@ func NewClobAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDes
 func (obj *ClobAttribute) getValueAsBytes() ([]byte, types.TGError) {
 	var network bytes.Buffer
 	enc := gob.NewEncoder(&network)
-	err := enc.Encode(obj.AttrValue)
+	err := enc.Encode(obj.attrValue)
 	if err != nil {
 		errMsg := "ClobAttribute::getValueAsBytes - Unable to encode attribute value"
 		return nil, exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.Error())
@@ -92,10 +92,10 @@ func (obj *ClobAttribute) getValueAsBytes() ([]byte, types.TGError) {
 }
 
 func (obj *ClobAttribute) SetCharBuffer(b string) {
-	if !obj.IsNull() && obj.AttrValue == b {
+	if !obj.IsNull() && obj.attrValue == b {
 		return
 	}
-	obj.AttrValue = []byte(b)
+	obj.attrValue = []byte(b)
 	obj.setIsModified(true)
 }
 
@@ -149,11 +149,11 @@ func (obj *ClobAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
 		//errMsg := fmt.Sprintf("Attribute value is required")
 		//return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 	// TODO: Revisit later
@@ -188,14 +188,14 @@ func (obj *ClobAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("BlobAttribute::ReadValue - read entityId: '%+v'", entityId))
-	obj.EntityId = entityId
-	obj.IsCached = false
+	obj.entityId = entityId
+	obj.isCached = false
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *ClobAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	if obj.AttrValue == nil {
+	if obj.attrValue == nil {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(false)
 	} else {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(true)
@@ -218,8 +218,8 @@ func (obj *ClobAttribute) WriteValue(os types.TGOutputStream) types.TGError {
 func (obj *ClobAttribute) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("ClobAttribute:{")
-	buffer.WriteString(fmt.Sprintf("EntityId: %+v", obj.EntityId))
-	buffer.WriteString(fmt.Sprintf(", IsCached: %+v", obj.IsCached))
+	buffer.WriteString(fmt.Sprintf("EntityId: %+v", obj.entityId))
+	buffer.WriteString(fmt.Sprintf(", IsCached: %+v", obj.isCached))
 	strArray := []string{buffer.String(), obj.attributeToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return  msgStr
@@ -269,7 +269,7 @@ func (obj *ClobAttribute) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *ClobAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified, obj.EntityId, obj.IsCached)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified, obj.entityId, obj.isCached)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ClobAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -284,7 +284,7 @@ func (obj *ClobAttribute) MarshalBinary() ([]byte, error) {
 func (obj *ClobAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified, &obj.EntityId, &obj.IsCached)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified, &obj.entityId, &obj.isCached)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ClobAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

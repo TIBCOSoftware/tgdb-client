@@ -121,7 +121,7 @@ func (obj *AttributeDescriptor) String() string {
 	buffer.WriteString(fmt.Sprintf("SysType: %d", obj.sysType))
 	buffer.WriteString(fmt.Sprintf(", AttributeId: %d", obj.attributeId))
 	buffer.WriteString(fmt.Sprintf(", Name: %s", obj.name))
-	buffer.WriteString(fmt.Sprintf(", AttrType: %s", types.GetAttributeTypeFromId(obj.attrType).TypeName))
+	buffer.WriteString(fmt.Sprintf(", AttrType: %s", types.GetAttributeTypeFromId(obj.attrType).GetTypeName()))
 	buffer.WriteString(fmt.Sprintf(", IsArray: %+v", obj.isArray))
 	buffer.WriteString(fmt.Sprintf(", Precision: %+v", obj.precision))
 	buffer.WriteString(fmt.Sprintf(", Scale: %+v", obj.scale))

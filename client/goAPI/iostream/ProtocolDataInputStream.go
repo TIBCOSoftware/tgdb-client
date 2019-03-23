@@ -55,12 +55,12 @@ func main() {
 var logger = logging.DefaultTGLogManager().GetLogger()
 
 type ProtocolDataInputStream struct {
-	mark		 int	// Private Internal Marker - Not to be serialized / de-serialized
-	Buf          []byte
-	BufLen       int
-	CurPos       int
-	Encoding     string
-	ReferenceMap map[int64]types.TGEntity
+	mark                int	// Private Internal Marker - Not to be serialized / de-serialized
+	Buf                 []byte
+	BufLen              int
+	iStreamCurPos       int
+	iStreamEncoding     string
+	iStreamReferenceMap map[int64]types.TGEntity
 }
 
 func DefaultProtocolDataInputStream() *ProtocolDataInputStream {
@@ -70,11 +70,11 @@ func DefaultProtocolDataInputStream() *ProtocolDataInputStream {
 	gob.Register(ProtocolDataInputStream{})
 
 	newStream := ProtocolDataInputStream{
-		mark:         0,
-		Buf:          make([]byte, 0),
-		BufLen:       0,
-		CurPos:       0,
-		ReferenceMap: make(map[int64]types.TGEntity, 0),
+		mark:                0,
+		Buf:                 make([]byte, 0),
+		BufLen:              0,
+		iStreamCurPos:       0,
+		iStreamReferenceMap: make(map[int64]types.TGEntity, 0),
 	}
 	return &newStream
 }
@@ -93,13 +93,13 @@ func NewProtocolDataInputStream(buf []byte) *ProtocolDataInputStream {
 
 func (msg *ProtocolDataInputStream) ReadBoolean() (bool, types.TGError) {
 	//logger.Log(fmt.Sprintf(Entering ProtocolDataInputStream::ReadBoolean()"))
-	if msg.CurPos >= msg.BufLen {
+	if msg.iStreamCurPos >= msg.BufLen {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream::ReadBoolean('%+v') as msg.CurPos >= msg.BufLen", false))
 		errMsg := fmt.Sprint("End of data stream")
 		return false, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	a := msg.Buf[msg.CurPos]
-	msg.CurPos += 1
+	a := msg.Buf[msg.iStreamCurPos]
+	msg.iStreamCurPos += 1
 	if a == 0x00 {
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadBoolean('%+v') as a == 0x00", false))
 		return false, nil
@@ -110,27 +110,27 @@ func (msg *ProtocolDataInputStream) ReadBoolean() (bool, types.TGError) {
 
 func (msg *ProtocolDataInputStream) ReadByte() (byte, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::ReadByte()"))
-	if msg.CurPos >= msg.BufLen {
+	if msg.iStreamCurPos >= msg.BufLen {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream::ReadByte('%+v') as msg.CurPos >= msg.BufLen", 0))
 		errMsg := fmt.Sprint("End of data stream")
 		return 0, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	a := msg.Buf[msg.CurPos]
-	msg.CurPos += 1
+	a := msg.Buf[msg.iStreamCurPos]
+	msg.iStreamCurPos += 1
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadByte from the contents w/ ('%+v')", a))
 	return a, nil
 }
 
 func (msg *ProtocolDataInputStream) ReadChar() (string, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::ReadChar()"))
-	if (msg.CurPos + 2) > msg.BufLen {
+	if (msg.iStreamCurPos + 2) > msg.BufLen {
 		logger.Error(fmt.Sprintf("Returning ProtocolDataInputStream::ReadChar('%+v') as msg.CurPos+2 > msg.BufLen", ""))
 		errMsg := fmt.Sprint("End of data stream")
 		return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	a := int(msg.Buf[msg.CurPos]) << 8
-	b := int(msg.Buf[msg.CurPos+1]) & 0xff
-	msg.CurPos += 2
+	a := int(msg.Buf[msg.iStreamCurPos]) << 8
+	b := int(msg.Buf[msg.iStreamCurPos+1]) & 0xff
+	msg.iStreamCurPos += 2
 	c := fmt.Sprintf("%c", a+b)
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadChar from the contents w/ ('%+v')", c))
 	return c, nil
@@ -165,7 +165,7 @@ func (msg *ProtocolDataInputStream) ReadFully(b []byte) ([]byte, types.TGError) 
 		errMsg := fmt.Sprint("Input argument to ReadFully is null")
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	return msg.ReadFullyAtPos(b, msg.CurPos, len(b))
+	return msg.ReadFullyAtPos(b, msg.iStreamCurPos, len(b))
 }
 
 func (msg *ProtocolDataInputStream) ReadFullyAtPos(b []byte, readCurPos, readLen int) ([]byte, types.TGError) {
@@ -175,31 +175,31 @@ func (msg *ProtocolDataInputStream) ReadFullyAtPos(b []byte, readCurPos, readLen
 		errMsg := fmt.Sprint("Input argument representing how many bytes to read in ReadFullyAtPos is null")
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	if (msg.CurPos + readLen) > msg.BufLen {
+	if (msg.iStreamCurPos + readLen) > msg.BufLen {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream::ReadFullyAtPos as (msg.CurPos + readLen) > msg.BufLen"))
 		errMsg := fmt.Sprint("Input readLen to ReadFully is invalid")
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	// Copy in input buffer b at offset for length
-	copy(b, msg.Buf[msg.CurPos:(msg.CurPos+readLen)])
+	copy(b, msg.Buf[msg.iStreamCurPos:(msg.iStreamCurPos +readLen)])
 	//logger.Log(fmt.Sprintf("Inside ProtocolDataInputStream::ReadFullyAtPos() temp / b is '%+v'", b))
-	msg.CurPos = msg.CurPos + readLen
+	msg.iStreamCurPos = msg.iStreamCurPos + readLen
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadFullyAtPos('%d') for length '%d' from '%+v' in contents", readCurPos, readLen, b))
 	return b, nil
 }
 
 func (msg *ProtocolDataInputStream) ReadInt() (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::ReadInt() from Stream '%+v'", msg.String()))
-	if (msg.CurPos + 4) > msg.BufLen {
+	if (msg.iStreamCurPos + 4) > msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadInt as (msg.CurPos + 4) > msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	a := int(msg.Buf[msg.CurPos]) << 24
-	b := int(msg.Buf[msg.CurPos+1]) << 16 & 0x00ff0000
-	c := int(msg.Buf[msg.CurPos+2]) << 8 & 0x0000ff00
-	d := int(msg.Buf[msg.CurPos+3]) & 0xff
-	msg.CurPos += 4
+	a := int(msg.Buf[msg.iStreamCurPos]) << 24
+	b := int(msg.Buf[msg.iStreamCurPos+1]) << 16 & 0x00ff0000
+	c := int(msg.Buf[msg.iStreamCurPos+2]) << 8 & 0x0000ff00
+	d := int(msg.Buf[msg.iStreamCurPos+3]) & 0xff
+	msg.iStreamCurPos += 4
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadInt from the contents w/ ('%d')", a+b+c+d))
 	return a + b + c + d, nil
 }
@@ -211,7 +211,7 @@ func (msg *ProtocolDataInputStream) ReadLine() (string, types.TGError) {
 
 func (msg *ProtocolDataInputStream) ReadLong() (int64, types.TGError) {
 	//logger.Log(fmt.Sprint("Entering ProtocolDataInputStream::ReadLong()"))
-	if (msg.CurPos + 8) > msg.BufLen {
+	if (msg.iStreamCurPos + 8) > msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadLong as (msg.CurPos + 8) > msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -233,14 +233,14 @@ func (msg *ProtocolDataInputStream) ReadLong() (int64, types.TGError) {
 
 func (msg *ProtocolDataInputStream) ReadShort() (int16, types.TGError) {
 	//logger.Log(fmt.Sprint(Entering ProtocolDataInputStream::ReadShort()"))
-	if (msg.CurPos + 2) > msg.BufLen {
+	if (msg.iStreamCurPos + 2) > msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadShort as (msg.CurPos + 2) > msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	a := int16(msg.Buf[msg.CurPos]) << 8
-	b := int16(msg.Buf[msg.CurPos+1]) & 0xff
-	msg.CurPos += 2
+	a := int16(msg.Buf[msg.iStreamCurPos]) << 8
+	b := int16(msg.Buf[msg.iStreamCurPos+1]) & 0xff
+	msg.iStreamCurPos += 2
 	c := a + b
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadShort from the contents w/ ('%d')", c))
 	return c, nil
@@ -248,27 +248,27 @@ func (msg *ProtocolDataInputStream) ReadShort() (int16, types.TGError) {
 
 func (msg *ProtocolDataInputStream) ReadUnsignedByte() (int, types.TGError) {
 	//logger.Log(fmt.Sprint("Entering ProtocolDataInputStream::ReadUnsignedByte()"))
-	if msg.CurPos >= msg.BufLen {
+	if msg.iStreamCurPos >= msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUnsignedByte as msg.CurPos > msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	a := int(msg.Buf[msg.CurPos]) & 0xff
-	msg.CurPos += 1
+	a := int(msg.Buf[msg.iStreamCurPos]) & 0xff
+	msg.iStreamCurPos += 1
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadUnsignedByte from the contents w/ ('%d')", a))
 	return a, nil
 }
 
 func (msg *ProtocolDataInputStream) ReadUnsignedShort() (uint16, types.TGError) {
 	//logger.Log(fmt.Sprint("Entering ProtocolDataInputStream::ReadUnsignedShort()"))
-	if (msg.CurPos + 2) > msg.BufLen {
+	if (msg.iStreamCurPos + 2) > msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUnsignedShort as (msg.CurPos + 2) > msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return 0, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	a := int(msg.Buf[msg.CurPos]) << 8
-	b := int(msg.Buf[msg.CurPos+1]) & 0xff
-	msg.CurPos += 2
+	a := int(msg.Buf[msg.iStreamCurPos]) << 8
+	b := int(msg.Buf[msg.iStreamCurPos+1]) & 0xff
+	msg.iStreamCurPos += 2
 	c := uint16((a + b) & 0x0000ffff)
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadUnsignedShort from the contents w/ ('%d')", c))
 	return c, nil
@@ -276,13 +276,13 @@ func (msg *ProtocolDataInputStream) ReadUnsignedShort() (uint16, types.TGError) 
 
 func (msg *ProtocolDataInputStream) ReadUTF() (string, types.TGError) {
 	//logger.Log(fmt.Sprint("Entering ProtocolDataInputStream::ReadUTF()"))
-	start := msg.CurPos
+	start := msg.iStreamCurPos
 
 	utfLen, err := msg.ReadUnsignedShort()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTF as msg.ReadUnsignedShort resulted in error"))
 		// Reset the current position
-		msg.CurPos = start
+		msg.iStreamCurPos = start
 		return "", err
 	}
 	logger.Log(fmt.Sprintf("Inside ProtocolDataInputStream::ReadUTF() utfLength to read: '%d'", utfLen))
@@ -293,42 +293,42 @@ func (msg *ProtocolDataInputStream) ReadUTF() (string, types.TGError) {
 
 func (msg *ProtocolDataInputStream) ReadUTFString(utfLen int) (string, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::ReadUTFString('%d') CurPos: %d BufLen: %d Buf: %+v", utfLen, msg.CurPos, msg.BufLen, msg.Buf))
-	if (msg.CurPos + utfLen) > msg.BufLen {
+	if (msg.iStreamCurPos + utfLen) > msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTFString as (msg.CurPos + utfLen) > msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
 	charBuf := ""
-	start := msg.CurPos
-	lastPos := msg.CurPos + utfLen
+	start := msg.iStreamCurPos
+	lastPos := msg.iStreamCurPos + utfLen
 	strLen := 0
 	var c, cVal, char2, char3 int
 
 	// Loop through message buffer
 	for {
-		if !(msg.CurPos < lastPos) {
+		if !(msg.iStreamCurPos < lastPos) {
 			//logger.Log(fmt.Sprintf("ProtocolDataInputStream::ReadUTFString - Breaking Loop @msg.CurPos '%d' lastPos '%d' c '%d' cVal '%d' char2 '%d' char3 '%d'", msg.CurPos, lastPos, c, cVal, char2, char3))
 			break
 		}
-		c = int(msg.Buf[msg.CurPos]) & 0xff
+		c = int(msg.Buf[msg.iStreamCurPos]) & 0xff
 		//logger.Log(fmt.Sprintf("ProtocolDataInputStream::ReadUTFString - Inside Loop msg.CurPos '%d' lastPos '%d' c '%d' cVal '%d' char2 '%d' char3 '%d'", msg.CurPos, lastPos, c, cVal, char2, char3))
-		msg.CurPos += 1
+		msg.iStreamCurPos += 1
 		cVal = c >> 4
 		if cVal <= 7 { // 0xxxxxxx
 			charBuf = charBuf + string(c)
 			strLen++
 		} else if cVal == 12 || cVal == 13 { // 110x xxxx   10xx xxxx
-			if msg.CurPos+1 > lastPos {
-				msg.CurPos = start
+			if msg.iStreamCurPos+1 > lastPos {
+				msg.iStreamCurPos = start
 				logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTFString as msg.CurPos+1 > lastPos"))
 				errMsg := fmt.Sprint("Data Format Issue")
 				return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 			}
-			char2 = int(msg.Buf[msg.CurPos])
-			msg.CurPos += 1
+			char2 = int(msg.Buf[msg.iStreamCurPos])
+			msg.iStreamCurPos += 1
 			if (char2 & 0xC0) != 0x80 {
-				msg.CurPos = start
+				msg.iStreamCurPos = start
 				logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTFString as (char2 & 0xC0) != 0x80"))
 				errMsg := fmt.Sprint("Data Format Issue")
 				return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -337,18 +337,18 @@ func (msg *ProtocolDataInputStream) ReadUTFString(utfLen int) (string, types.TGE
 			charBuf = charBuf + string(c1)
 			strLen++
 		} else if cVal == 14 { // 1110 xxxx  10xx xxxx  10xx xxxx
-			if msg.CurPos+2 > lastPos {
-				msg.CurPos = start
+			if msg.iStreamCurPos+2 > lastPos {
+				msg.iStreamCurPos = start
 				logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTFString as msg.CurPos+2 > lastPos"))
 				errMsg := fmt.Sprint("Data Format Issue")
 				return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 			}
-			char2 = int(msg.Buf[msg.CurPos])
-			msg.CurPos += 1
-			char3 = int(msg.Buf[msg.CurPos])
-			msg.CurPos += 1
+			char2 = int(msg.Buf[msg.iStreamCurPos])
+			msg.iStreamCurPos += 1
+			char3 = int(msg.Buf[msg.iStreamCurPos])
+			msg.iStreamCurPos += 1
 			if ((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80) {
-				msg.CurPos = start
+				msg.iStreamCurPos = start
 				logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTFString as ((char2 & 0xC0) != 0x80) || ((char3 & 0xC0) != 0x80)"))
 				errMsg := fmt.Sprint("Data Format Issue")
 				return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -357,15 +357,15 @@ func (msg *ProtocolDataInputStream) ReadUTFString(utfLen int) (string, types.TGE
 			charBuf = charBuf + string(c1)
 			strLen++
 		} else { // 10xx xxxx,  1111 xxxx
-			msg.CurPos = start
+			msg.iStreamCurPos = start
 			logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTFString for 10xxxxxx, 1111xxxx"))
 			errMsg := fmt.Sprint("Data Format Issue")
 			return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 		}
 	}
 
-	if msg.CurPos != lastPos {
-		msg.CurPos = start
+	if msg.iStreamCurPos != lastPos {
+		msg.iStreamCurPos = start
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadUTFString as msg.CurPos != lastPos"))
 		errMsg := fmt.Sprint("Data Format Issue")
 		return "", exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -382,14 +382,14 @@ func (msg *ProtocolDataInputStream) SkipBytes(n int) (int, types.TGError) {
 		errMsg := fmt.Sprint("Invalid bytes to skip")
 		return 0, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	avail := msg.BufLen - msg.CurPos
+	avail := msg.BufLen - msg.iStreamCurPos
 	logger.Log(fmt.Sprintf("ProtocolDataInputStream::SkipBytes - Available bytes ('%d') compared w/ To-Be-Skipped '%d'", avail, n))
 	if avail <= n {
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::SkipBytes as avail <= n from the contents w/ ('%d')", avail))
-		msg.CurPos = msg.BufLen
+		msg.iStreamCurPos = msg.BufLen
 		return avail, nil
 	}
-	msg.CurPos = msg.CurPos + n
+	msg.iStreamCurPos = msg.iStreamCurPos + n
 	logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::SkipBytes from the contents w/ ('%d')", n))
 	return n, nil
 }
@@ -398,10 +398,10 @@ func (msg *ProtocolDataInputStream) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("ProtocolDataInputStream:{")
 	buffer.WriteString(fmt.Sprintf("Buffer Length: %d", msg.BufLen))
-	buffer.WriteString(fmt.Sprintf(", Current Position: %d", msg.CurPos))
-	buffer.WriteString(fmt.Sprintf(", Encoding: %s", msg.Encoding))
+	buffer.WriteString(fmt.Sprintf(", Current Position: %d", msg.iStreamCurPos))
+	buffer.WriteString(fmt.Sprintf(", Encoding: %s", msg.iStreamEncoding))
 	buffer.WriteString(fmt.Sprintf(", Buffer: %s", bytes.NewBuffer(msg.Buf).String()))
-	buffer.WriteString(fmt.Sprintf(", Reference Map: %+v", msg.ReferenceMap))
+	buffer.WriteString(fmt.Sprintf(", Reference Map: %+v", msg.iStreamReferenceMap))
 	buffer.WriteString("}")
 	return buffer.String()
 }
@@ -413,23 +413,23 @@ func (msg *ProtocolDataInputStream) String() string {
 // Available checks whether there is any data available on the stream to read
 func (msg *ProtocolDataInputStream) Available() (int, types.TGError) {
 	//if msg.BufLen == 0 || (msg.BufLen-msg.CurPos) < 0 {
-	if (msg.BufLen-msg.CurPos) < 0 {
+	if (msg.BufLen-msg.iStreamCurPos) < 0 {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::Available as (msg.BufLen-msg.CurPos) < 0"))
 		errMsg := fmt.Sprint("Invalid data length of Protocol Data Input Stream")
 		return 0, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	return msg.BufLen - msg.CurPos, nil
+	return msg.BufLen - msg.iStreamCurPos, nil
 }
 
 // GetPosition gets the current position of internal cursor
 func (msg *ProtocolDataInputStream) GetPosition() int64 {
-	return int64(msg.CurPos)
+	return int64(msg.iStreamCurPos)
 }
 
 // GetReferenceMap returns a user maintained reference map
 func (msg *ProtocolDataInputStream) GetReferenceMap() map[int64]types.TGEntity {
-	return msg.ReferenceMap
+	return msg.iStreamReferenceMap
 }
 
 // Mark marks the current position
@@ -445,13 +445,13 @@ func (msg *ProtocolDataInputStream) MarkSupported() bool {
 // Read reads the current byte
 func (msg *ProtocolDataInputStream) Read() (int, types.TGError) {
 	logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::Read(), contents are '%+v'", msg.Buf))
-	if msg.CurPos > msg.BufLen {
+	if msg.iStreamCurPos > msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::Read as msg.CurPos > msg.BufLen"))
 		return -1, nil
 	}
-	if msg.CurPos < msg.BufLen {
-		b := int(msg.Buf[msg.CurPos] & 0xff)
-		msg.CurPos += 1
+	if msg.iStreamCurPos < msg.BufLen {
+		b := int(msg.Buf[msg.iStreamCurPos] & 0xff)
+		msg.iStreamCurPos += 1
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::Read from the contents w/ ('%d')", b))
 		return b, nil
 	}
@@ -477,12 +477,12 @@ func (msg *ProtocolDataInputStream) ReadAtOffset(b []byte, off int, length int) 
 		errMsg := fmt.Sprint("Invalid input data / offset / length OR data is corrupt")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	if msg.CurPos >= msg.BufLen {
+	if msg.iStreamCurPos >= msg.BufLen {
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadAtOffset('%d') for length '%d' from the contents w/ ('%d')", off, -1, b))
 		return -1, nil
 	}
-	if (msg.CurPos + length) > msg.BufLen {
-		length = msg.BufLen - msg.CurPos
+	if (msg.iStreamCurPos + length) > msg.BufLen {
+		length = msg.BufLen - msg.iStreamCurPos
 	}
 	if length <= 0 {
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadAtOffset('%d') for length '%d' from the contents w/ ('%d')", off, 0, b))
@@ -494,7 +494,7 @@ func (msg *ProtocolDataInputStream) ReadAtOffset(b []byte, off int, length int) 
 	tempLen := len(temp) - length
 	temp = temp[:tempLen]
 	copy(temp, msg.Buf)
-	msg.CurPos = msg.CurPos + length
+	msg.iStreamCurPos = msg.iStreamCurPos + length
 	logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadAtOffset('%d') for length '%d' from the contents w/ ('%d')", off, length, b))
 	return length, nil
 }
@@ -527,62 +527,62 @@ func (msg *ProtocolDataInputStream) ReadBytes() ([]byte, types.TGError) {
 // ReadVarLong reads a Variable long field
 func (msg *ProtocolDataInputStream) ReadVarLong() (int64, types.TGError) {
 	logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::ReadVarLong(), contents are '%+v'", msg.Buf))
-	if msg.CurPos >= msg.BufLen {
+	if msg.iStreamCurPos >= msg.BufLen {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadVarLong as msg.CurPos >= msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	curByte := msg.Buf[msg.CurPos]
+	curByte := msg.Buf[msg.iStreamCurPos]
 	if curByte == types.U64PACKED_NULL {
-		msg.CurPos++
+		msg.iStreamCurPos++
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadVarLong from the contents w/ ('%d')", types.U64_NULL))
 		return types.U64_NULL, nil
 	}
 
 	if curByte&0x80 == 0 {
-		msg.CurPos++
+		msg.iStreamCurPos++
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadVarLong from the contents w/ ('%d')", int64(curByte)))
 		return int64(curByte), nil
 	}
 
 	if curByte&0x40 == 0 {
-		if (msg.CurPos + 2) > msg.BufLen {
+		if (msg.iStreamCurPos + 2) > msg.BufLen {
 			logger.Log(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream::ReadVarLong as (msg.CurPos + 2) > msg.BufLen"))
 			errMsg := fmt.Sprint("End of data stream")
 			return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 		}
-		a := msg.Buf[msg.CurPos] << 8
-		msg.CurPos++
-		b := msg.Buf[msg.CurPos] & 0xff
-		msg.CurPos++
+		a := msg.Buf[msg.iStreamCurPos] << 8
+		msg.iStreamCurPos++
+		b := msg.Buf[msg.iStreamCurPos] & 0xff
+		msg.iStreamCurPos++
 		c := int16(a + b)
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadVarLong from the contents w/ ('%d')", int64(c&0x3fff)))
 		return int64(c & 0x3fff), nil
 	}
 
 	if curByte&0x20 == 0 {
-		if (msg.CurPos + 4) > msg.BufLen {
+		if (msg.iStreamCurPos + 4) > msg.BufLen {
 			logger.Log(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream::ReadVarLong as (msg.CurPos + 4) > msg.BufLen"))
 			errMsg := fmt.Sprint("End of data stream")
 			return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 		}
-		a := int(msg.Buf[msg.CurPos] << 24)
-		msg.CurPos++
-		b := int(msg.Buf[msg.CurPos]<<16) & 0x00ff0000
-		msg.CurPos++
-		c := int(msg.Buf[msg.CurPos]<<8) & 0x0000ff00
-		msg.CurPos++
-		d := int((msg.Buf[msg.CurPos]) & 0xff)
-		msg.CurPos++
+		a := int(msg.Buf[msg.iStreamCurPos] << 24)
+		msg.iStreamCurPos++
+		b := int(msg.Buf[msg.iStreamCurPos]<<16) & 0x00ff0000
+		msg.iStreamCurPos++
+		c := int(msg.Buf[msg.iStreamCurPos]<<8) & 0x0000ff00
+		msg.iStreamCurPos++
+		d := int((msg.Buf[msg.iStreamCurPos]) & 0xff)
+		msg.iStreamCurPos++
 		lValue := (a + b + c + d) & 0x1fffffff
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadVarLong from the contents w/ ('%d')", int64(lValue)))
 		return int64(lValue), nil
 	}
 
 	count := int(curByte & 0x0f)
-	msg.CurPos++
-	if (msg.CurPos + count) > msg.BufLen {
+	msg.iStreamCurPos++
+	if (msg.iStreamCurPos + count) > msg.BufLen {
 		logger.Log(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream::ReadVarLong as (msg.CurPos + count) > msg.BufLen"))
 		errMsg := fmt.Sprint("End of data stream")
 		return -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -590,7 +590,7 @@ func (msg *ProtocolDataInputStream) ReadVarLong() (int64, types.TGError) {
 	lValue := 0
 	for i := 0; i < count; i++ {
 		lValue <<= 8
-		lValue |= int(msg.Buf[msg.CurPos] & 0x00ff)
+		lValue |= int(msg.Buf[msg.iStreamCurPos] & 0x00ff)
 	}
 	logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadVarLong from the contents w/ ('%d')", int64(lValue)))
 	return int64(lValue), nil
@@ -599,22 +599,22 @@ func (msg *ProtocolDataInputStream) ReadVarLong() (int64, types.TGError) {
 // Reset brings internal moving cursor back to the old position
 func (msg *ProtocolDataInputStream) Reset() {
 	logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::Reset( Marker = '%d') in the contents", msg.mark))
-	msg.CurPos = msg.mark
+	msg.iStreamCurPos = msg.mark
 	logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::Reset( Marker = '%d'), contents are '%+v'", msg.mark, msg.Buf))
 }
 
 // SetPosition sets the position of reading.
 func (msg *ProtocolDataInputStream) SetPosition(position int64) int64 {
 	logger.Log(fmt.Sprintf("Entering ProtocolDataInputStream::SetPosition('%d') in the contents", position))
-	oldPos := msg.CurPos
-	msg.CurPos = int(position)
+	oldPos := msg.iStreamCurPos
+	msg.iStreamCurPos = int(position)
 	logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::SetPosition('%d'), contents are '%+v'", int64(oldPos), msg.Buf))
 	return int64(oldPos)
 }
 
 // SetReferenceMap sets a user maintained map as reference data
 func (msg *ProtocolDataInputStream) SetReferenceMap(rMap map[int64]types.TGEntity) {
-	msg.ReferenceMap = rMap
+	msg.iStreamReferenceMap = rMap
 }
 
 // Skip skips n bytes
@@ -632,7 +632,7 @@ func (msg *ProtocolDataInputStream) Skip(n int64) (int64, types.TGError) {
 func (msg *ProtocolDataInputStream) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.Buf, msg.BufLen, msg.CurPos, msg.Encoding, msg.ReferenceMap)
+	_, err := fmt.Fprintln(&b, msg.Buf, msg.BufLen, msg.iStreamCurPos, msg.iStreamEncoding, msg.iStreamReferenceMap)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -647,7 +647,7 @@ func (msg *ProtocolDataInputStream) MarshalBinary() ([]byte, error) {
 func (msg *ProtocolDataInputStream) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.Buf, &msg.BufLen, &msg.CurPos, &msg.Encoding, &msg.ReferenceMap)
+	_, err := fmt.Fscanln(b, &msg.Buf, &msg.BufLen, &msg.iStreamCurPos, &msg.iStreamEncoding, &msg.iStreamReferenceMap)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning ProtocolDataInputStream:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

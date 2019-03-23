@@ -54,13 +54,13 @@ type MessageHeader struct {
 	BufLength int // Length of the message including the header
 	//MagicId         int    // Intentionally to be Kept Private? - Magic to recognize this is our message
 	//ProtocolVersion uint16 // protocol Version
-	VerbId     int
-	SequenceNo int64 // Intentionally to be Kept Private? - Message SystemTypeSequence No from the client
-	Timestamp  int64 // Timestamp of the message sent
-	RequestId  int64 // Unique _request Identifier from the client, which is returned
-	AuthToken  int64 // Only Authenticated messages (Post Successful User Login) will have proper value
-	SessionId  int64 // Only Authenticated messages (Post Successful User Login) will have proper value
-	DataOffset int16 // Offset from where the payload begins
+	verbId     int
+	sequenceNo int64 // Intentionally to be Kept Private? - Message SystemTypeSequence No from the client
+	timestamp  int64 // Timestamp of the message sent
+	requestId  int64 // Unique _request Identifier from the client, which is returned
+	authToken  int64 // Only Authenticated messages (Post Successful User Login) will have proper value
+	sessionId  int64 // Only Authenticated messages (Post Successful User Login) will have proper value
+	dataOffset int16 // Offset from where the payload begins
 }
 
 var AtomicSequenceNumber int64
@@ -76,13 +76,13 @@ func defaultMessageHeader() *MessageHeader {
 		BufLength: -1,
 		//MagicId:         utils.GetMagic(),
 		//ProtocolVersion: utils.GetProtocolVersion(),
-		VerbId:     AbstractMessage,
-		SequenceNo: seqNo,
-		Timestamp:  time.Now().UnixNano(), // C|Java had -1 as initialization - replaced for testing
-		RequestId:  -1,
-		AuthToken:  0,
-		SessionId:  0,
-		DataOffset: -1,
+		verbId:     AbstractMessage,
+		sequenceNo: seqNo,
+		timestamp:  time.Now().UnixNano(), // C|Java had -1 as initialization - replaced for testing
+		requestId:  -1,
+		authToken:  0,
+		sessionId:  0,
+		dataOffset: -1,
 	}
 	return &newMsg
 }
@@ -115,7 +115,7 @@ func main() {
 // NOTE: Maintain the order of structure elements as shown above for streamlined server communication
 type AbstractProtocolMessage struct {
 	*MessageHeader
-	IsUpdatable bool
+	isUpdatable bool
 	bytesBuffer []byte
 	contentLock sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
 }
@@ -128,7 +128,7 @@ func DefaultAbstractProtocolMessage() *AbstractProtocolMessage {
 
 	newMsg := AbstractProtocolMessage{
 		MessageHeader: defaultMessageHeader(),
-		IsUpdatable:   false,
+		isUpdatable:   false,
 		bytesBuffer:   make([]byte, 0),
 	}
 	newMsg.BufLength = binary.Size(reflect.ValueOf(newMsg))
@@ -137,8 +137,8 @@ func DefaultAbstractProtocolMessage() *AbstractProtocolMessage {
 
 func NewAbstractProtocolMessage(authToken, sessionId int64) *AbstractProtocolMessage {
 	newMsg := DefaultAbstractProtocolMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = binary.Size(reflect.ValueOf(newMsg))
 	return newMsg
 }
@@ -148,11 +148,11 @@ func NewAbstractProtocolMessage(authToken, sessionId int64) *AbstractProtocolMes
 /////////////////////////////////////////////////////////////////
 
 func (msg *AbstractProtocolMessage) getAuthToken() int64 {
-	return msg.AuthToken
+	return msg.authToken
 }
 
 func (msg *AbstractProtocolMessage) getIsUpdatable() bool {
-	return msg.IsUpdatable
+	return msg.isUpdatable
 }
 
 func (msg *AbstractProtocolMessage) getMessageByteBufLength() int {
@@ -160,34 +160,34 @@ func (msg *AbstractProtocolMessage) getMessageByteBufLength() int {
 }
 
 func (msg *AbstractProtocolMessage) getRequestId() int64 {
-	return msg.RequestId
+	return msg.requestId
 }
 
 func (msg *AbstractProtocolMessage) getSequenceNo() int64 {
-	return msg.SequenceNo
+	return msg.sequenceNo
 }
 
 func (msg *AbstractProtocolMessage) getSessionId() int64 {
-	return msg.SessionId
+	return msg.sessionId
 }
 
 func (msg *AbstractProtocolMessage) getTimestamp() int64 {
-	if msg.Timestamp == -1 {
-		msg.Timestamp = time.Now().Unix()
+	if msg.timestamp == -1 {
+		msg.timestamp = time.Now().Unix()
 	}
-	return msg.Timestamp
+	return msg.timestamp
 }
 
 func (msg *AbstractProtocolMessage) getVerbId() int {
-	return msg.VerbId
+	return msg.verbId
 }
 
 func (msg *AbstractProtocolMessage) setAuthToken(authToken int64) {
-	msg.AuthToken = authToken
+	msg.authToken = authToken
 }
 
 func (msg *AbstractProtocolMessage) setIsUpdatable(updateFlag bool) {
-	msg.IsUpdatable = updateFlag
+	msg.isUpdatable = updateFlag
 }
 
 func (msg *AbstractProtocolMessage) setMessageByteBufLength(bufLength int) {
@@ -195,29 +195,29 @@ func (msg *AbstractProtocolMessage) setMessageByteBufLength(bufLength int) {
 }
 
 func (msg *AbstractProtocolMessage) setRequestId(requestId int64) {
-	msg.RequestId = requestId
+	msg.requestId = requestId
 }
 
 func (msg *AbstractProtocolMessage) setSequenceNo(sequenceNo int64) {
-	msg.SequenceNo = sequenceNo
+	msg.sequenceNo = sequenceNo
 }
 
 func (msg *AbstractProtocolMessage) setSessionId(sessionId int64) {
-	msg.SessionId = sessionId
+	msg.sessionId = sessionId
 }
 
 func (msg *AbstractProtocolMessage) setTimestamp(timestamp int64) types.TGError {
-	if !(msg.IsUpdatable || timestamp != -1) {
+	if !(msg.isUpdatable || timestamp != -1) {
 		logger.Error(fmt.Sprint("ERROR: Returning readHeader:setTimestamp as !msg.IsUpdatable && timestamp != -1"))
-		errMsg := fmt.Sprintf("Mutating a readonly message '%s'", GetVerb(msg.VerbId).Name)
+		errMsg := fmt.Sprintf("Mutating a readonly message '%s'", GetVerb(msg.verbId).name)
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	msg.Timestamp = timestamp
+	msg.timestamp = timestamp
 	return nil
 }
 
 func (msg *AbstractProtocolMessage) setVerbId(verbId int) {
-	msg.VerbId = verbId
+	msg.verbId = verbId
 }
 
 func (msg *AbstractProtocolMessage) updateSequenceAndTimeStamp(timestamp int64) types.TGError {
@@ -225,8 +225,8 @@ func (msg *AbstractProtocolMessage) updateSequenceAndTimeStamp(timestamp int64) 
 	if err != nil {
 		return err
 	}
-	if msg.IsUpdatable {
-		msg.SequenceNo = atomic.AddInt64(&AtomicSequenceNumber, 1)
+	if msg.isUpdatable {
+		msg.sequenceNo = atomic.AddInt64(&AtomicSequenceNumber, 1)
 		msg.BufLength = -1
 		msg.bytesBuffer = make([]byte, 0)
 	}
@@ -326,7 +326,7 @@ func (msg *AbstractProtocolMessage) readHeader(is types.TGInputStream) types.TGE
 	msg.SetRequestId(requestId)
 	msg.SetAuthToken(authToken)
 	msg.SetSessionId(sessionId)
-	msg.DataOffset = dataOffset
+	msg.dataOffset = dataOffset
 	//msg.SetMessageByteBufLength(binary.Size(reflect.ValueOf(msg)))
 	msg.SetMessageByteBufLength(int(binary.Size(reflect.ValueOf(msg))))
 	logger.Error(fmt.Sprint("Returning AbstractProtocolMessage:readHeader"))
@@ -360,14 +360,14 @@ func (msg *AbstractProtocolMessage) messageToString() string {
 	buffer.WriteString(fmt.Sprintf("BufLength: %d", msg.BufLength))
 	//buffer.WriteString(fmt.Sprintf("MagicId: %d", msg.MagicId))
 	//buffer.WriteString(fmt.Sprintf(", ProtocolVersion: %d", msg.ProtocolVersion))
-	buffer.WriteString(fmt.Sprintf(", VerbId: %d", msg.VerbId))
-	buffer.WriteString(fmt.Sprintf(", SequenceNo: %d", msg.SequenceNo))
-	buffer.WriteString(fmt.Sprintf(", Timestamp: %d", msg.Timestamp))
-	buffer.WriteString(fmt.Sprintf(", RequestId: %d", msg.RequestId))
-	buffer.WriteString(fmt.Sprintf(", AuthToken: %d", msg.AuthToken))
-	buffer.WriteString(fmt.Sprintf(", SessionId: %d", msg.SessionId))
-	buffer.WriteString(fmt.Sprintf(", DataOffset: %d", msg.DataOffset))
-	buffer.WriteString(fmt.Sprintf(", IsUpdatable: %+v", msg.IsUpdatable))
+	buffer.WriteString(fmt.Sprintf(", VerbId: %d", msg.verbId))
+	buffer.WriteString(fmt.Sprintf(", SequenceNo: %d", msg.sequenceNo))
+	buffer.WriteString(fmt.Sprintf(", Timestamp: %d", msg.timestamp))
+	buffer.WriteString(fmt.Sprintf(", RequestId: %d", msg.requestId))
+	buffer.WriteString(fmt.Sprintf(", AuthToken: %d", msg.authToken))
+	buffer.WriteString(fmt.Sprintf(", SessionId: %d", msg.sessionId))
+	buffer.WriteString(fmt.Sprintf(", DataOffset: %d", msg.dataOffset))
+	buffer.WriteString(fmt.Sprintf(", IsUpdatable: %+v", msg.isUpdatable))
 	buffer.WriteString("}")
 	return buffer.String()
 }
@@ -375,6 +375,11 @@ func (msg *AbstractProtocolMessage) messageToString() string {
 /////////////////////////////////////////////////////////////////
 // Helper functions for AbstractProtocolMessage
 /////////////////////////////////////////////////////////////////
+
+// GetIsUpdatable checks whether this message updatable or not
+func (msg *AbstractProtocolMessage) GetIsUpdatable() bool {
+	return msg.getIsUpdatable()
+}
 
 // SetIsUpdatable sets the updatable flag
 func (msg *AbstractProtocolMessage) SetIsUpdatable(updateFlag bool) {
@@ -538,11 +543,6 @@ func (msg *AbstractProtocolMessage) GetAuthToken() int64 {
 	return msg.getAuthToken()
 }
 
-// GetIsUpdatable checks whether this message updatable or not
-func (msg *AbstractProtocolMessage) GetIsUpdatable() bool {
-	return msg.getIsUpdatable()
-}
-
 // GetMessageByteBufLength gets the MessageByteBufLength. This method is called after the toBytes() is executed.
 func (msg *AbstractProtocolMessage) GetMessageByteBufLength() int {
 	return msg.getMessageByteBufLength()
@@ -631,8 +631,8 @@ func (msg *AbstractProtocolMessage) WritePayload(os types.TGOutputStream) types.
 func (msg *AbstractProtocolMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo,
-		msg.Timestamp, msg.RequestId, msg.AuthToken, msg.SessionId, msg.DataOffset, msg.IsUpdatable)
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo,
+		msg.timestamp, msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractProtocolMessage:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -648,8 +648,8 @@ func (msg *AbstractProtocolMessage) MarshalBinary() ([]byte, error) {
 func (msg *AbstractProtocolMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.AuthToken, &msg.SessionId, &msg.DataOffset, &msg.IsUpdatable)
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.authToken, &msg.sessionId, &msg.dataOffset, &msg.isUpdatable)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractProtocolMessage:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

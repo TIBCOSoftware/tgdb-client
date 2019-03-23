@@ -52,20 +52,20 @@ func DefaultFloatAttribute() *FloatAttribute {
 
 func NewFloatAttributeWithOwner(ownerEntity types.TGEntity) *FloatAttribute {
 	newAttribute := DefaultFloatAttribute()
-	newAttribute.Owner = ownerEntity
+	newAttribute.owner = ownerEntity
 	return newAttribute
 }
 
 func NewFloatAttribute(attrDesc *AttributeDescriptor) *FloatAttribute {
 	newAttribute := DefaultFloatAttribute()
-	newAttribute.AttrDesc = attrDesc
+	newAttribute.attrDesc = attrDesc
 	return newAttribute
 }
 
 func NewFloatAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDescriptor, value interface{}) *FloatAttribute {
 	newAttribute := NewFloatAttributeWithOwner(ownerEntity)
-	newAttribute.AttrDesc = attrDesc
-	newAttribute.AttrValue = value
+	newAttribute.attrDesc = attrDesc
+	newAttribute.attrValue = value
 	return newAttribute
 }
 
@@ -74,10 +74,10 @@ func NewFloatAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDe
 /////////////////////////////////////////////////////////////////
 
 func (obj *FloatAttribute) SetFloat(b float32) {
-	if !obj.IsNull() && obj.AttrValue == b {
+	if !obj.IsNull() && obj.attrValue == b {
 		return
 	}
-	obj.AttrValue = b
+	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
@@ -129,11 +129,11 @@ func (obj *FloatAttribute) SetOwner(ownerEntity types.TGEntity) {
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *FloatAttribute) SetValue(value interface{}) types.TGError {
 	if value == nil {
-		obj.AttrValue = value
+		obj.attrValue = value
 		obj.setIsModified(true)
 		return nil
 	}
-	if !obj.IsNull() && obj.AttrValue == value {
+	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
 
@@ -166,13 +166,13 @@ func (obj *FloatAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	logger.Log(fmt.Sprintf("FloatAttribute::ReadValue - read value: '%+v'", value))
-	obj.AttrValue = value
+	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *FloatAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	iValue := reflect.ValueOf(obj.AttrValue).Float()
+	iValue := reflect.ValueOf(obj.attrValue).Float()
 	os.(*iostream.ProtocolDataOutputStream).WriteFloat(float32(iValue))
 	return nil
 }
@@ -206,7 +206,7 @@ func (obj *FloatAttribute) WriteExternal(os types.TGOutputStream) types.TGError 
 func (obj *FloatAttribute) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.Owner, obj.AttrDesc, obj.AttrValue, obj.IsModified)
+	_, err := fmt.Fprintln(&b, obj.owner, obj.attrDesc, obj.attrValue, obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning FloatAttribute:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -221,7 +221,7 @@ func (obj *FloatAttribute) MarshalBinary() ([]byte, error) {
 func (obj *FloatAttribute) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.Owner, &obj.AttrDesc, &obj.AttrValue, &obj.IsModified)
+	_, err := fmt.Fscanln(b, &obj.owner, &obj.attrDesc, &obj.attrValue, &obj.isModified)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning FloatAttribute:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

@@ -65,7 +65,7 @@ func DefaultQueryRequestMessage() *QueryRequestMessage {
 	newMsg.edgeLimit = 0
 	newMsg.sortOrderDsc = false
 	newMsg.sortResultLimit = 50
-	newMsg.VerbId = VerbQueryRequest
+	newMsg.verbId = VerbQueryRequest
 	newMsg.BufLength = int(reflect.TypeOf(newMsg).Size())
 	return &newMsg
 }
@@ -73,8 +73,8 @@ func DefaultQueryRequestMessage() *QueryRequestMessage {
 // Create New Message Instance
 func NewQueryRequestMessage(authToken, sessionId int64) *QueryRequestMessage {
 	newMsg := DefaultQueryRequestMessage()
-	newMsg.AuthToken = authToken
-	newMsg.SessionId = sessionId
+	newMsg.authToken = authToken
+	newMsg.sessionId = sessionId
 	newMsg.BufLength = int(reflect.TypeOf(*newMsg).Size())
 	return newMsg
 }
@@ -480,8 +480,8 @@ func (msg *QueryRequestMessage) WritePayload(os types.TGOutputStream) types.TGEr
 func (msg *QueryRequestMessage) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, msg.BufLength, msg.VerbId, msg.SequenceNo, msg.Timestamp,
-		msg.RequestId, msg.DataOffset, msg.AuthToken, msg.SessionId, msg.IsUpdatable, msg.queryExpr, msg.edgeExpr,
+	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
+		msg.requestId, msg.dataOffset, msg.authToken, msg.sessionId, msg.isUpdatable, msg.queryExpr, msg.edgeExpr,
 		msg.traverseExpr, msg.endExpr, msg.queryHashId, msg.command, msg.queryObject, msg.fetchSize, msg.batchSize,
 		msg.traversalDepth, msg.edgeLimit, msg.sortAttrName, msg.sortOrderDsc, msg.sortResultLimit)
 	if err != nil {
@@ -499,8 +499,8 @@ func (msg *QueryRequestMessage) MarshalBinary() ([]byte, error) {
 func (msg *QueryRequestMessage) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.VerbId, &msg.SequenceNo,
-		&msg.Timestamp, &msg.RequestId, &msg.DataOffset, &msg.AuthToken, &msg.SessionId, &msg.IsUpdatable,
+	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
+		&msg.timestamp, &msg.requestId, &msg.dataOffset, &msg.authToken, &msg.sessionId, &msg.isUpdatable,
 		&msg.queryExpr, &msg.edgeExpr, &msg.traverseExpr, &msg.endExpr, &msg.queryHashId, &msg.command, &msg.queryObject,
 		&msg.fetchSize, &msg.batchSize, &msg.traversalDepth, &msg.edgeLimit, &msg.sortAttrName, &msg.sortOrderDsc,
 		&msg.sortResultLimit)

@@ -32,9 +32,9 @@ import (
  */
 
 type CompositeKey struct {
-	GraphMetadata *GraphMetadata
-	KeyName       string
-	Attributes    map[string]types.TGAttribute
+	graphMetadata *GraphMetadata
+	keyName       string
+	attributes    map[string]types.TGAttribute
 }
 
 func NewCompositeKey(graphMetadata *GraphMetadata, typeName string) *CompositeKey {
@@ -44,11 +44,31 @@ func NewCompositeKey(graphMetadata *GraphMetadata, typeName string) *CompositeKe
 	gob.Register(CompositeKey{})
 
 	newCompositeKey := CompositeKey{
-		GraphMetadata: graphMetadata,
-		KeyName:       typeName,
-		Attributes:    make(map[string]types.TGAttribute, 0),
+		graphMetadata: graphMetadata,
+		keyName:       typeName,
+		attributes:    make(map[string]types.TGAttribute, 0),
 	}
 	return &newCompositeKey
+}
+
+/////////////////////////////////////////////////////////////////
+// Helper functions for CompositeKey
+/////////////////////////////////////////////////////////////////
+
+func (obj *CompositeKey) GetAttributes() map[string]types.TGAttribute {
+	return obj.attributes
+}
+
+func (obj *CompositeKey) GetKeyName() string {
+	return obj.keyName
+}
+
+func (obj *CompositeKey) SetAttributes(attrs map[string]types.TGAttribute) {
+	obj.attributes = attrs
+}
+
+func (obj *CompositeKey) SetKeyName(name string) {
+	obj.keyName = name
 }
 
 /////////////////////////////////////////////////////////////////
@@ -64,10 +84,10 @@ func (obj *CompositeKey) SetOrCreateAttribute(name string, value interface{}) ty
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	// If attribute is not present in the set, create a new one
-	attr := obj.Attributes[name]
+	attr := obj.attributes[name]
 	if attr == nil {
 		logger.Log(fmt.Sprintf("CompositeKey:SetOrCreateAttribute attribute '%+v' not found - trying to get descriptor from GraphMetadata", name))
-		attrDesc, err := obj.GraphMetadata.GetAttributeDescriptor(name)
+		attrDesc, err := obj.graphMetadata.GetAttributeDescriptor(name)
 		if err != nil {
 			logger.Log(fmt.Sprintf("ERROR: Returning CompositeKey:SetOrCreateAttribute unable to get descriptor for attribute '%s' w/ error '%+v'", name, err.Error()))
 			return err
@@ -76,7 +96,7 @@ func (obj *CompositeKey) SetOrCreateAttribute(name string, value interface{}) ty
 		if attrDesc == nil {
 			aType := reflect.TypeOf(value).String()
 			logger.Log(fmt.Sprintf("=======> CompositeKey SetOrCreateAttribute creating new attribute descriptor '%+v':'%+v'(%+v) <=======", name, value, aType))
-			attrDesc = obj.GraphMetadata.CreateAttributeDescriptorForDataType(name, aType)
+			attrDesc = obj.graphMetadata.CreateAttributeDescriptorForDataType(name, aType)
 		}
 		newAttr, aErr := CreateAttributeWithDesc(nil, attrDesc.(*AttributeDescriptor), value)
 		if aErr != nil {
@@ -94,7 +114,7 @@ func (obj *CompositeKey) SetOrCreateAttribute(name string, value interface{}) ty
 		return err
 	}
 	// Add it to the set
-	obj.Attributes[name] = attr
+	obj.attributes[name] = attr
 	logger.Log(fmt.Sprintf("Returning CompositeKey:SetOrCreateAttribute w/ Key as '%+v'", obj))
 	return nil
 }
@@ -111,9 +131,9 @@ func (obj *CompositeKey) ReadExternal(is types.TGInputStream) types.TGError {
 
 // WriteExternal writes a system object into an appropriate byte format onto an external output stream
 func (obj *CompositeKey) WriteExternal(os types.TGOutputStream) types.TGError {
-	if obj.KeyName != "" {
+	if obj.keyName != "" {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(true) //TypeName exists
-		err := os.(*iostream.ProtocolDataOutputStream).WriteUTF(obj.KeyName)
+		err := os.(*iostream.ProtocolDataOutputStream).WriteUTF(obj.keyName)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning CompositeKey:WriteExternal - unable to write obj.KeyName w/ Error: '%+v'", err.Error()))
 			return err
@@ -121,8 +141,8 @@ func (obj *CompositeKey) WriteExternal(os types.TGOutputStream) types.TGError {
 	} else {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(false)
 	}
-	os.(*iostream.ProtocolDataOutputStream).WriteShort(len(obj.Attributes))
-	for _, attr := range obj.Attributes {
+	os.(*iostream.ProtocolDataOutputStream).WriteShort(len(obj.attributes))
+	for _, attr := range obj.attributes {
 		// Null value is not allowed and therefore no need to include isNull flag
 		err := attr.WriteExternal(os)
 		if err != nil {
@@ -141,7 +161,7 @@ func (obj *CompositeKey) WriteExternal(os types.TGOutputStream) types.TGError {
 func (obj *CompositeKey) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
-	_, err := fmt.Fprintln(&b, obj.GraphMetadata, obj.KeyName, obj.Attributes)
+	_, err := fmt.Fprintln(&b, obj.graphMetadata, obj.keyName, obj.attributes)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CompositeKey:MarshalBinary w/ Error: '%+v'", err.Error()))
 		return nil, err
@@ -156,7 +176,7 @@ func (obj *CompositeKey) MarshalBinary() ([]byte, error) {
 func (obj *CompositeKey) UnmarshalBinary(data []byte) error {
 	// A simple encoding: plain text.
 	b := bytes.NewBuffer(data)
-	_, err := fmt.Fscanln(b, &obj.GraphMetadata, &obj.KeyName, &obj.Attributes)
+	_, err := fmt.Fscanln(b, &obj.graphMetadata, &obj.keyName, &obj.attributes)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CompositeKey:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err
