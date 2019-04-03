@@ -111,6 +111,10 @@ func CreateMessageForVerb(verbId int) (types.TGMessage, types.TGError) {
 		return DefaultDisconnectChannelRequestMessage(), nil
 	case VerbSessionForcefullyTerminated:
 		return DefaultSessionForcefullyTerminatedMessage(), nil
+	case VerbDecryptBufferRequest:
+		return DefaultDecryptBufferRequestMessage(), nil
+	case VerbDecryptBufferResponse:
+		return DefaultDecryptBufferResponseMessage(), nil
 	case VerbExceptionMessage:
 		return DefaultExceptionMessage(), nil
 	case VerbInvalidMessage:
@@ -184,6 +188,10 @@ func CreateMessageWithToken(verbId int, authToken, sessionId int64) (types.TGMes
 		return NewDisconnectChannelRequestMessage(authToken, sessionId), nil
 	case VerbSessionForcefullyTerminated:
 		return NewSessionForcefullyTerminatedMessage(authToken, sessionId), nil
+	case VerbDecryptBufferRequest:
+		return NewDecryptBufferRequestMessage(authToken, sessionId), nil
+	case VerbDecryptBufferResponse:
+		return NewDecryptBufferResponseMessage(authToken, sessionId), nil
 	case VerbExceptionMessage:
 		return NewExceptionMessage(authToken, sessionId), nil
 	case VerbInvalidMessage:

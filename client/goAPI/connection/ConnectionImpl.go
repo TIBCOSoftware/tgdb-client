@@ -93,6 +93,60 @@ func NewTGDBConnection(conPool *ConnectionPoolImpl, channel types.TGChannel, pro
 // Helper functions for TGConnection
 /////////////////////////////////////////////////////////////////
 
+func (obj *TGDBConnection) DecryptEntity(entityId int64) ([]byte, types.TGError) {
+	buf, err := obj.GetLargeObjectAsBytes(entityId, true)
+	if err != nil {
+		return nil, err
+	}
+	cryptoGrapher := obj.Channel.GetDataCryptoGrapher()
+	return cryptoGrapher.Decrypt(buf)
+}
+
+func (obj *TGDBConnection) DecryptBuffer(encryptedBuf []byte) ([]byte, types.TGError) {
+	logger.Log(fmt.Sprint("Entering TGDBConnection:DecryptBuffer w/ EncryptedBuffer"))
+	err := obj.InitMetadata()
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to initialize metadata w/ error: '%s'", err.Error()))
+		return nil, err
+	}
+	obj.ConnPoolImpl.AdminLock()
+	defer obj.ConnPoolImpl.AdminUnlock()
+
+	logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to createChannelRequest() for: pdu.VerbDecryptBufferRequest"))
+	// Create a channel request
+	msgRequest, channelResponse, cErr := obj.createChannelRequest(pdu.VerbDecryptBufferRequest)
+	if cErr != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to createChannelRequest(pdu.VerbDecryptBufferRequest w/ error: '%s'", cErr.Error()))
+		return nil, cErr
+	}
+	decryptRequest := msgRequest.(*pdu.DecryptBufferRequestMessage)
+	decryptRequest.SetEncryptedBuffer(encryptedBuf)
+
+	logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to obj.Channel.SendRequest() for: pdu.VerbDecryptBufferRequest"))
+	// Execute request on channel and get the response
+	msgResponse, channelErr := obj.Channel.SendRequest(decryptRequest, channelResponse.(*channel.BlockingChannelResponse))
+	if channelErr != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to Channel.SendRequest() w/ error: '%s'", channelErr.Error()))
+		return nil, channelErr
+	}
+	logger.Log(fmt.Sprintf("Inside TGDBConnection::GetLargeObjectAsBytes received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
+	response := msgResponse.(*pdu.GetLargeObjectResponseMessage)
+
+	if response == nil {
+		errMsg := "TGDBConnection::GetLargeObjectAsBytes does not have any results in GetLargeObjectResponseMessage"
+		logger.Error(errMsg)
+		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
+	}
+
+	logger.Log(fmt.Sprintf("Returning TGDBConnection:GetLargeObjectAsBytes w/ '%+v'", response.GetBuffer()))
+	return response.GetBuffer(), nil
+}
+
+func (obj *TGDBConnection) EncryptEntity(rawBuffer []byte) ([]byte, types.TGError) {
+	cryptoGrapher := obj.Channel.GetDataCryptoGrapher()
+	return cryptoGrapher.Encrypt(rawBuffer)
+}
+
 func (obj *TGDBConnection) GetChannel() types.TGChannel {
 	return obj.Channel
 }
@@ -1139,7 +1193,7 @@ func (obj *TGDBConnection) GetGraphObjectFactory() (types.TGGraphObjectFactory, 
 }
 
 // GetLargeObjectAsBytes gets an Binary Large Object Entity given an UniqueKey for the Object
-func (obj *TGDBConnection) GetLargeObjectAsBytes(entityId int64) ([]byte, types.TGError) {
+func (obj *TGDBConnection) GetLargeObjectAsBytes(entityId int64, decryptFlag bool) ([]byte, types.TGError) {
 	logger.Log(fmt.Sprintf("Entering TGDBConnection:GetLargeObjectAsBytes for EntityId: '%+v'", entityId))
 	err := obj.InitMetadata()
 	if err != nil {
@@ -1158,6 +1212,7 @@ func (obj *TGDBConnection) GetLargeObjectAsBytes(entityId int64) ([]byte, types.
 	}
 	queryRequest := msgRequest.(*pdu.GetLargeObjectRequestMessage)
 	queryRequest.SetEntityId(entityId)
+	queryRequest.SetDecryption(decryptFlag)
 
 	logger.Log(fmt.Sprint("Inside TGDBConnection::GetLargeObjectAsBytes about to obj.Channel.SendRequest() for: pdu.VerbGetLargeObjectRequest"))
 	// Execute request on channel and get the response

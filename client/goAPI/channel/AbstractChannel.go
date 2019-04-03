@@ -77,24 +77,24 @@ var ConnectionsToChannel int32
 
 type AbstractChannel struct {
 	authToken         int64
-	channelLinkState types.LinkState
+	channelLinkState  types.LinkState
 	channelProperties *utils.SortedProperties
 	channelUrl        *LinkUrl
 	clientId          string
 	connectionIndex   int
-	//dataCryptographer *DataCryptoGrapher	// TODO: Uncomment once DataCryptoGrapher is implemented
-	inboxAddress     string
-	needsPing        bool
-	numOfConnections int32
-	lastActiveTime   time.Time
-	primaryUrl       *LinkUrl
-	reader           *ChannelReader
-	requestId        int64
-	responses        map[int64]types.TGChannelResponse
-	sessionId        int64
-	exceptionLock    sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
-	exceptionCond    *sync.Cond // Condition for lock
-	sendLock         sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
+	cryptographer     types.TGDataCryptoGrapher
+	inboxAddress      string
+	needsPing         bool
+	numOfConnections  int32
+	lastActiveTime    time.Time
+	primaryUrl        *LinkUrl
+	reader            *ChannelReader
+	requestId         int64
+	responses         map[int64]types.TGChannelResponse
+	sessionId         int64
+	exceptionLock     sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
+	exceptionCond     *sync.Cond // Condition for lock
+	sendLock          sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
 	// TODO: Uncomment the following once Tracer is implemented
 	//tracer            types.Tracer // Used for tracing the information flow during the execution
 }
@@ -181,6 +181,7 @@ func (obj *AbstractChannel) channelToString() string {
 	//buffer.WriteString(fmt.Sprintf(", ChannelProperties: %+v", obj.ChannelProperties))
 	buffer.WriteString(fmt.Sprintf(", ClientId: %s", obj.clientId))
 	buffer.WriteString(fmt.Sprintf(", ConnectionIndex: %d", obj.connectionIndex))
+	//buffer.WriteString(fmt.Sprintf(", DataCryptoGrapher: %+v", obj.cryptoGrapher))
 	buffer.WriteString(fmt.Sprintf(", InboxAddress: %s", obj.inboxAddress))
 	buffer.WriteString(fmt.Sprintf(", NeedsPing: %+v", obj.needsPing))
 	buffer.WriteString(fmt.Sprintf(", NumOfConnections: %d", obj.numOfConnections))
@@ -233,6 +234,11 @@ func (obj *AbstractChannel) setChannelSessionId(sessionId int64) {
 	obj.sessionId = sessionId
 }
 
+// SetDataCryptoGrapher sets the data cryptographer
+func (obj *AbstractChannel) setDataCryptoGrapher(crypto types.TGDataCryptoGrapher) {
+	obj.cryptographer = crypto
+}
+
 func (obj *AbstractChannel) setNoOfConnections(num int32) {
 	obj.numOfConnections = num
 }
@@ -272,7 +278,7 @@ func channelDisConnect(obj types.TGChannel) types.TGError {
 	obj.ChannelLock()
 	defer obj.ChannelUnlock()
 
-	if ! isChannelConnected(obj) {
+	if !isChannelConnected(obj) {
 		logger.Warning(fmt.Sprintf("WARNING: Inside AbstractChannel:channelDisConnect channel is already disconnected"))
 		return nil
 	}
@@ -327,7 +333,7 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 			logger.Log(fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop as channel is closed"))
 			return Disconnected.ChannelException()
 		}
-	}	// End of Infinite Loop
+	} // End of Infinite Loop
 
 	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelHandleException about to obj.channelReconnect()"))
 	if channelReconnect(obj) {
@@ -376,11 +382,12 @@ func channelReconnect(obj types.TGChannel) bool {
 	// Execute Derived Channel's method - Ignore the Error Handling
 	_ = obj.CloseSocket()
 
-	//cn := utils.GetConfigFromKey(utils.ChannelFTHosts)
-	//if obj.GetProperties().GetProperty(cn, "") == "" {
-	//	logger.Warning(fmt.Sprint("WARNING: Returning AbstractChannel:channelReconnect - There are no FT host URLs configured for this channel"))
-	//	return false
-	//}
+	cn1 := utils.GetConfigFromKey(utils.ChannelFTHosts)
+	ftHosts := obj.GetProperties().GetProperty(cn1, "")
+	if len(ftHosts) <= 0 {
+		logger.Warning(fmt.Sprint("WARNING: Returning AbstractChannel:channelReconnect - There are no FT host URLs configured for this channel"))
+		return false
+	}
 
 	oldUrl := obj.GetChannelURL()
 	cn := utils.GetConfigFromKey(utils.ChannelFTRetryIntervalSeconds)
@@ -394,7 +401,7 @@ func channelReconnect(obj types.TGChannel) bool {
 	obj.SetChannelLinkState(types.LinkReconnecting)
 
 	logger.Log(fmt.Sprint("Inside AbstractChannel:channelReconnect about to obj.channelTryRepeatConnect()"))
-	err := channelTryRepeatConnect(obj,true)
+	err := channelTryRepeatConnect(obj, true)
 	if err != nil {
 		obj.SetChannelURL(oldUrl.(*LinkUrl))
 		obj.SetChannelLinkState(types.LinkClosed)
@@ -457,7 +464,7 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 		//obj.ChannelUnlock()
 		logger.Log(fmt.Sprint("Returning AbstractChannel:channelRequestReply Breaking Loop successfully after reading the response message"))
 		return msg, nil
-	}	// End of Infinite Loop
+	} // End of Infinite Loop
 
 	logger.Log(fmt.Sprint("Returning AbstractChannel:channelRequestReply"))
 	return nil, nil
@@ -479,7 +486,7 @@ func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag boo
 
 	for {
 		logger.Log(fmt.Sprint("Entering AbstractChannel:channelSendMessage Infinite Loop"))
-		if ! isChannelConnected(obj) {
+		if !isChannelConnected(obj) {
 			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendMessage - Channel is closed"))
 			errMsg := fmt.Sprint("AbstractChannel:channelSendMessage - Channel is closed")
 			return exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
@@ -512,7 +519,7 @@ func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag boo
 		obj.ChannelUnlock()
 		logger.Log(fmt.Sprintf("Returning AbstractChannel:channelSendMessage Breaking Loop successfully after sending the message"))
 		break
-	}	// End of Infinite Loop
+	} // End of Infinite Loop
 	logger.Log(fmt.Sprintf("Returning AbstractChannel:channelSendMessage"))
 	return nil
 }
@@ -536,7 +543,7 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 
 	for {
 		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest Infinite Loop"))
-		if ! isChannelConnected(obj) {
+		if !isChannelConnected(obj) {
 			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendRequest - Channel is closed"))
 			errMsg := fmt.Sprintf("AbstractChannel:channelSendRequest - Channel is closed")
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
@@ -572,7 +579,7 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 				continue
 			}
 		}
-		if ! channelResponse.IsBlocking() {
+		if !channelResponse.IsBlocking() {
 			obj.ChannelUnlock()
 			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendRequest as channel response is NOT blocking"))
 			return nil, nil
@@ -596,14 +603,14 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 		obj.ChannelUnlock()
 		logger.Log(fmt.Sprintf("Returning AbstractChannel:channelSendRequest Breaking Loop successfully w/ msgResponse: '%+v'", msgResponse))
 		return msgResponse, nil
-	}	// End of Infinite Loop
+	} // End of Infinite Loop
 	logger.Log(fmt.Sprintf("Returning AbstractChannel:channelSendRequest"))
 	return nil, nil
 }
 
 func channelStart(obj types.TGChannel) types.TGError {
 	logger.Log(fmt.Sprint("Entering AbstractChannel:channelStart"))
-	if ! isChannelConnected(obj) {
+	if !isChannelConnected(obj) {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelStart - Channel is not connected"))
 		errMsg := fmt.Sprint("AbstractChannel:channelStart - Channel is not connected")
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
@@ -621,7 +628,7 @@ func channelStop(obj types.TGChannel, bForcefully bool) {
 	obj.ChannelLock()
 	defer obj.ChannelUnlock()
 
-	if ! isChannelConnected(obj) {
+	if !isChannelConnected(obj) {
 		logger.Warning(fmt.Sprint("WARNING: Returning AbstractChannel:channelStop as channel is already disconnected"))
 		return
 	}
@@ -752,7 +759,7 @@ func channelTryRepeatConnect(obj types.TGChannel, sleepOnFirstInvocation bool) t
 		}
 	} // End of Outer Infinite For loop
 
-	if ! reconnected {
+	if !reconnected {
 		errMsg := fmt.Sprintf("AbstractChannel:channelTryRepeatConnect %s:Failed %d attempts to connect to TGDB Server.", "TGDB-CONNECT-ERR", retryCount)
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractChannel:channelTryRepeatConnect w/ Error: '%s'", errMsg))
 		return exception.NewTGConnectionTimeoutWithMsg(errMsg)
@@ -823,6 +830,11 @@ func (obj *AbstractChannel) GetChannelURL() types.TGChannelUrl {
 // GetConnectionIndex gets the Connection Index
 func (obj *AbstractChannel) GetConnectionIndex() int {
 	return obj.connectionIndex
+}
+
+// GetDataCryptoGrapher gets the data cryptographer handle
+func (obj *AbstractChannel) GetDataCryptoGrapher() types.TGDataCryptoGrapher {
+	return obj.cryptographer
 }
 
 // GetExceptionCondition gets the Exception Condition

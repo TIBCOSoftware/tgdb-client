@@ -148,6 +148,10 @@ func (obj *AbstractAttribute) setIsModified(flag bool) {
 	obj.isModified = flag
 }
 
+func (obj *AbstractAttribute) setNull() {
+	obj.attrValue = nil
+}
+
 func (obj *AbstractAttribute) setOwner(ownerEntity types.TGEntity) {
 	obj.owner = ownerEntity
 }
@@ -227,6 +231,34 @@ func ReadExternalForEntity(owner types.TGEntity, is types.TGInputStream) (types.
 	return newAttr, nil
 }
 
+func AbstractAttributeReadDecrypted(obj types.TGAttribute, is types.TGInputStream) types.TGError {
+	/** TODO: Implement in GO and Delete once DataCryptoGrapher is implemented
+		GraphMetadataImpl gmi = (GraphMetadataImpl) owner.getGraphMetadata();
+        ConnectionImpl conn = gmi.getConnection();
+        byte[] blob = null;
+
+        TGSystemObject.TGSystemType systemType = owner.getEntityType().getSystemType();
+        switch (systemType) {
+            case NodeType:
+            {
+                long entityId = in.readLong();
+                blob = conn.decryptEntity(entityId);
+                break;
+            }
+            case EdgeType:
+            {
+                byte[] encryptedBuf = in.readBytes();
+                blob = conn.decryptBuffer(encryptedBuf);
+                break;
+            }
+            default:
+                throw new TGException(String.format("Decryption not supported for system types:%s", systemType.name()));
+        }
+        this.value = ConversionUtils.fromByteArray(blob, this.desc.getType());
+	 */
+	return nil
+}
+
 func AbstractAttributeReadExternal(obj types.TGAttribute, is types.TGInputStream) types.TGError {
 	logger.Log(fmt.Sprint("Entering AbstractAttribute:EntityTypeReadExternal"))
 	// We have already read the AttributeId, so no need to read it.
@@ -240,8 +272,22 @@ func AbstractAttributeReadExternal(obj types.TGAttribute, is types.TGInputStream
 		obj.(*AbstractAttribute).attrValue = nil
 		return nil
 	}
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		return AbstractAttributeReadDecrypted(obj, is)
+	}
 	logger.Log(fmt.Sprint("Returning AbstractAttribute::AbstractAttributeReadExternal after reading the attribute value"))
 	return obj.ReadValue(is)
+}
+
+func AbstractAttributeWriteDecrypted(obj types.TGAttribute, os types.TGOutputStream) types.TGError {
+	/** TODO: Implement in GO and Delete once DataCryptoGrapher is implemented
+		byte[] blob = ConversionUtils.toByteArray(this.value, this.desc.getType());
+        GraphMetadataImpl gmi = (GraphMetadataImpl) owner.getGraphMetadata();
+        ConnectionImpl conn = gmi.getConnection();
+        byte[] encrypted = conn.encryptEntity(blob);
+        os.writeBytes(encrypted);
+	 */
+	return nil
 }
 
 func AbstractAttributeWriteExternal(obj types.TGAttribute, os types.TGOutputStream) types.TGError {
@@ -253,8 +299,10 @@ func AbstractAttributeWriteExternal(obj types.TGAttribute, os types.TGOutputStre
 	if obj.IsNull() {
 		return nil
 	}
-
-	logger.Log(fmt.Sprint("Entering AbstractAttribute:AbstractAttributeWriteExternal after writing the attribute value"))
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		return AbstractAttributeWriteDecrypted(obj, os)
+	}
+	logger.Log(fmt.Sprint("Returning AbstractAttribute:AbstractAttributeWriteExternal after writing the attribute value"))
 	return obj.WriteValue(os)
 }
 

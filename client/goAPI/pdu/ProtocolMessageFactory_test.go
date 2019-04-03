@@ -413,6 +413,12 @@ func createTestMessageForVerb(verbId int) types.TGMessage {
 		return createTestDisconnectChannelRequestMessage()
 	case VerbSessionForcefullyTerminated:
 		return createTestSessionForcefullyTerminatedMessage()
+	case VerbDecryptBufferRequest:
+		fallthrough
+		//return createTestDecryptBufferRequestMessage()
+	case VerbDecryptBufferResponse:
+		fallthrough
+		//return createTestDecryptBufferResponseMessage()
 	case VerbExceptionMessage:
 		return createTestExceptionMessage()
 	case VerbInvalidMessage:

@@ -34,6 +34,8 @@ type TGAttributeDescriptor interface {
 	GetScale() int16
 	// IsAttributeArray checks whether the AttributeType an array desc or not
 	IsAttributeArray() bool
+	// IsEncrypted checks whether this attribute is Encrypted or not
+	IsEncrypted() bool
 	// SetPrecision sets the prevision for Attribute Descriptor of type Number
 	SetPrecision(precision int16)
 	// SetScale sets the scale for Attribute Descriptor of type Number

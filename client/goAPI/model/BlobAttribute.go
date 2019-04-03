@@ -113,7 +113,7 @@ func (obj *BlobAttribute) GetAsBytes() []byte {
 	// TODO: Revisit later once connection.GetLargeObjectAsBytes() is implemented
 	gmd := obj.GetOwner().GetGraphMetadata()
 	conn := gmd.(*GraphMetadata).GetConnection()
-	v, _ := conn.GetLargeObjectAsBytes(obj.entityId)
+	v, _ := conn.GetLargeObjectAsBytes(obj.entityId, false)
 	obj.attrValue = v
 	obj.isCached = true
 	return obj.attrValue.([]byte)

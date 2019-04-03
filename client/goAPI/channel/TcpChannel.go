@@ -106,8 +106,13 @@ func (obj *TCPChannel) doAuthenticate() types.TGError {
 
 	obj.setChannelAuthToken(msgResponse.GetAuthToken())
 	obj.setChannelSessionId(msgResponse.GetSessionId())
-	// TODO: Uncomment once DataCryptoGrapher is implemented
-	//obj.setDataCryptographer(NewDataCryptoGrapher(msgResponse.GetSessionId(), msgResponse.(*pdu.AuthenticateResponseMessage).GetServerCertBuffer()))
+
+	cryptoDataGrapher, err := NewDataCryptoGrapher(msgResponse.GetSessionId(), msgResponse.(*pdu.AuthenticateResponseMessage).GetServerCertBuffer())
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::doAuthenticate NewDataCryptoGrapher failed w/ '%+v'", err.Error()))
+		return err
+	}
+	obj.setDataCryptoGrapher(cryptoDataGrapher)
 	logger.Log(fmt.Sprintf("======> Returning TCPChannel:doAuthenticate Successfully authenticated for user: '%s'", obj.getChannelUserName()))
 	return nil
 }

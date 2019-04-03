@@ -39,6 +39,7 @@ type AttributeDescriptor struct {
 	name        string
 	attrType    int
 	isArray     bool
+	isEncrypted bool
 	precision   int16
 	scale       int16
 }
@@ -50,12 +51,13 @@ func DefaultAttributeDescriptor() *AttributeDescriptor {
 	gob.Register(AttributeDescriptor{})
 
 	newAttributeDescriptor := AttributeDescriptor{
-		sysType:   types.SystemTypeAttributeDescriptor,
-		name:      "",
-		attrType:  types.AttributeTypeInvalid,
-		isArray:   false,
-		precision: 0,
-		scale:     0,
+		sysType:     types.SystemTypeAttributeDescriptor,
+		name:        "",
+		attrType:    types.AttributeTypeInvalid,
+		isArray:     false,
+		isEncrypted: false,
+		precision:   0,
+		scale:       0,
 	}
 	newAttributeDescriptor.attributeId = atomic.AddInt64(&LocalAttributeId, 1)
 	return &newAttributeDescriptor
@@ -107,6 +109,10 @@ func (obj *AttributeDescriptor) SetIsArray(arrayFlag bool) {
 	obj.isArray = arrayFlag
 }
 
+func (obj *AttributeDescriptor) SetIsEncrypted(encryptedFlag bool) {
+	obj.isEncrypted = encryptedFlag
+}
+
 func (obj *AttributeDescriptor) SetName(attrName string) {
 	obj.name = attrName
 }
@@ -156,6 +162,11 @@ func (obj *AttributeDescriptor) GetScale() int16 {
 // IsAttributeArray checks whether the AttributeType an array desc or not
 func (obj *AttributeDescriptor) IsAttributeArray() bool {
 	return obj.isArray
+}
+
+// IsEncrypted checks whether this attribute is Encrypted or not
+func (obj *AttributeDescriptor) IsEncrypted() bool {
+	return obj.isEncrypted
 }
 
 // SetPrecision sets the prevision for Attribute Descriptor of type Number
@@ -222,6 +233,11 @@ func (obj *AttributeDescriptor) ReadExternal(is types.TGInputStream) types.TGErr
 		logger.Error(fmt.Sprintf("ERROR: Returning AttributeDescriptor:ReadExternal - unable to read isArray w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	isEncrypted, err := is.(*iostream.ProtocolDataInputStream).ReadBoolean()
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning AttributeDescriptor:ReadExternal - unable to read isEncrypted w/ Error: '%+v'", err.Error()))
+		return err
+	}
 	var precision, scale int16
 	if attrType == types.AttributeTypeNumber {
 		precision, err = is.(*iostream.ProtocolDataInputStream).ReadShort()
@@ -240,6 +256,7 @@ func (obj *AttributeDescriptor) ReadExternal(is types.TGInputStream) types.TGErr
 	obj.SetName(attrName)
 	obj.SetAttrType(int(attrType))
 	obj.SetIsArray(isArray)
+	obj.SetIsEncrypted(isEncrypted)
 	obj.SetPrecision(precision)
 	obj.SetScale(scale)
 	logger.Log(fmt.Sprintf("Returning AttributeDescriptor:ReadExternal w/ NO error, for attrDesc: '%+v'", obj))
@@ -257,6 +274,7 @@ func (obj *AttributeDescriptor) WriteExternal(os types.TGOutputStream) types.TGE
 	}
 	os.(*iostream.ProtocolDataOutputStream).WriteByte(obj.GetAttrType())
 	os.(*iostream.ProtocolDataOutputStream).WriteBoolean(obj.IsAttributeArray())
+	os.(*iostream.ProtocolDataOutputStream).WriteBoolean(obj.IsEncrypted())
 	if obj.attrType == types.AttributeTypeNumber {
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(int(obj.GetPrecision()))
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(int(obj.GetScale()))

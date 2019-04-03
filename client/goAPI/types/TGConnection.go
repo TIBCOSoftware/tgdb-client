@@ -57,7 +57,7 @@ type TGConnection interface {
 	// GetGraphObjectFactory gets the Graph Object Factory for Object creation
 	GetGraphObjectFactory() (TGGraphObjectFactory, TGError)
 	// GetLargeObjectAsBytes gets an Binary Large Object Entity given an UniqueKey for the Object
-	GetLargeObjectAsBytes(entityId int64) ([]byte, TGError)
+	GetLargeObjectAsBytes(entityId int64, decryptFlag bool) ([]byte, TGError)
 	// InsertEntity marks an ENTITY for insert operation. Upon commit, the entity will be inserted in the database
 	InsertEntity(entity TGEntity) TGError
 	// Rollback rolls back the current transaction on this connection

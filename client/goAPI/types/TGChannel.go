@@ -179,6 +179,8 @@ type TGChannel interface {
 	GetChannelURL() TGChannelUrl
 	// GetConnectionIndex gets the Connection Index
 	GetConnectionIndex() int
+	// GetDataCryptoGrapher gets the Data Crypto Grapher
+	GetDataCryptoGrapher() TGDataCryptoGrapher
 	// GetExceptionCondition gets the Exception Condition
 	GetExceptionCondition() *sync.Cond
 	// GetLinkState gets the Link/Channel State

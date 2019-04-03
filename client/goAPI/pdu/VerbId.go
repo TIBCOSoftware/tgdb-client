@@ -76,6 +76,9 @@ const (
 	// Disconnect Request verbs
 	VerbDisconnectChannelRequest    int = 40
 	VerbSessionForcefullyTerminated int = 41
+	// Decryption Request verbs
+	VerbDecryptBufferRequest  int = 44
+	VerbDecryptBufferResponse int = 45
 	// Unknown Exception Message on the server.
 	VerbExceptionMessage int = 100
 	VerbInvalidMessage   int = -1
@@ -114,6 +117,8 @@ var PreDefinedVerbs = map[int]CommandVerbs{
 	VerbDumpStacktraceRequest:       {id: VerbDumpStacktraceRequest, name: "VerbDumpStacktraceRequest", implementor: "pdu.VerbDumpStacktraceRequest"},
 	VerbDisconnectChannelRequest:    {id: VerbDisconnectChannelRequest, name: "VerbDisconnectChannelRequest", implementor: "pdu.VerbDisconnectChannelRequest"},
 	VerbSessionForcefullyTerminated: {id: VerbSessionForcefullyTerminated, name: "VerbSessionForcefullyTerminated", implementor: "pdu.VerbSessionForcefullyTerminated"},
+	VerbDecryptBufferRequest:        {id: VerbDecryptBufferRequest, name: "VerbDecryptBufferRequest", implementor: "pdu.VerbDecryptBufferRequest"},
+	VerbDecryptBufferResponse:       {id: VerbDecryptBufferResponse, name: "VerbDecryptBufferResponse", implementor: "pdu.VerbDecryptBufferResponse"},
 	VerbExceptionMessage:            {id: VerbExceptionMessage, name: "VerbExceptionMessage", implementor: "pdu.VerbExceptionMessage"},
 	VerbInvalidMessage:              {id: VerbInvalidMessage, name: "VerbInvalidMessage", implementor: "pdu.VerbInvalidMessage"},
 }
