@@ -239,9 +239,14 @@ func (obj *SSLChannel) doAuthenticate() types.TGError {
 	}
 
 	obj.setChannelAuthToken(msgResponse.GetAuthToken())
-	// TODO: Uncomment once DataCryptoGrapher is implemented
 	obj.setChannelSessionId(msgResponse.GetSessionId())
-	//obj.setDataCryptographer(NewDataCryptoGrapher(msgResponse.GetSessionId(), msgResponse.(*pdu.AuthenticateResponseMessage).GetServerCertBuffer()))
+
+	cryptoDataGrapher, err := NewDataCryptoGrapher(msgResponse.GetSessionId(), msgResponse.(*pdu.AuthenticateResponseMessage).GetServerCertBuffer())
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning SSLChannel::doAuthenticate NewDataCryptoGrapher failed w/ '%+v'", err.Error()))
+		return err
+	}
+	obj.setDataCryptoGrapher(cryptoDataGrapher)
 	logger.Log(fmt.Sprintf("======> Returning SSLChannel:doAuthenticate Successfully authenticated for user: '%s'", obj.getChannelUserName()))
 	return nil
 }
@@ -397,8 +402,8 @@ func (obj *SSLChannel) validateHandshakeResponseVersion(sVersion int64, cVersion
 	cStrVer := cVersion.GetVersionString()
 
 	if 	serverVersion.GetMajor() == cVersion.GetMajor() &&
-		serverVersion.GetMajor() == cVersion.GetMajor() &&
-		serverVersion.GetMajor() == cVersion.GetMajor() {
+		serverVersion.GetMinor() == cVersion.GetMinor() &&
+		serverVersion.GetUpdate() == cVersion.GetUpdate() {
 		return nil
 	}
 

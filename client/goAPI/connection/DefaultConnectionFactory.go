@@ -281,7 +281,7 @@ func (obj *TGConnectionFactory) CreateConnection(url, user, pwd string, env map[
 // Create an admin connection on the url using the name and password
 func (obj *TGConnectionFactory) CreateAdminConnection(url, user, pwd string, env map[string]string) (types.TGConnection, types.TGError) {
 	logger.Log(fmt.Sprintf("Entering TGConnectionFactory:CreateAdminConnection w/ URL: '%s' User: '%s', and Pwd: '%s'", url, user, pwd))
-	connPool, err := obj.CreateConnectionPool(url, user, pwd, 1, env)
+	connPool, err := obj.CreateConnectionPoolWithType(url, user, pwd, 1, env, TypeAdmin)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGConnectionFactory:CreateAdminConnection - unable to create connection pool - '%+v", err.Error()))
 		return nil, err

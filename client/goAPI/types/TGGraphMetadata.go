@@ -37,6 +37,8 @@ type TGGraphMetadata interface {
 	CreateCompositeKey(nodeTypeName string) TGKey
 	// CreateEdgeType creates Edge Type
 	CreateEdgeType(typeName string, parentEdgeType TGEdgeType) TGEdgeType
+	// GetConnection returns the connection from its graph object factory
+	GetConnection() TGConnection
 	// GetEdgeType returns the Edge by name
 	GetEdgeType(typeName string) (TGEdgeType, TGError)
 	// GetEdgeTypeById returns the Edge Type by id

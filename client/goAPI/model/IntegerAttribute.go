@@ -7,7 +7,6 @@ import (
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
 	"reflect"
 	"strings"
 )
@@ -150,7 +149,7 @@ func (obj *IntegerAttribute) SetValue(value interface{}) types.TGError {
 	}
 
 	if reflect.TypeOf(value).Kind() == reflect.String {
-		v, err := utils.StringToInteger(value.(string))
+		v, err := StringToInteger(value.(string))
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning IntegerAttribute:SetValue - unable to extract attribute value in string format/type"))
 			errMsg := fmt.Sprintf("Failure to covert string to IntegerAttribute")

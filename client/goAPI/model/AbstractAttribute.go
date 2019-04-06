@@ -180,7 +180,7 @@ func (obj *AbstractAttribute) setValue(value interface{}) types.TGError {
 func (obj *AbstractAttribute) attributeToString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("AbstractAttribute:{")
-	//buffer.WriteString(fmt.Sprintf("Owner: %+v ", obj.Owner))
+	//buffer.WriteString(fmt.Sprintf("Owner: %+v ", obj.owner))
 	buffer.WriteString(fmt.Sprintf("AttrDesc: %s", obj.attrDesc.String()))
 	buffer.WriteString(fmt.Sprintf(", AttrValue: %+v", obj.attrValue))
 	buffer.WriteString(fmt.Sprintf(", IsModified: %+v", obj.isModified))
@@ -232,31 +232,44 @@ func ReadExternalForEntity(owner types.TGEntity, is types.TGInputStream) (types.
 }
 
 func AbstractAttributeReadDecrypted(obj types.TGAttribute, is types.TGInputStream) types.TGError {
-	/** TODO: Implement in GO and Delete once DataCryptoGrapher is implemented
-		GraphMetadataImpl gmi = (GraphMetadataImpl) owner.getGraphMetadata();
-        ConnectionImpl conn = gmi.getConnection();
-        byte[] blob = null;
+	conn := obj.GetOwner().GetGraphMetadata().GetConnection()
+	sysType := obj.GetOwner().GetEntityType().GetSystemType()
+	decryptBuf := make([]byte, 0)
+	switch sysType {
+	case types.SystemTypeNode:
+		entityId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in reading entityId from message buffer: %s", err.Error()))
+			return err
+		}
+		decryptBuf, err = conn.DecryptEntity(entityId)
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in conn.DecryptEntity(entityId): %s", err.Error()))
+			return err
+		}
+	case types.SystemTypeEdge:
+		encryptedBuf, err := is.(*iostream.ProtocolDataInputStream).ReadBytes()
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in reading encryptedBuf from message buffer: %s", err.Error()))
+			return err
+		}
+		decryptBuf, err = conn.DecryptBuffer(encryptedBuf)
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in conn.DecryptBuffer(encryptedBuf): %s", err.Error()))
+			return err
+		}
+	default:
+		logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted - Decryption not supported for entity type:'%d'", sysType))
+		errMsg := fmt.Sprintf("Decryption not supported for entity type:'%d'", sysType)
+		return exception.GetErrorByType(types.TGErrorIOException, types.TGDB_CLIENT_READEXTERNAL, errMsg, "")
+	}
+	value, err := ObjectFromByteArray(decryptBuf, obj.GetAttributeDescriptor().GetAttrType())
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in ObjectFromByteArray(): %s", err.Error()))
+		return err
+	}
 
-        TGSystemObject.TGSystemType systemType = owner.getEntityType().getSystemType();
-        switch (systemType) {
-            case NodeType:
-            {
-                long entityId = in.readLong();
-                blob = conn.decryptEntity(entityId);
-                break;
-            }
-            case EdgeType:
-            {
-                byte[] encryptedBuf = in.readBytes();
-                blob = conn.decryptBuffer(encryptedBuf);
-                break;
-            }
-            default:
-                throw new TGException(String.format("Decryption not supported for system types:%s", systemType.name()));
-        }
-        this.value = ConversionUtils.fromByteArray(blob, this.desc.getType());
-	 */
-	return nil
+	return obj.SetValue(value)
 }
 
 func AbstractAttributeReadExternal(obj types.TGAttribute, is types.TGInputStream) types.TGError {
@@ -279,15 +292,19 @@ func AbstractAttributeReadExternal(obj types.TGAttribute, is types.TGInputStream
 	return obj.ReadValue(is)
 }
 
-func AbstractAttributeWriteDecrypted(obj types.TGAttribute, os types.TGOutputStream) types.TGError {
-	/** TODO: Implement in GO and Delete once DataCryptoGrapher is implemented
-		byte[] blob = ConversionUtils.toByteArray(this.value, this.desc.getType());
-        GraphMetadataImpl gmi = (GraphMetadataImpl) owner.getGraphMetadata();
-        ConnectionImpl conn = gmi.getConnection();
-        byte[] encrypted = conn.encryptEntity(blob);
-        os.writeBytes(encrypted);
-	 */
-	return nil
+func AbstractAttributeWriteEncrypted(obj types.TGAttribute, os types.TGOutputStream) types.TGError {
+	buff, err := ObjectToByteArray(obj.GetValue(), obj.GetAttributeDescriptor().GetAttrType())
+	if err != nil {
+		logger.Error(fmt.Sprint("ERROR: Returning AbstractAttribute:AbstractAttributeWriteEncrypted w/ Error in ObjectToByteArray"))
+		return err
+	}
+	conn := obj.GetOwner().GetGraphMetadata().GetConnection()
+	encryptedBuf, err := conn.EncryptEntity(buff)
+	if err != nil {
+		logger.Error(fmt.Sprint("ERROR: Returning AbstractAttribute:AbstractAttributeWriteEncrypted w/ Error in conn.EncryptEntity(buff)"))
+		return err
+	}
+	return os.(*iostream.ProtocolDataOutputStream).WriteBytes(encryptedBuf)
 }
 
 func AbstractAttributeWriteExternal(obj types.TGAttribute, os types.TGOutputStream) types.TGError {
@@ -300,7 +317,7 @@ func AbstractAttributeWriteExternal(obj types.TGAttribute, os types.TGOutputStre
 		return nil
 	}
 	if obj.GetAttributeDescriptor().IsEncrypted() {
-		return AbstractAttributeWriteDecrypted(obj, os)
+		return AbstractAttributeWriteEncrypted(obj, os)
 	}
 	logger.Log(fmt.Sprint("Returning AbstractAttribute:AbstractAttributeWriteExternal after writing the attribute value"))
 	return obj.WriteValue(os)

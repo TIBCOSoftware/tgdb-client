@@ -286,7 +286,7 @@ func (obj *TCPChannel) validateHandshakeResponseVersion(sVersion int64, cVersion
 }
 
 func (obj *TCPChannel) writeLoop(done chan bool) {
-	logger.Log(fmt.Sprintf("======> Entering TCPChannel:writeLoop"))
+	logger.Log(fmt.Sprint("======> Entering TCPChannel:writeLoop"))
 	for {
 		logger.Log(fmt.Sprintf("======> Inside TCPChannel:writeLoop entering infinite loop"))
 		select { // Non-blocking channel operation

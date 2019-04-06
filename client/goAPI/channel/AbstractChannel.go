@@ -127,6 +127,7 @@ func NewAbstractChannel(linkUrl *LinkUrl, props *utils.SortedProperties) *Abstra
 	newChannel.channelUrl = linkUrl
 	newChannel.primaryUrl = linkUrl
 	newChannel.channelProperties = props
+	// TODO: Uncomment once Trace functionality is implemented
 	//enableTraceFlag := newChannel.ChannelProperties.GetPropertyAsBoolean(utils.GetConfigFromKey(utils.EnableConnectionTrace))
 	//if enableTraceFlag {
 	//	traceDir := newChannel.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ConnectionTraceDir), ".")
@@ -548,6 +549,7 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 			errMsg := fmt.Sprintf("AbstractChannel:channelSendRequest - Channel is closed")
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 		}
+		// TODO: Uncomment once Trace functionality is implemented
 		//if obj.tracer != nil {
 		//	obj.tracer.Trace(msg)
 		//}

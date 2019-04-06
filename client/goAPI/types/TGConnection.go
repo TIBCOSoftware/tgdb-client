@@ -30,10 +30,16 @@ type TGConnection interface {
 	CloseQuery(queryHashId int64) (TGQuery, TGError)
 	// CreateQuery creates a reusable query object that can be used to execute one or more statement
 	CreateQuery(expr string) (TGQuery, TGError)
+	// DecryptBuffer decrypts the encrypted buffer by sending a DecryptBufferRequest to the server
+	DecryptBuffer(encryptedBuf []byte) ([]byte, TGError)
+	// DecryptEntity decrypts the encrypted entity using channel's data cryptographer
+	DecryptEntity(entityId int64) ([]byte, TGError)
 	// DeleteEntity marks an ENTITY for delete operation. Upon commit, the entity will be deleted from the database
 	DeleteEntity(entity TGEntity) TGError
 	// Disconnect breaks the connection from the TGDB server
 	Disconnect() TGError
+	// EncryptEntity encrypts the encrypted entity using channel's data cryptographer
+	EncryptEntity(rawBuffer []byte) ([]byte, TGError)
 	// ExecuteGremlinQuery executes a Gremlin Grammer-Based query with  query options
 	ExecuteGremlinQuery(expr string, collection []interface{}, options TGQueryOption) ([]interface{}, TGError)
 	// ExecuteQuery executes an immediate query with associated query options

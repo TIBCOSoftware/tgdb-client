@@ -7,7 +7,6 @@ import (
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
 	"reflect"
 	"strings"
 	"time"
@@ -148,7 +147,7 @@ func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 	}
 
 	if reflect.TypeOf(value).Kind() == reflect.String {
-		v, err := utils.StringToCalendar(value.(string))
+		v, err := StringToCalendar(value.(string))
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning TimestampAttribute:SetValue - unable to extract attribute value in string format/type"))
 			errMsg := fmt.Sprint("Failure to covert string to TimestampAttribute")
@@ -159,7 +158,7 @@ func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 		return nil
 	} else if reflect.TypeOf(value).Kind() == reflect.Int32 ||
 		reflect.TypeOf(value).Kind() == reflect.Int64 {
-		v := utils.LongToCalendar(value.(int64))
+		v := LongToCalendar(value.(int64))
 		logger.Log(fmt.Sprintf("Transformed value '%+v' is of type: '%+v'\n", v, reflect.TypeOf(v).Kind()))
 		obj.SetCalendar(v)
 		return nil

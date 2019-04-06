@@ -23,8 +23,8 @@ package types
 
 type TGAdminConnection interface {
 	TGConnection
-	//// GetAttrDescs gets the list of attribute descriptors
-	//GetAttrDescs() ([]TGAttributeDescriptor, TGError)
+	//// GetAttributeDescriptors gets the list of attribute descriptors
+	//GetAttributeDescriptors() ([]TGAttributeDescriptor, TGError)
 	//
 	//// GetConnections gets the list of all socket connections using this connection type
 	//GetConnections() (TGAdminShowConnections, TGError)
@@ -41,6 +41,7 @@ type TGAdminConnection interface {
 	//// StopServer stops the admin connection
 	//StopServer() TGError
 	//
+	//// CheckpointServer allows the programmatic control to do a checkpoint on server
 	//CheckpointServer() TGError
 	//
 	//// DumpServerStackTrace prints the stack trace
@@ -49,6 +50,6 @@ type TGAdminConnection interface {
 	//// KillConnection terminates the connection forcefully
 	//KillConnection(killConnectionInfo TGAdminKillConnectionInfo ) TGError
 	//
-	//// SetLogLevel set the log level
-	//SetLogLevel(logLevel int, logComponent int64) TGError
+	//// setServerLogLevel set the log level
+	//setServerLogLevel(logLevel int, logComponent int64) TGError
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
 	"reflect"
 	"strings"
 	"sync/atomic"
@@ -106,14 +105,13 @@ func (obj *BlobAttribute) SetBlob(b []byte) {
 }
 
 func (obj *BlobAttribute) GetAsBytes() []byte {
-	if obj.entityId < 0 || obj.isCached {
-		ba, _ := obj.getValueAsBytes()
-		return ba
+	conn := obj.GetOwner().GetGraphMetadata().GetConnection()
+	v, err := conn.GetLargeObjectAsBytes(obj.entityId, false)
+	if err != nil {
+		obj.attrValue = nil
+		logger.Debug(fmt.Sprint("BlobAttribute::GetAsBytes - Unable to conn.GetLargeObjectAsBytes()"))
+		return nil
 	}
-	// TODO: Revisit later once connection.GetLargeObjectAsBytes() is implemented
-	gmd := obj.GetOwner().GetGraphMetadata()
-	conn := gmd.(*GraphMetadata).GetConnection()
-	v, _ := conn.GetLargeObjectAsBytes(obj.entityId, false)
 	obj.attrValue = v
 	obj.isCached = true
 	return obj.attrValue.([]byte)
@@ -198,8 +196,10 @@ func (obj *BlobAttribute) SetValue(value interface{}) types.TGError {
 		return nil
 	}
 
-	if reflect.TypeOf(value).Kind() != reflect.Float32 &&
+	if 	reflect.TypeOf(value).Kind() != reflect.Float32 &&
 		reflect.TypeOf(value).Kind() != reflect.Float64 &&
+		reflect.TypeOf(value).Kind() != reflect.Array &&
+		reflect.TypeOf(value).Kind() != reflect.Struct &&
 		reflect.TypeOf(value).Kind() != reflect.String {
 		logger.Error(fmt.Sprint("ERROR: Returning BlobAttribute:SetValue - attribute value is NOT in expected format/type"))
 		errMsg := fmt.Sprintf("Failure to cast the attribute value to BlobAttribute")
@@ -207,7 +207,7 @@ func (obj *BlobAttribute) SetValue(value interface{}) types.TGError {
 	}
 
 	if reflect.TypeOf(value).Kind() == reflect.Float32 {
-		v, err := utils.BigDecimalToByteArray(value.(float32))
+		v, err := FloatToByteArray(value.(float32))
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning BlobAttribute:SetValue - unable to extract attribute value in float format/type"))
 			errMsg := fmt.Sprintf("Failure to covert float to BlobAttribute")
@@ -215,7 +215,7 @@ func (obj *BlobAttribute) SetValue(value interface{}) types.TGError {
 		}
 		obj.SetBlob(v)
 	} else if reflect.TypeOf(value).Kind() == reflect.Float64 {
-		v, err := utils.DoubleToByteArray(value.(float64))
+		v, err := DoubleToByteArray(value.(float64))
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning BlobAttribute:SetValue - unable to extract attribute value in double format/type"))
 			errMsg := fmt.Sprintf("Failure to covert double to BlobAttribute")
@@ -225,29 +225,18 @@ func (obj *BlobAttribute) SetValue(value interface{}) types.TGError {
 	} else if reflect.TypeOf(value).Kind() == reflect.String {
 		v := []byte(value.(string))
 		obj.SetBlob(v)
+	} else if reflect.TypeOf(value).Kind() == reflect.Struct {
+		v, err := InputStreamToByteArray(iostream.NewProtocolDataInputStream(value.([]byte)))
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning BlobAttribute:SetValue - unable to InputStreamToByteArray(iostream.NewProtocolDataInputStream(value.([]byte)))"))
+			errMsg := fmt.Sprintf("Failure to covert instream bytes to BlobAttribute")
+			return exception.GetErrorByType(types.TGErrorTypeCoercionNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, err.Error())
+		}
+		obj.SetBlob(v)
 	} else {
 		obj.attrValue = value
 		obj.setIsModified(true)
 	}
-	// TODO: Revisit later - use retrospection via go/constant package
-	//if (value instanceof byte[]) {
-	//    this.value = value;
-	//}
-	//else if (value instanceof String) {
-	//    this.value = ((String)value).getBytes();
-	//}
-	//else if (value instanceof BigDecimal) {
-	//    this.value = ConversionUtils.bigDecimal2ByteArray(BigDecimal.class.cast(value));
-	//}
-	//else if (value instanceof ByteBuffer) {
-	//    this.value = ((ByteBuffer)value).array();
-	//}
-	//else if (value instanceof InputStream) {
-	//    this.value = ConversionUtils.inputStream2ByteArray((InputStream) value);
-	//}
-	//else {
-	//    throw new TGErrorTypeCoercionNotSupported(TGAttributeType.AttributeTypeBlob, value.getClass().getSimpleName());
-	//}
 
 	return nil
 }
