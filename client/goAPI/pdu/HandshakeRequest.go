@@ -138,8 +138,8 @@ func (msg *HandShakeRequestMessage) FromBytes(buffer []byte) (types.TGMessage, t
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside HandShakeRequestMessage:FromBytes - about to readHeader"))
-	err = msg.readHeader(is)
+	logger.Log(fmt.Sprint("Inside HandShakeRequestMessage:FromBytes - about to APMReadHeader"))
+	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -161,8 +161,8 @@ func (msg *HandShakeRequestMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering HandShakeRequestMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside HandShakeRequestMessage:ToBytes - about to writeHeader"))
-	err := msg.writeHeader(os)
+	logger.Log(fmt.Sprint("Inside HandShakeRequestMessage:ToBytes - about to APMWriteHeader"))
+	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -186,62 +186,93 @@ func (msg *HandShakeRequestMessage) ToBytes() ([]byte, int, types.TGError) {
 
 // GetAuthToken gets the authToken
 func (msg *HandShakeRequestMessage) GetAuthToken() int64 {
-	return msg.getAuthToken()
+	return msg.HeaderGetAuthToken()
 }
 
 // GetIsUpdatable checks whether this message updatable or not
 func (msg *HandShakeRequestMessage) GetIsUpdatable() bool {
-	return msg.getIsUpdatable()
+	return msg.GetUpdatableFlag()
 }
 
 // GetMessageByteBufLength gets the MessageByteBufLength. This method is called after the toBytes() is executed.
 func (msg *HandShakeRequestMessage) GetMessageByteBufLength() int {
-	return msg.getMessageByteBufLength()
+	return msg.HeaderGetMessageByteBufLength()
 }
 
 // GetRequestId gets the requestId for the message. This will be used as the CorrelationId
 func (msg *HandShakeRequestMessage) GetRequestId() int64 {
-	return msg.getRequestId()
+	return msg.HeaderGetRequestId()
 }
 
 // GetSequenceNo gets the sequenceNo of the message
 func (msg *HandShakeRequestMessage) GetSequenceNo() int64 {
-	return msg.getSequenceNo()
+	return msg.HeaderGetSequenceNo()
 }
 
 // GetSessionId gets the session id
 func (msg *HandShakeRequestMessage) GetSessionId() int64 {
-	return msg.getSessionId()
+	return msg.HeaderGetSessionId()
 }
 
 // GetTimestamp gets the Timestamp
 func (msg *HandShakeRequestMessage) GetTimestamp() int64 {
-	return msg.getTimestamp()
+	return msg.HeaderGetTimestamp()
 }
 
 // GetVerbId gets verbId of the message
 func (msg *HandShakeRequestMessage) GetVerbId() int {
-	return msg.getVerbId()
+	return msg.HeaderGetVerbId()
 }
 
 // SetAuthToken sets the authToken
 func (msg *HandShakeRequestMessage) SetAuthToken(authToken int64) {
-	msg.setAuthToken(authToken)
+	msg.HeaderSetAuthToken(authToken)
+}
+
+// SetDataOffset sets the offset at which data starts in the payload
+func (msg *HandShakeRequestMessage) SetDataOffset(dataOffset int16) {
+	msg.HeaderSetDataOffset(dataOffset)
+}
+
+// SetIsUpdatable sets the updatable flag
+func (msg *HandShakeRequestMessage) SetIsUpdatable(updateFlag bool) {
+	msg.SetUpdatableFlag(updateFlag)
+}
+
+// SetMessageByteBufLength sets the message buffer length
+func (msg *HandShakeRequestMessage) SetMessageByteBufLength(bufLength int) {
+	msg.HeaderSetMessageByteBufLength(bufLength)
 }
 
 // SetRequestId sets the request id
 func (msg *HandShakeRequestMessage) SetRequestId(requestId int64) {
-	msg.setRequestId(requestId)
+	msg.HeaderSetRequestId(requestId)
+}
+
+// SetSequenceNo sets the sequenceNo
+func (msg *HandShakeRequestMessage) SetSequenceNo(sequenceNo int64) {
+	msg.HeaderSetSequenceNo(sequenceNo)
 }
 
 // SetSessionId sets the session id
 func (msg *HandShakeRequestMessage) SetSessionId(sessionId int64) {
-	msg.setSessionId(sessionId)
+	msg.HeaderSetSessionId(sessionId)
 }
 
 // SetTimestamp sets the timestamp
 func (msg *HandShakeRequestMessage) SetTimestamp(timestamp int64) types.TGError {
-	return msg.setTimestamp(timestamp)
+	if !(msg.isUpdatable || timestamp != -1) {
+		logger.Error(fmt.Sprint("ERROR: Returning APMReadHeader:setTimestamp as !msg.IsUpdatable && timestamp != -1"))
+		errMsg := fmt.Sprintf("Mutating a readonly message '%s'", GetVerb(msg.verbId).name)
+		return exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
+	}
+	msg.HeaderSetTimestamp(timestamp)
+	return nil
+}
+
+// SetVerbId sets verbId of the message
+func (msg *HandShakeRequestMessage) SetVerbId(verbId int) {
+	msg.HeaderSetVerbId(verbId)
 }
 
 func (msg *HandShakeRequestMessage) String() string {
@@ -252,7 +283,7 @@ func (msg *HandShakeRequestMessage) String() string {
 	buffer.WriteString(fmt.Sprintf(", HandshakeType: %d", msg.handshakeType))
 	buffer.WriteString(fmt.Sprintf(", Version: %d", msg.version))
 	buffer.WriteString(fmt.Sprintf(", BufLength: %d", msg.BufLength))
-	strArray := []string{buffer.String(), msg.messageToString()+"}"}
+	strArray := []string{buffer.String(), msg.APMMessageToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return  msgStr
 }
@@ -261,17 +292,17 @@ func (msg *HandShakeRequestMessage) String() string {
 // @param timestamp
 // @return TGMessage on success, error on failure
 func (msg *HandShakeRequestMessage) UpdateSequenceAndTimeStamp(timestamp int64) types.TGError {
-	return msg.updateSequenceAndTimeStamp(timestamp)
+	return msg.SetSequenceAndTimeStamp(timestamp)
 }
 
 // ReadHeader reads the bytes from input stream and constructs a common header of network packet
 func (msg *HandShakeRequestMessage) ReadHeader(is types.TGInputStream) types.TGError {
-	return msg.readHeader(is)
+	return APMReadHeader(msg, is)
 }
 
 // WriteHeader exports the values of the common message header attributes to output stream
 func (msg *HandShakeRequestMessage) WriteHeader(os types.TGOutputStream) types.TGError {
-	return msg.writeHeader(os)
+	return APMWriteHeader(msg, os)
 }
 
 // ReadPayload reads the bytes from input stream and constructs message specific payload attributes

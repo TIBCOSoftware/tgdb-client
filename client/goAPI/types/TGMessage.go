@@ -49,20 +49,22 @@ type TGMessage interface {
 
 	// SetAuthToken sets the authToken
 	SetAuthToken(authToken int64)
+	// SetDataOffset sets the offset at which data starts in the payload
+	SetDataOffset(dataOffset int16)
 	// SetIsUpdatable sets the updatable flag
-	//SetIsUpdatable(updateFlag bool)
+	SetIsUpdatable(updateFlag bool)
 	// SetMessageByteBufLength sets the message buffer length
-	//SetMessageByteBufLength(bufLength int)
+	SetMessageByteBufLength(bufLength int)
 	// SetRequestId sets the request id
 	SetRequestId(requestId int64)
 	// SetSequenceNo sets the sequenceNo
-	//SetSequenceNo(sequenceNo int64)
+	SetSequenceNo(sequenceNo int64)
 	// SetSessionId sets the session id
 	SetSessionId(sessionId int64)
 	// SetTimestamp sets the timestamp
 	SetTimestamp(timestamp int64) TGError
 	// SetVerbId sets verbId of the message
-	//SetVerbId(verbId int)
+	SetVerbId(verbId int)
 
 	// UpdateSequenceAndTimeStamp updates the SequenceAndTimeStamp, if message is mutable
 	// @param timestamp

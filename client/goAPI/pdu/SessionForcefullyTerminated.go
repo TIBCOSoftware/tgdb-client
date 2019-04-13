@@ -93,8 +93,8 @@ func (msg *SessionForcefullyTerminatedMessage) FromBytes(buffer []byte) (types.T
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside SessionForcefullyTerminatedMessage:FromBytes - about to readHeader"))
-	err = msg.readHeader(is)
+	logger.Log(fmt.Sprint("Inside SessionForcefullyTerminatedMessage:FromBytes - about to APMReadHeader"))
+	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -116,8 +116,8 @@ func (msg *SessionForcefullyTerminatedMessage) ToBytes() ([]byte, int, types.TGE
 	logger.Log(fmt.Sprint("Entering SessionForcefullyTerminatedMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside SessionForcefullyTerminatedMessage:ToBytes - about to writeHeader"))
-	err := msg.writeHeader(os)
+	logger.Log(fmt.Sprint("Inside SessionForcefullyTerminatedMessage:ToBytes - about to APMWriteHeader"))
+	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -141,62 +141,93 @@ func (msg *SessionForcefullyTerminatedMessage) ToBytes() ([]byte, int, types.TGE
 
 // GetAuthToken gets the authToken
 func (msg *SessionForcefullyTerminatedMessage) GetAuthToken() int64 {
-	return msg.getAuthToken()
+	return msg.HeaderGetAuthToken()
 }
 
 // GetIsUpdatable checks whether this message updatable or not
 func (msg *SessionForcefullyTerminatedMessage) GetIsUpdatable() bool {
-	return msg.getIsUpdatable()
+	return msg.GetUpdatableFlag()
 }
 
 // GetMessageByteBufLength gets the MessageByteBufLength. This method is called after the toBytes() is executed.
 func (msg *SessionForcefullyTerminatedMessage) GetMessageByteBufLength() int {
-	return msg.getMessageByteBufLength()
+	return msg.HeaderGetMessageByteBufLength()
 }
 
 // GetRequestId gets the requestId for the message. This will be used as the CorrelationId
 func (msg *SessionForcefullyTerminatedMessage) GetRequestId() int64 {
-	return msg.getRequestId()
+	return msg.HeaderGetRequestId()
 }
 
 // GetSequenceNo gets the sequenceNo of the message
 func (msg *SessionForcefullyTerminatedMessage) GetSequenceNo() int64 {
-	return msg.getSequenceNo()
+	return msg.HeaderGetSequenceNo()
 }
 
 // GetSessionId gets the session id
 func (msg *SessionForcefullyTerminatedMessage) GetSessionId() int64 {
-	return msg.getSessionId()
+	return msg.HeaderGetSessionId()
 }
 
 // GetTimestamp gets the Timestamp
 func (msg *SessionForcefullyTerminatedMessage) GetTimestamp() int64 {
-	return msg.getTimestamp()
+	return msg.HeaderGetTimestamp()
 }
 
 // GetVerbId gets verbId of the message
 func (msg *SessionForcefullyTerminatedMessage) GetVerbId() int {
-	return msg.getVerbId()
+	return msg.HeaderGetVerbId()
 }
 
 // SetAuthToken sets the authToken
 func (msg *SessionForcefullyTerminatedMessage) SetAuthToken(authToken int64) {
-	msg.setAuthToken(authToken)
+	msg.HeaderSetAuthToken(authToken)
+}
+
+// SetDataOffset sets the offset at which data starts in the payload
+func (msg *SessionForcefullyTerminatedMessage) SetDataOffset(dataOffset int16) {
+	msg.HeaderSetDataOffset(dataOffset)
+}
+
+// SetIsUpdatable sets the updatable flag
+func (msg *SessionForcefullyTerminatedMessage) SetIsUpdatable(updateFlag bool) {
+	msg.SetUpdatableFlag(updateFlag)
+}
+
+// SetMessageByteBufLength sets the message buffer length
+func (msg *SessionForcefullyTerminatedMessage) SetMessageByteBufLength(bufLength int) {
+	msg.HeaderSetMessageByteBufLength(bufLength)
 }
 
 // SetRequestId sets the request id
 func (msg *SessionForcefullyTerminatedMessage) SetRequestId(requestId int64) {
-	msg.setRequestId(requestId)
+	msg.HeaderSetRequestId(requestId)
+}
+
+// SetSequenceNo sets the sequenceNo
+func (msg *SessionForcefullyTerminatedMessage) SetSequenceNo(sequenceNo int64) {
+	msg.HeaderSetSequenceNo(sequenceNo)
 }
 
 // SetSessionId sets the session id
 func (msg *SessionForcefullyTerminatedMessage) SetSessionId(sessionId int64) {
-	msg.setSessionId(sessionId)
+	msg.HeaderSetSessionId(sessionId)
 }
 
 // SetTimestamp sets the timestamp
 func (msg *SessionForcefullyTerminatedMessage) SetTimestamp(timestamp int64) types.TGError {
-	return msg.setTimestamp(timestamp)
+	if !(msg.isUpdatable || timestamp != -1) {
+		logger.Error(fmt.Sprint("ERROR: Returning APMReadHeader:setTimestamp as !msg.IsUpdatable && timestamp != -1"))
+		errMsg := fmt.Sprintf("Mutating a readonly message '%s'", GetVerb(msg.verbId).name)
+		return exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
+	}
+	msg.HeaderSetTimestamp(timestamp)
+	return nil
+}
+
+// SetVerbId sets verbId of the message
+func (msg *SessionForcefullyTerminatedMessage) SetVerbId(verbId int) {
+	msg.HeaderSetVerbId(verbId)
 }
 
 func (msg *SessionForcefullyTerminatedMessage) String() string {
@@ -205,7 +236,7 @@ func (msg *SessionForcefullyTerminatedMessage) String() string {
 	buffer.WriteString(fmt.Sprintf("ExceptionMsg: %s", msg.exceptionMsg))
 	buffer.WriteString(fmt.Sprintf(", ExceptionType: %d", msg.exceptionType))
 	buffer.WriteString(fmt.Sprintf(", BufLength: %d", msg.BufLength))
-	strArray := []string{buffer.String(), msg.messageToString()+"}"}
+	strArray := []string{buffer.String(), msg.APMMessageToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return  msgStr
 }
@@ -214,17 +245,17 @@ func (msg *SessionForcefullyTerminatedMessage) String() string {
 // @param timestamp
 // @return TGMessage on success, error on failure
 func (msg *SessionForcefullyTerminatedMessage) UpdateSequenceAndTimeStamp(timestamp int64) types.TGError {
-	return msg.updateSequenceAndTimeStamp(timestamp)
+	return msg.SetSequenceAndTimeStamp(timestamp)
 }
 
 // ReadHeader reads the bytes from input stream and constructs a common header of network packet
 func (msg *SessionForcefullyTerminatedMessage) ReadHeader(is types.TGInputStream) types.TGError {
-	return msg.readHeader(is)
+	return APMReadHeader(msg, is)
 }
 
 // WriteHeader exports the values of the common message header attributes to output stream
 func (msg *SessionForcefullyTerminatedMessage) WriteHeader(os types.TGOutputStream) types.TGError {
-	return msg.writeHeader(os)
+	return APMWriteHeader(msg, os)
 }
 
 // ReadPayload reads the bytes from input stream and constructs message specific payload attributes

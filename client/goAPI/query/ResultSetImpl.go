@@ -43,7 +43,7 @@ func DefaultResultSet() *ResultSet {
 	gob.Register(ResultSet{})
 
 	newResults := ResultSet{
-		currPos:    0,
+		currPos:    -1,
 		isOpen:     true,
 		resultId:   -1,
 		resultList: make([]types.TGEntity, 0),
@@ -92,7 +92,7 @@ func (obj *ResultSet) GetResults() []types.TGEntity {
 // AddEntityToResultSet adds another entity to the result set
 func (obj *ResultSet) AddEntityToResultSet(entity types.TGEntity) types.TGResultSet {
 	obj.resultList = append(obj.resultList, entity)
-	obj.currPos++
+	//obj.currPos++
 	return obj
 }
 
@@ -172,7 +172,7 @@ func (obj *ResultSet) HasNext() bool {
 	}
 	if len(obj.resultList) == 0 {
 		return false
-	} else if obj.currPos < len(obj.resultList)-1 {
+	} else if obj.currPos < (len(obj.resultList)-1) {
 		return true
 	}
 	return false
@@ -185,7 +185,7 @@ func (obj *ResultSet) Next() types.TGEntity {
 	}
 	if len(obj.resultList) == 0 {
 		return nil
-	} else if obj.currPos < len(obj.resultList)-1 {
+	} else if obj.currPos < (len(obj.resultList)-1) {
 		obj.currPos++
 		return obj.resultList[obj.currPos]
 	}

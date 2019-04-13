@@ -226,10 +226,10 @@ func (obj *Edge) String() string {
 	buffer.WriteString("Edge:{")
 	buffer.WriteString(fmt.Sprintf("DirectionType: %+v", obj.directionType))
 	if obj.fromNode != nil {
-		buffer.WriteString(fmt.Sprintf(", FromNode: %+v", obj.fromNode.String()))
+		buffer.WriteString(fmt.Sprintf(", FromNode: %+v", obj.fromNode.GetVirtualId()))
 	}
 	if obj.toNode != nil {
-		buffer.WriteString(fmt.Sprintf(", ToNode: %+v", obj.toNode.String()))
+		buffer.WriteString(fmt.Sprintf(", ToNode: %+v", obj.toNode.GetVirtualId()))
 	}
 	strArray := []string{buffer.String(), obj.entityToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
@@ -296,6 +296,7 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 		fromNode = fromEntity.(*Node)
 	}
 	obj.SetFromNode(fromNode)
+	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal Edge has fromNode & StreamEntityCount is '%d'", len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
 
 	toNodeId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
@@ -319,6 +320,8 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 		toNode = toEntity.(*Node)
 	}
 	obj.SetToNode(toNode)
+	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal Edge has toNode & StreamEntityCount is '%d'", len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
+
 	obj.SetIsInitialized(true)
 	logger.Log(fmt.Sprintf("Returning Edge:ReadExternal w/ NO error, for edge: '%+v'", obj))
 	return nil

@@ -250,7 +250,7 @@ func (obj *Node) SetVersion(version int) {
 func (obj *Node) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("Node:{")
-	//buffer.WriteString(fmt.Sprintf("Edges: %+v", obj.Edges))
+	buffer.WriteString(fmt.Sprintf("Edges: %+v", obj.edges))
 	strArray := []string{buffer.String(), obj.entityToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return msgStr
@@ -310,6 +310,7 @@ func (obj *Node) ReadExternal(is types.TGInputStream) types.TGError {
 			edge = entity.(*Edge)
 		}
 		obj.edges = append(obj.edges, edge)
+		logger.Log(fmt.Sprintf("Inside Node:ReadExternal Node has '%d' edges & StreamEntityCount is '%d'", len(obj.edges), len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
 	}
 
 	obj.SetIsInitialized(true)
