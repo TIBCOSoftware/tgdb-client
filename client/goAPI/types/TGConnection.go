@@ -54,6 +54,14 @@ type TGConnection interface {
 	ExecuteQueryWithFilter(expr string, edgeFilter string, traversalCondition string, endCondition string, options TGQueryOption) (TGResultSet, TGError)
 	// ExecuteQueryWithId executes an immediate query for specified id & query options
 	ExecuteQueryWithId(queryHashId int64, option TGQueryOption) (TGResultSet, TGError)
+	// GetAddedList gets a list of added entities
+	GetAddedList() map[int64]TGEntity
+	// GetChangedList gets a list of changed entities
+	GetChangedList() map[int64]TGEntity
+	// GetChangedList gets the communication channel associated with this connection
+	GetChannel() TGChannel
+	// GetConnectionProperties gets a list of connection properties
+	GetConnectionProperties() TGProperties
 	// GetEntities gets a result set of entities given an non-uniqueKey
 	GetEntities(key TGKey, properties TGProperties) (TGResultSet, TGError)
 	// GetEntity gets an Entity given an UniqueKey for the Object
@@ -64,10 +72,16 @@ type TGConnection interface {
 	GetGraphObjectFactory() (TGGraphObjectFactory, TGError)
 	// GetLargeObjectAsBytes gets an Binary Large Object Entity given an UniqueKey for the Object
 	GetLargeObjectAsBytes(entityId int64, decryptFlag bool) ([]byte, TGError)
+	// GetRemovedList gets a list of removed entities
+	GetRemovedList() map[int64]TGEntity
 	// InsertEntity marks an ENTITY for insert operation. Upon commit, the entity will be inserted in the database
 	InsertEntity(entity TGEntity) TGError
 	// Rollback rolls back the current transaction on this connection
 	Rollback() TGError
+	// SetConnectionPool sets connection pool
+	//SetConnectionPool(connPool TGConnectionPool)
+	// SetConnectionProperties sets connection properties
+	//SetConnectionProperties(connProps *utils.SortedProperties)
 	// SetExceptionListener sets exception listener
 	SetExceptionListener(listener TGConnectionExceptionListener)
 	// UpdateEntity marks an ENTITY for update operation. Upon commit, the entity will be updated in the database

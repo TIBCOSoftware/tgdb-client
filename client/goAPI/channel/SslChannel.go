@@ -58,7 +58,6 @@ func DefaultSSLChannel() *SSLChannel {
 	buff := make([]byte, 0)
 	newChannel.input = iostream.NewProtocolDataInputStream(buff)
 	newChannel.output = iostream.NewProtocolDataOutputStream(0)
-	//newChannel.reconnecting = false
 	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
 	newChannel.reader = NewChannelReader(&newChannel)
 	return &newChannel
@@ -66,17 +65,23 @@ func DefaultSSLChannel() *SSLChannel {
 
 func NewSSLChannel(linkUrl *LinkUrl, props *utils.SortedProperties) (*SSLChannel, types.TGError) {
 	//logger.Log(fmt.Sprintf("======> Entering SSLChannel:NewSSLChannel w/ linkUrl: '%s'", linkUrl.String()))
-	newChannel := DefaultSSLChannel()
-	newChannel.channelUrl = linkUrl
-	newChannel.primaryUrl = linkUrl
-	newChannel.channelProperties = props
+	newChannel := SSLChannel{
+		AbstractChannel: NewAbstractChannel(linkUrl, props),
+		msgCh:           make(chan types.TGMessage),
+		isSocketClosed:  false,
+	}
+	buff := make([]byte, 0)
+	newChannel.input = iostream.NewProtocolDataInputStream(buff)
+	newChannel.output = iostream.NewProtocolDataOutputStream(0)
+	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
+	newChannel.reader = NewChannelReader(&newChannel)
 	config, err := initTLSConfig(props)
 	if err != nil {
 		return nil, err
 	}
 	newChannel.tlsConfig = config
 	logger.Log(fmt.Sprintf("======> Returning SSLChannel:NewSSLChannel w/ TLSConfig: '%+v'", config))
-	return newChannel, nil
+	return &newChannel, nil
 }
 
 /////////////////////////////////////////////////////////////////
@@ -554,7 +559,7 @@ func (obj *SSLChannel) GetClientId() string {
 	return obj.clientId
 }
 
-// GetChannelURL gets the Channel URL
+// GetChannelURL gets the channel URL
 func (obj *SSLChannel) GetChannelURL() types.TGChannelUrl {
 	return obj.channelUrl
 }
@@ -569,7 +574,7 @@ func (obj *SSLChannel) GetExceptionCondition() *sync.Cond {
 	return obj.exceptionCond
 }
 
-// GetLinkState gets the Link/Channel State
+// GetLinkState gets the Link/channel State
 func (obj *SSLChannel) GetLinkState() types.LinkState {
 	return obj.channelLinkState
 }
@@ -584,17 +589,17 @@ func (obj *SSLChannel) GetPrimaryURL() types.TGChannelUrl {
 	return obj.primaryUrl
 }
 
-// GetProperties gets the Channel Properties
+// GetProperties gets the channel Properties
 func (obj *SSLChannel) GetProperties() types.TGProperties {
 	return obj.channelProperties
 }
 
-// GetReader gets the Channel Reader
+// GetReader gets the channel Reader
 func (obj *SSLChannel) GetReader() types.TGChannelReader {
 	return obj.reader
 }
 
-// GetResponses gets the Channel Response Map
+// GetResponses gets the channel Response Map
 func (obj *SSLChannel) GetResponses() map[int64]types.TGChannelResponse {
 	return obj.responses
 }
@@ -602,6 +607,11 @@ func (obj *SSLChannel) GetResponses() map[int64]types.TGChannelResponse {
 // GetSessionId gets Session id
 func (obj *SSLChannel) GetSessionId() int64 {
 	return obj.sessionId
+}
+
+// GetTracer gets the channel Tracer
+func (obj *SSLChannel) GetTracer() types.TGTracer {
+	return obj.tracer
 }
 
 // IsChannelPingable checks whether the channel is pingable or not
@@ -623,7 +633,7 @@ func (obj *SSLChannel) SendRequest(msg types.TGMessage, response types.TGChannel
 	return channelSendRequest(obj, msg, response, true)
 }
 
-// SetChannelLinkState sets the Link/Channel State
+// SetChannelLinkState sets the Link/channel State
 func (obj *SSLChannel) SetChannelLinkState(state types.LinkState) {
 	obj.channelLinkState = state
 }
@@ -812,7 +822,7 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 
 	obj.DisablePing()
 	if obj.GetIsClosed() {
-		logger.Warning(fmt.Sprint("WARNING: Returning SSLChannel:ReadWireMsg since SSL Channel is Closed"))
+		logger.Warning(fmt.Sprint("WARNING: Returning SSLChannel:ReadWireMsg since SSL channel is Closed"))
 		// TODO: Revisit later - Should we not return an error?
 		return nil, nil
 	}
@@ -867,7 +877,7 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 }
 
 // Send Message to the server, compress and/or encrypt.
-// Hence it is abstraction, that the Channel knows about it.
+// Hence it is abstraction, that the channel knows about it.
 // @param msg       The message that needs to be sent to the server
 func (obj *SSLChannel) Send(msg types.TGMessage) types.TGError {
 	logger.Log(fmt.Sprintf("======> Entering SSLChannel:Send w/ Message as '%+v'", msg.String()))

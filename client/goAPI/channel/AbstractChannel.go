@@ -34,7 +34,7 @@ import (
  *
  */
 
-// ======= Exception Channel Type =======
+// ======= Exception channel Type =======
 type ExceptionChannelType int
 
 const (
@@ -61,7 +61,7 @@ func (proType ExceptionChannelType) ChannelException() *ExceptionHandleResult {
 	if proType&RetryOperation == RetryOperation {
 		exceptionResult = ExceptionHandleResult{
 			ExceptionType:    types.TGErrorRetryIOException,
-			ExceptionMessage: "TGDB-CHANNEL-RETRY:Channel Reconnected, Retry Operation",
+			ExceptionMessage: "TGDB-CHANNEL-RETRY:channel Reconnected, Retry Operation",
 		}
 	}
 	if proType&Disconnected == Disconnected {
@@ -95,8 +95,7 @@ type AbstractChannel struct {
 	exceptionLock     sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
 	exceptionCond     *sync.Cond // Condition for lock
 	sendLock          sync.Mutex // reentrant-lock for synchronizing sending/receiving messages over the wire
-	// TODO: Uncomment the following once Tracer is implemented
-	//tracer            types.Tracer // Used for tracing the information flow during the execution
+	tracer            types.TGTracer // Used for tracing the information flow during the execution
 }
 
 func DefaultAbstractChannel() *AbstractChannel {
@@ -127,18 +126,16 @@ func NewAbstractChannel(linkUrl *LinkUrl, props *utils.SortedProperties) *Abstra
 	newChannel.channelUrl = linkUrl
 	newChannel.primaryUrl = linkUrl
 	newChannel.channelProperties = props
-	// TODO: Uncomment once Trace functionality is implemented
-	//enableTraceFlag := newChannel.ChannelProperties.GetPropertyAsBoolean(utils.GetConfigFromKey(utils.EnableConnectionTrace))
-	//if enableTraceFlag {
-	//	traceDir := newChannel.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ConnectionTraceDir), ".")
-	//	clientId := newChannel.ChannelProperties.GetProperty(utils.GetConfigFromKey(utils.ChannelClientId), "")
-	//	tracer, err := NewChannelTracer(clientId, traceDir)
-	//	if err != nil {
-	//		enableTraceFlag = false
-	//	} else {
-	//		newChannel.tracer = tracer
-	//	}
-	//}
+	// TODO: Uncomment the following two lines to test Trace functionality
+	//enableTraceFlag := newChannel.channelProperties.GetProperty(utils.GetConfigFromKey(utils.EnableConnectionTrace), "true")
+	//if enableTraceFlag == "true" {
+	enableTraceFlag := newChannel.channelProperties.GetPropertyAsBoolean(utils.GetConfigFromKey(utils.EnableConnectionTrace))
+	if enableTraceFlag {
+		traceDir := newChannel.channelProperties.GetProperty(utils.GetConfigFromKey(utils.ConnectionTraceDir), ".")
+		clientId := newChannel.channelProperties.GetProperty(utils.GetConfigFromKey(utils.ChannelClientId), "")
+		newChannel.tracer = NewChannelTracer(clientId, traceDir)
+		//newChannel.tracer.Start()
+	}
 	return newChannel
 }
 
@@ -194,6 +191,7 @@ func (obj *AbstractChannel) channelToString() string {
 	buffer.WriteString(fmt.Sprintf(", Responses: %+v", obj.responses))
 	buffer.WriteString(fmt.Sprintf(", SessionId: %d", obj.sessionId))
 	//buffer.WriteString(fmt.Sprintf(", Reader: %s", obj.GetReader().String()))
+	//buffer.WriteString(fmt.Sprintf(", Tracer: %s", obj.GetTracer().String()))
 	buffer.WriteString(fmt.Sprintf(", ExceptionCond: %+v", obj.exceptionCond))
 	buffer.WriteString("}")
 	return buffer.String()
@@ -380,7 +378,7 @@ func channelProcessMessage(obj types.TGChannel, msg types.TGMessage) types.TGErr
 func channelReconnect(obj types.TGChannel) bool {
 	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelReconnect"))
 	// This is needed here to avoid a FD leak
-	// Execute Derived Channel's method - Ignore the Error Handling
+	// Execute Derived channel's method - Ignore the Error Handling
 	_ = obj.CloseSocket()
 
 	cn1 := utils.GetConfigFromKey(utils.ChannelFTHosts)
@@ -425,7 +423,7 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 		//obj.ChannelLock()
 
 		logger.Log(fmt.Sprint("Inside AbstractChannel:channelRequestReply Infinite Loop about to obj.Send()"))
-		// Execute Derived Channel's method
+		// Execute Derived channel's method
 		err := obj.Send(request)
 		if err != nil {
 			//obj.ChannelUnlock()
@@ -444,7 +442,7 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 		}
 
 		logger.Log(fmt.Sprint("Inside AbstractChannel:channelRequestReply Infinite Loop about to obj.ReadWireMsg()"))
-		// Execute Derived Channel's method
+		// Execute Derived channel's method
 		msg, err := obj.ReadWireMsg()
 		if err != nil {
 			//obj.ChannelUnlock()
@@ -488,8 +486,8 @@ func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag boo
 	for {
 		logger.Log(fmt.Sprint("Entering AbstractChannel:channelSendMessage Infinite Loop"))
 		if !isChannelConnected(obj) {
-			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendMessage - Channel is closed"))
-			errMsg := fmt.Sprint("AbstractChannel:channelSendMessage - Channel is closed")
+			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendMessage - channel is closed"))
+			errMsg := fmt.Sprint("AbstractChannel:channelSendMessage - channel is closed")
 			return exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 		}
 		obj.ChannelLock()
@@ -545,13 +543,13 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 	for {
 		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest Infinite Loop"))
 		if !isChannelConnected(obj) {
-			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendRequest - Channel is closed"))
-			errMsg := fmt.Sprintf("AbstractChannel:channelSendRequest - Channel is closed")
+			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendRequest - channel is closed"))
+			errMsg := fmt.Sprintf("AbstractChannel:channelSendRequest - channel is closed")
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 		}
-		// TODO: Uncomment once Trace functionality is implemented
-		//if obj.tracer != nil {
-		//	obj.tracer.Trace(msg)
+		// TODO: Uncomment once Trace functionality is implemented and tested
+		//if obj.GetTracer() != nil {
+		//	obj.GetTracer().Trace(msg)
 		//}
 		obj.ChannelLock()
 		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest about to set channel response '%+v' in map '%+v'", channelResponse, obj.GetResponses()))
@@ -613,14 +611,16 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 func channelStart(obj types.TGChannel) types.TGError {
 	logger.Log(fmt.Sprint("Entering AbstractChannel:channelStart"))
 	if !isChannelConnected(obj) {
-		logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelStart - Channel is not connected"))
-		errMsg := fmt.Sprint("AbstractChannel:channelStart - Channel is not connected")
+		logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelStart - channel is not connected"))
+		errMsg := fmt.Sprint("AbstractChannel:channelStart - channel is not connected")
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 	}
 	obj.EnablePing()
-	logger.Log(fmt.Sprint("Inside AbstractChannel:channelStart about to start Channel Reader"))
+	logger.Log(fmt.Sprint("Inside AbstractChannel:channelStart about to start channel Reader"))
 	go obj.GetReader().Start()
-	//obj.GetReader().Start()
+	// TODO: Uncomment once Trace functionality is implemented and tested
+	//logger.Log(fmt.Sprint("Inside AbstractChannel:channelStart about to start channel Tracer"))
+	//go obj.GetTracer().Start()
 	logger.Log(fmt.Sprint("Returning AbstractChannel:channelStart"))
 	return nil
 }
@@ -638,28 +638,30 @@ func channelStop(obj types.TGChannel, bForcefully bool) {
 	if bForcefully || obj.GetNoOfConnections() == 0 {
 		logger.Log(fmt.Sprint("AbstractChannel:channelStop stopping channel"))
 		obj.DisablePing()
-		logger.Log(fmt.Sprint("AbstractChannel:channelStop about to stop Channel Reader"))
-		//go obj.GetReader().Stop()
+		logger.Log(fmt.Sprint("AbstractChannel:channelStop about to stop channel Reader"))
 		obj.GetReader().Stop()
+		// TODO: Uncomment once Trace functionality is implemented and tested
+		//logger.Log(fmt.Sprint("AbstractChannel:channelStop about to stop channel Tracer"))
+		//obj.GetTracer().Stop()
 
 		logger.Log(fmt.Sprint("Inside AbstractChannel:channelStop about to CreateMessageForVerb()"))
 		// Send the disconnect request. sendRequest will not receive a channel response since the channel will be disconnected.
 		msgRequest, err := pdu.CreateMessageForVerb(pdu.VerbDisconnectChannelRequest)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Inside AbstractChannel:channelStop VerbDisconnectChannelRequest CreateMessageForVerb failed with '%s'", err.Error()))
-			// Execute Derived Channel's method - Ignore Error Handling
+			// Execute Derived channel's method - Ignore Error Handling
 			_ = obj.CloseSocket()
 			if isChannelClosing(obj) {
 				obj.SetChannelLinkState(types.LinkClosed)
 			}
 			return
 		}
-		// Execute Derived Channel's method
+		// Execute Derived channel's method
 		err = obj.Send(msgRequest)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Inside AbstractChannel:channelStop VerbDisconnectChannelRequest send failed with '%s'", err.Error()))
 			//logger.Log(fmt.Sprintf("Inside AbstractChannel:channelStop about to CloseSocket() due to error in send(msgRequest)"))
-			// Execute Derived Channel's method - Ignore Error Handling
+			// Execute Derived channel's method - Ignore Error Handling
 			_ = obj.CloseSocket()
 			if isChannelClosing(obj) {
 				obj.SetChannelLinkState(types.LinkClosed)
@@ -669,7 +671,7 @@ func channelStop(obj types.TGChannel, bForcefully bool) {
 		obj.SetChannelLinkState(types.LinkClosing)
 
 		logger.Log(fmt.Sprint("Inside AbstractChannel:channelStop about to CloseSocket()"))
-		// Execute Derived Channel's method - Ignore Error Handling
+		// Execute Derived channel's method - Ignore Error Handling
 		_ = obj.CloseSocket()
 	}
 	logger.Log(fmt.Sprint("Returning AbstractChannel:channelStop"))
@@ -686,7 +688,7 @@ func channelTerminated(obj types.TGChannel, killMsg string) {
 	obj.SetChannelLinkState(types.LinkTerminated)
 
 	logger.Log(fmt.Sprint("Inside AbstractChannel:channelTerminated about to CloseSocket()"))
-	// Execute Derived Channel's method - Ignore Error Handling
+	// Execute Derived channel's method - Ignore Error Handling
 	_ = obj.CloseSocket()
 	logger.Log(fmt.Sprintf("Returning AbstractChannel:channelTerminated w/ '%s'", killMsg))
 	return
@@ -725,21 +727,21 @@ func channelTryRepeatConnect(obj types.TGChannel, sleepOnFirstInvocation bool) t
 			}
 
 			logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to CreateSocket() on attempt:%d to URL:%s", i, urlStr))
-			// Execute Derived Channel's method
+			// Execute Derived channel's method
 			err := obj.CreateSocket()
 			if err != nil {
 				logger.Warning(fmt.Sprintf("WARNING: Inside AbstractChannel:channelTryRepeatConnect about to CloseSocket() on attempt:%d to URL:%s w/ '%+v'", i, urlStr, err.Error()))
-				// Execute Derived Channel's method - Ignore Error Handling
+				// Execute Derived channel's method - Ignore Error Handling
 				_ = obj.CloseSocket()
 				continue
 			}
 
 			logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to OnConnect() on attempt:%d to URL:%s", i, urlStr))
-			// Execute Derived Channel's method
+			// Execute Derived channel's method
 			err = obj.OnConnect()
 			if err != nil {
 				logger.Warning(fmt.Sprintf("WARNING: Inside AbstractChannel:channelTryRepeatConnect Failed to execute channel specific OnConnect w/ '%+v'", err.Error()))
-				// Execute Derived Channel's method - Ignore Error Handling
+				// Execute Derived channel's method - Ignore Error Handling
 				_ = obj.CloseSocket()
 				continue
 			}
@@ -824,7 +826,7 @@ func (obj *AbstractChannel) GetClientId() string {
 	return obj.clientId
 }
 
-// GetChannelURL gets the Channel URL
+// GetChannelURL gets the channel URL
 func (obj *AbstractChannel) GetChannelURL() types.TGChannelUrl {
 	return obj.channelUrl
 }
@@ -844,7 +846,7 @@ func (obj *AbstractChannel) GetExceptionCondition() *sync.Cond {
 	return obj.exceptionCond
 }
 
-// GetLinkState gets the Link/Channel State
+// GetLinkState gets the Link/channel State
 func (obj *AbstractChannel) GetLinkState() types.LinkState {
 	return obj.channelLinkState
 }
@@ -859,17 +861,17 @@ func (obj *AbstractChannel) GetPrimaryURL() types.TGChannelUrl {
 	return obj.primaryUrl
 }
 
-// GetProperties gets the Channel Properties
+// GetProperties gets the channel Properties
 func (obj *AbstractChannel) GetProperties() types.TGProperties {
 	return obj.channelProperties
 }
 
-// GetReader gets the Channel Reader
+// GetReader gets the channel Reader
 func (obj *AbstractChannel) GetReader() types.TGChannelReader {
 	return obj.reader
 }
 
-// GetResponses gets the Channel Response Map
+// GetResponses gets the channel Response Map
 func (obj *AbstractChannel) GetResponses() map[int64]types.TGChannelResponse {
 	return obj.responses
 }
@@ -877,6 +879,11 @@ func (obj *AbstractChannel) GetResponses() map[int64]types.TGChannelResponse {
 // GetSessionId gets Session id
 func (obj *AbstractChannel) GetSessionId() int64 {
 	return obj.sessionId
+}
+
+// GetTracer gets the channel Tracer
+func (obj *AbstractChannel) GetTracer() types.TGTracer {
+	return obj.tracer
 }
 
 // IsChannelPingable checks whether the channel is pingable or not
@@ -899,7 +906,7 @@ func (obj *AbstractChannel) SendRequest(msg types.TGMessage, response types.TGCh
 	return channelSendRequest(obj, msg, response, true)
 }
 
-// SetChannelLinkState sets the Link/Channel State
+// SetChannelLinkState sets the Link/channel State
 func (obj *AbstractChannel) SetChannelLinkState(state types.LinkState) {
 	obj.channelLinkState = state
 }
@@ -963,7 +970,7 @@ func (obj *AbstractChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 }
 
 // Send Message to the server, compress and or encrypt.
-// Hence it is abstraction, that the Channel knows about it.
+// Hence it is abstraction, that the channel knows about it.
 // @param msg       The message that needs to be sent to the server
 func (obj *AbstractChannel) Send(msg types.TGMessage) types.TGError {
 	logger.Error(fmt.Sprintf("####### ======> ERROR: Entering AbstractChannel:Send w/ Message as '%s'", msg.String()))

@@ -281,10 +281,6 @@ func (msg *CommitTransactionRequest) String() string {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d=Entity: %+v ", k, v))
 	}
 	buffer.WriteString("}")
-	//buffer.WriteString(fmt.Sprint("ChangedList: "))
-	//for k, v := range msg.ChangedList {
-	//	buffer.WriteString(fmt.Sprintf("EntityId: %d Entity: %+v ", k, v))
-	//}
 	buffer.WriteString(fmt.Sprint(", UpdatedList:{"))
 	for k, v := range msg.updatedList {
 		buffer.WriteString(fmt.Sprintf("EntityId: %d=Entity: %+v ", k, v))
@@ -412,7 +408,7 @@ func (msg *CommitTransactionRequest) MarshalBinary() ([]byte, error) {
 	// A simple encoding: plain text.
 	var b bytes.Buffer
 	_, err := fmt.Fprintln(&b, msg.BufLength, msg.verbId, msg.sequenceNo, msg.timestamp,
-		msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable, msg.addedList, //msg.ChangedList,
+		msg.requestId, msg.authToken, msg.sessionId, msg.dataOffset, msg.isUpdatable, msg.addedList,
 		msg.updatedList, msg.removedList, msg.attrDescSet)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CommitTransactionRequest:MarshalBinary w/ Error: '%+v'", err.Error()))
@@ -432,7 +428,6 @@ func (msg *CommitTransactionRequest) UnmarshalBinary(data []byte) error {
 	_, err := fmt.Fscanln(b, &msg.BufLength, &msg.verbId, &msg.sequenceNo,
 		&msg.timestamp, &msg.requestId, &msg.authToken, &msg.sessionId, &msg.dataOffset, &msg.isUpdatable,
 		&msg.addedList, &msg.updatedList, &msg.removedList, &msg.attrDescSet)
-		//&msg.AddedList, &msg.ChangedList, &msg.UpdatedList, &msg.RemovedList, &msg.AttrDescSet)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning CommitTransactionRequest:UnmarshalBinary w/ Error: '%+v'", err.Error()))
 		return err

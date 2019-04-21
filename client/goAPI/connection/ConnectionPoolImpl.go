@@ -28,7 +28,7 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGConnectionPool.go
+ * File name: ConnectionPoolImpl.go
  * Created on: Oct 20, 2018
  * Created by: achavan
  * SVN id: $id: $
@@ -59,11 +59,11 @@ const (
 type ConnectionPoolImpl struct {
 	adminLock             sync.RWMutex // rw-lock for synchronizing read-n-update of connection pool properties
 	connectReserveTimeOut time.Duration
-	connList              []*TGDBConnection // Total Available Connections (Active + Dead/ToBeReused)
+	connList              []types.TGConnection // Total Available Connections (Active + Dead/ToBeReused)
 	connType              TypeConnection
 	chanPool              chan *TGDBConnection
-	poolProperties        *utils.SortedProperties
-	consumers             map[int64]*TGDBConnection           // Active/In-Use Connections
+	poolProperties        types.TGProperties
+	consumers             map[int64]types.TGConnection        // Active/In-Use Connections
 	exceptionListener     types.TGConnectionExceptionListener // Function Pointer
 	poolSize              int
 	poolState             int
@@ -80,13 +80,13 @@ func defaultTGConnectionPool() *ConnectionPoolImpl {
 	gob.Register(ConnectionPoolImpl{})
 
 	//once.Do(func() {
-		gInstance := &ConnectionPoolImpl{
-			connList:  make([]*TGDBConnection, 0),
-			connType:  TypeConventional,
-			consumers: make(map[int64]*TGDBConnection, 0),
-		}
-		gInstance.poolSize, _ = strconv.Atoi(utils.GetConfigFromKey(utils.ConnectionPoolDefaultPoolSize).GetDefaultValue())
-		gInstance.useDedicateChannel, _ = strconv.ParseBool(utils.GetConfigFromKey(utils.ConnectionPoolUseDedicatedChannelPerConnection).GetDefaultValue())
+	gInstance := &ConnectionPoolImpl{
+		connList:  make([]types.TGConnection, 0),
+		connType:  TypeConventional,
+		consumers: make(map[int64]types.TGConnection, 0),
+	}
+	gInstance.poolSize, _ = strconv.Atoi(utils.GetConfigFromKey(utils.ConnectionPoolDefaultPoolSize).GetDefaultValue())
+	gInstance.useDedicateChannel, _ = strconv.ParseBool(utils.GetConfigFromKey(utils.ConnectionPoolUseDedicatedChannelPerConnection).GetDefaultValue())
 	//})
 	return gInstance
 }
@@ -129,7 +129,7 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 		case TypeConventional:
 			conn = NewTGDBConnection(cp, ch, props)
 		//case TypeAdmin:
-			//conn = NewTGDBAdminConnection(cp, ch, props)
+		//	conn = NewAdminConnection(cp, ch, props)
 		default:
 			conn = NewTGDBConnection(cp, ch, props)
 		}
@@ -149,16 +149,8 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 // Helper functions from Interface ==> TGConnectionPool
 /////////////////////////////////////////////////////////////////
 
-func (obj *ConnectionPoolImpl) AdminLock() {
-	obj.adminLock.RLock()
-}
-
-func (obj *ConnectionPoolImpl) AdminUnlock() {
-	obj.adminLock.RUnlock()
-}
-
 // GetConnectionList returns all the connections = Active/In-Use + Un-used/Initialized
-func (obj *ConnectionPoolImpl) GetConnectionList() []*TGDBConnection {
+func (obj *ConnectionPoolImpl) GetConnectionList() []types.TGConnection {
 	return obj.connList
 }
 
@@ -168,7 +160,7 @@ func (obj *ConnectionPoolImpl) GetConnectionProperties() types.TGProperties {
 }
 
 // GetActiveConnections returns all the Active/In-Use connections
-func (obj *ConnectionPoolImpl) GetActiveConnections() map[int64]*TGDBConnection {
+func (obj *ConnectionPoolImpl) GetActiveConnections() map[int64]types.TGConnection {
 	return obj.consumers
 }
 
@@ -220,6 +212,16 @@ func (obj *ConnectionPoolImpl) GetConnection() (types.TGConnection, types.TGErro
 /////////////////////////////////////////////////////////////////
 // Implement functions from Interface ==> TGConnectionPool
 /////////////////////////////////////////////////////////////////
+
+// AdminLock locks the connection pool so that the list of connections can be updated
+func (obj *ConnectionPoolImpl) AdminLock() {
+	obj.adminLock.RLock()
+}
+
+// AdminUnlock unlocks the connection pool so that the list of connections can be updated
+func (obj *ConnectionPoolImpl) AdminUnlock() {
+	obj.adminLock.RUnlock()
+}
 
 // Connect establishes connection from this pool of available/configured connections to the TGDB server
 // Exception could be BadAuthentication or BadUrl

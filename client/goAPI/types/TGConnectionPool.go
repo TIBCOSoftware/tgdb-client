@@ -22,6 +22,10 @@ package types
  */
 
 type TGConnectionPool interface {
+	// AdminLock locks the connection pool so that the list of connections can be updated
+	AdminLock()
+	// AdminUnlock unlocks the connection pool so that the list of connections can be updated
+	AdminUnlock()
 	// Connect establishes connection from this pool of available/configured connections to the TGDB server
 	// Exception could be BadAuthentication or BadUrl
 	Connect() TGError

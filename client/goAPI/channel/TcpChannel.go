@@ -58,7 +58,6 @@ func DefaultTCPChannel() *TCPChannel {
 	buff := make([]byte, 0)
 	newChannel.input = iostream.NewProtocolDataInputStream(buff)
 	newChannel.output = iostream.NewProtocolDataOutputStream(0)
-	//newChannel.reconnecting = false
 	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
 	newChannel.reader = NewChannelReader(&newChannel)
 	return &newChannel
@@ -66,12 +65,17 @@ func DefaultTCPChannel() *TCPChannel {
 
 func NewTCPChannel(linkUrl *LinkUrl, props *utils.SortedProperties) *TCPChannel {
 	//logger.Log(fmt.Sprintf("======> Entering TCPChannel:NewTCPChannel w/ linkUrl: '%s'", linkUrl.String()))
-	newChannel := DefaultTCPChannel()
-	newChannel.channelUrl = linkUrl
-	newChannel.primaryUrl = linkUrl
-	newChannel.channelProperties = props
-	//logger.Log(fmt.Sprintf("======> Entering TCPChannel:NewTCPChannel w/ newChannel: '%+v'", newChannel.String()))
-	return newChannel
+	newChannel := TCPChannel{
+		AbstractChannel: NewAbstractChannel(linkUrl, props),
+		msgCh:           make(chan types.TGMessage),
+		isSocketClosed:  false,
+	}
+	buff := make([]byte, 0)
+	newChannel.input = iostream.NewProtocolDataInputStream(buff)
+	newChannel.output = iostream.NewProtocolDataOutputStream(0)
+	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
+	newChannel.reader = NewChannelReader(&newChannel)
+	return &newChannel
 }
 
 /////////////////////////////////////////////////////////////////
@@ -431,7 +435,7 @@ func (obj *TCPChannel) GetClientId() string {
 	return obj.clientId
 }
 
-// GetChannelURL gets the Channel URL
+// GetChannelURL gets the channel URL
 func (obj *TCPChannel) GetChannelURL() types.TGChannelUrl {
 	return obj.channelUrl
 }
@@ -446,7 +450,7 @@ func (obj *TCPChannel) GetExceptionCondition() *sync.Cond {
 	return obj.exceptionCond
 }
 
-// GetLinkState gets the Link/Channel State
+// GetLinkState gets the Link/channel State
 func (obj *TCPChannel) GetLinkState() types.LinkState {
 	return obj.channelLinkState
 }
@@ -461,17 +465,17 @@ func (obj *TCPChannel) GetPrimaryURL() types.TGChannelUrl {
 	return obj.primaryUrl
 }
 
-// GetProperties gets the Channel Properties
+// GetProperties gets the channel Properties
 func (obj *TCPChannel) GetProperties() types.TGProperties {
 	return obj.channelProperties
 }
 
-// GetReader gets the Channel Reader
+// GetReader gets the channel Reader
 func (obj *TCPChannel) GetReader() types.TGChannelReader {
 	return obj.reader
 }
 
-// GetResponses gets the Channel Response Map
+// GetResponses gets the channel Response Map
 func (obj *TCPChannel) GetResponses() map[int64]types.TGChannelResponse {
 	return obj.responses
 }
@@ -479,6 +483,11 @@ func (obj *TCPChannel) GetResponses() map[int64]types.TGChannelResponse {
 // GetSessionId gets Session id
 func (obj *TCPChannel) GetSessionId() int64 {
 	return obj.sessionId
+}
+
+// GetTracer gets the channel Tracer
+func (obj *TCPChannel) GetTracer() types.TGTracer {
+	return obj.tracer
 }
 
 // IsChannelPingable checks whether the channel is pingable or not
@@ -501,7 +510,7 @@ func (obj *TCPChannel) SendRequest(msg types.TGMessage, response types.TGChannel
 	return channelSendRequest(obj, msg, response, true)
 }
 
-// SetChannelLinkState sets the Link/Channel State
+// SetChannelLinkState sets the Link/channel State
 func (obj *TCPChannel) SetChannelLinkState(state types.LinkState) {
 	obj.channelLinkState = state
 }
@@ -666,7 +675,7 @@ func (obj *TCPChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 
 	obj.DisablePing()
 	if obj.GetIsClosed() {
-		logger.Warning(fmt.Sprint("WARNING: Returning TCPChannel:ReadWireMsg since TCP Channel is Closed"))
+		logger.Warning(fmt.Sprint("WARNING: Returning TCPChannel:ReadWireMsg since TCP channel is Closed"))
 		// TODO: Revisit later - Should we not return an error?
 		return nil, nil
 	}
@@ -721,7 +730,7 @@ func (obj *TCPChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 }
 
 // Send sends the message to the server, compress and or encrypt.
-// Hence it is abstraction, that the Channel knows about it.
+// Hence it is abstraction, that the channel knows about it.
 // @param msg       The message that needs to be sent to the server
 func (obj *TCPChannel) Send(msg types.TGMessage) types.TGError {
 	logger.Log(fmt.Sprintf("======> Entering TCPChannel:Send w/ Socket '%+v' and Message as '%+v'", obj.socket, msg.String()))

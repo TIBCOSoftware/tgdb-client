@@ -199,6 +199,8 @@ type TGChannel interface {
 	//GetServerProtocolVersion() int
 	// GetSessionId gets Session id
 	GetSessionId() int64
+	// GetTracer gets the channel Tracer
+	GetTracer() TGTracer
 	// EnablePing enables the pinging ability to the channel
 	EnablePing()
 	// IsChannelPingable checks whether the channel is pingable or not
