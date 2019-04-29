@@ -1,16 +1,3 @@
-package channel
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"strconv"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -31,6 +18,19 @@ import (
  * SVN id: $id: $
  *
  */
+
+package channel
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"strconv"
+	"strings"
+)
 
 // Default settings - A fallback option - to construct a valid connection URL to TGDB server
 const (

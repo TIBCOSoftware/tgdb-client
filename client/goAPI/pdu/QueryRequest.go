@@ -1,16 +1,3 @@
-package pdu
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"reflect"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -25,12 +12,25 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: VerbQueryRequest.go
+ * File name: QueryRequest.go
  * Created on: Sep 30, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package pdu
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"reflect"
+	"strings"
+)
 
 type QueryRequestMessage struct {
 	*AbstractProtocolMessage
@@ -452,7 +452,7 @@ func (msg *QueryRequestMessage) WritePayload(os types.TGOutputStream) types.TGEr
 	}
 
 	// CREATE, EXECUTE.
-	if msg.GetCommand() == 1 || msg.GetCommand() == 2 {
+	if msg.GetCommand() == 1 || msg.GetCommand() == 2 || msg.GetCommand() == 3 || msg.GetCommand() == 4 {
 		if msg.GetQuery() == "" {
 			// isNull is true
 			os.(*iostream.ProtocolDataOutputStream).WriteBoolean(true)
@@ -494,7 +494,7 @@ func (msg *QueryRequestMessage) WritePayload(os types.TGOutputStream) types.TGEr
 				return err
 			}
 		}
-	} else if msg.GetCommand() == 3 || msg.GetCommand() == 4 {
+	} else if msg.GetCommand() == 5 || msg.GetCommand() == 6 {
 		// EXECUTED, CLOSE
 		os.(*iostream.ProtocolDataOutputStream).WriteLong(msg.GetQueryHashId())
 	}

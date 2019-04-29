@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package types
  * SVN id: $id: $
  *
  */
+
+package types
 
 // Channel Reader is an independent thread that starts and stops with the channel, and continuously monitors
 // network communication socket to read and process any message that is sent by the TGDB server

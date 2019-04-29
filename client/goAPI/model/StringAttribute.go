@@ -159,18 +159,36 @@ func (obj *StringAttribute) SetValue(value interface{}) types.TGError {
 
 // ReadValue reads the value from input stream
 func (obj *StringAttribute) ReadValue(is types.TGInputStream) types.TGError {
-	value, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
-	if err != nil {
-		return err
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeReadDecrypted(obj, is)
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning StringAttribute:ReadValue w/ Error in AbstractAttributeReadDecrypted()"))
+			return err
+		}
+	} else {
+		value, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
+		if err != nil {
+			return err
+		}
+		logger.Log(fmt.Sprintf("StringAttribute::ReadValue - read value: '%+v'", value))
+		obj.attrValue = value
 	}
-	logger.Log(fmt.Sprintf("StringAttribute::ReadValue - read value: '%+v'", value))
-	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *StringAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	return os.(*iostream.ProtocolDataOutputStream).WriteUTF(obj.attrValue.(string))
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeWriteEncrypted(obj, os)
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning StringAttribute:WriteValue - Unable to AbstractAttributeWriteEncrypted() w/ Error: '%s'", err.Error()))
+			errMsg := "StringAttribute::WriteValue - Unable to AbstractAttributeWriteEncrypted()"
+			return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+		}
+	} else {
+		return os.(*iostream.ProtocolDataOutputStream).WriteUTF(obj.attrValue.(string))
+	}
+	return nil
 }
 
 func (obj *StringAttribute) String() string {

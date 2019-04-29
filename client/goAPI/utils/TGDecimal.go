@@ -1,14 +1,3 @@
-package utils
-
-import (
-	"encoding/binary"
-	"fmt"
-	"math"
-	"math/big"
-	"strconv"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -23,12 +12,23 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: MyDecimal.go
+ * File name: TGDecimal.go
  * Created on: Feb 13, 2019
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"encoding/binary"
+	"fmt"
+	"math"
+	"math/big"
+	"strconv"
+	"strings"
+)
 
 /**
  * TODO: Revisit later - for more testing and optimization

@@ -1,12 +1,3 @@
-package admin
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -27,6 +18,15 @@ import (
  * SVN id: $id: $
  *
  */
+
+package admin
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
+)
 
 var logger = logging.DefaultTGLogManager().GetLogger()
 

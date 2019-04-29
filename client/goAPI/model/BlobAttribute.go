@@ -1,17 +1,3 @@
-package model
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"reflect"
-	"strings"
-	"sync/atomic"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -32,6 +18,20 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"reflect"
+	"strings"
+	"sync/atomic"
+)
 
 //var gUniqueId = NewAtomicLong(0)
 var UniqueId int64
@@ -81,38 +81,33 @@ func NewBlobAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDes
 // Helper functions for BlobAttribute
 /////////////////////////////////////////////////////////////////
 
-func (obj *BlobAttribute) getValueAsBytes() ([]byte, types.TGError) {
-	var network bytes.Buffer
-	enc := gob.NewEncoder(&network)
-	err := enc.Encode(obj.attrValue)
-	if err != nil {
-		errMsg := "BlobAttribute::getValueAsBytes - Unable to encode attribute value"
-		return nil, exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.Error())
-	}
-	dec := gob.NewDecoder(&network)
-	var v []byte
-	err = dec.Decode(&v)
-	if err != nil {
-		errMsg := "BlobAttribute::getValueAsBytes - Unable to decode attribute value"
-		return nil, exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.Error())
-	}
-	return v, nil
-}
-
 func (obj *BlobAttribute) SetBlob(b []byte) {
 	obj.attrValue = b
 	obj.setIsModified(true)
 }
 
 func (obj *BlobAttribute) GetAsBytes() []byte {
-	conn := obj.GetOwner().GetGraphMetadata().GetConnection()
-	v, err := conn.GetLargeObjectAsBytes(obj.entityId, false)
-	if err != nil {
-		obj.attrValue = nil
-		logger.Debug(fmt.Sprint("BlobAttribute::GetAsBytes - Unable to conn.GetLargeObjectAsBytes()"))
-		return nil
+	if obj.entityId < 0 || obj.isCached {
+		return obj.attrValue.([]byte)
 	}
-	obj.attrValue = v
+	conn := obj.GetOwner().GetGraphMetadata().GetConnection()
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		v, err := conn.DecryptEntity(obj.entityId)
+		if err != nil {
+			obj.attrValue = nil
+			logger.Debug(fmt.Sprint("BlobAttribute::GetAsBytes - Unable to conn.DecryptEntity()"))
+			return nil
+		}
+		obj.attrValue = v
+	} else {
+		v, err := conn.GetLargeObjectAsBytes(obj.entityId, false)
+		if err != nil {
+			obj.attrValue = nil
+			logger.Debug(fmt.Sprint("BlobAttribute::GetAsBytes - Unable to conn.GetLargeObjectAsBytes()"))
+			return nil
+		}
+		obj.attrValue = v
+	}
 	obj.isCached = true
 	return obj.attrValue.([]byte)
 }
@@ -261,17 +256,20 @@ func (obj *BlobAttribute) WriteValue(os types.TGOutputStream) types.TGError {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(false)
 	} else {
 		os.(*iostream.ProtocolDataOutputStream).WriteBoolean(true)
-		v, err := obj.getValueAsBytes()
-		if err != nil {
-			logger.Error(fmt.Sprintf("ERROR: Returning BlobAttribute:WriteValue - Unable to decode attribute value w/ Error: '%s'", err.Error()))
-			errMsg := "BlobAttribute::WriteValue - Unable to decode attribute value"
-			return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
-		}
-		err = os.(*iostream.ProtocolDataOutputStream).WriteBytes(v)
-		if err != nil {
-			logger.Error(fmt.Sprintf("ERROR: Returning BlobAttribute:WriteValue - Unable to write attribute value w/ Error: '%s'", err.Error()))
-			errMsg := "BlobAttribute::WriteValue - Unable to write attribute value"
-			return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+		if obj.GetAttributeDescriptor().IsEncrypted() {
+			err := AbstractAttributeWriteEncrypted(obj, os)
+			if err != nil {
+				logger.Error(fmt.Sprintf("ERROR: Returning BlobAttribute:WriteValue - Unable to AbstractAttributeWriteEncrypted() w/ Error: '%s'", err.Error()))
+				errMsg := "BlobAttribute::WriteValue - Unable to AbstractAttributeWriteEncrypted()"
+				return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+			}
+		} else {
+			err := os.(*iostream.ProtocolDataOutputStream).WriteBytes(obj.attrValue.([]byte))
+			if err != nil {
+				logger.Error(fmt.Sprintf("ERROR: Returning BlobAttribute:WriteValue - Unable to WriteBytes() w/ Error: '%s'", err.Error()))
+				errMsg := "BlobAttribute::WriteValue - Unable to WriteBytes()"
+				return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+			}
 		}
 	}
 	return nil

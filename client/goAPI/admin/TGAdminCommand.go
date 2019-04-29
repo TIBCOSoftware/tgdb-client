@@ -1,9 +1,3 @@
-package admin
-
-import (
-	"bytes"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -24,6 +18,12 @@ import (
  * SVN id: $id: $
  *
  */
+
+package admin
+
+import (
+	"bytes"
+)
 
 // ======= Admin Command Types =======
 type AdminCommand int

@@ -1,11 +1,3 @@
-package model
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,12 +12,20 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGEntityType_Test.go
+ * File name: EdgeTypeImpl_Test.go
  * Created on: Nov 17, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"testing"
+)
 
 func CreateTestEntityType(name string, entityType types.TGSystemType) *EntityType {
 	newEntityType := DefaultEntityType()

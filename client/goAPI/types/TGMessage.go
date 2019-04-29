@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package types
  * SVN id: $id: $
  *
  */
+
+package types
 
 // This is the main interface for all message types
 type TGMessage interface {

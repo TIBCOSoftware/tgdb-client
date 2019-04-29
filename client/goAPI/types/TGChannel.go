@@ -1,10 +1,3 @@
-package types
-
-import (
-	"bytes"
-	"sync"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -25,6 +18,13 @@ import (
  * SVN id: $id: $
  *
  */
+
+package types
+
+import (
+	"bytes"
+	"sync"
+)
 
 // ======= Link State Types =======
 type LinkState int

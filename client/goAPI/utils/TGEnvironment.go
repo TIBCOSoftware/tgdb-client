@@ -1,13 +1,3 @@
-package utils
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"os"
-	"strconv"
-	"strings"
-	"sync"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -28,6 +18,16 @@ import (
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"os"
+	"strconv"
+	"strings"
+	"sync"
+)
 
 type TGEnvironment struct {
 	envMap map[ConfigName]string

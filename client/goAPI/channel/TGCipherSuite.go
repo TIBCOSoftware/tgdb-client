@@ -1,10 +1,3 @@
-package channel
-
-import (
-	"crypto/tls"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -25,6 +18,13 @@ import (
  * SVN id: $id: $
  *
  */
+
+package channel
+
+import (
+	"crypto/tls"
+	"strings"
+)
 
 type TGCipherSuite struct {
 	suiteId     uint16

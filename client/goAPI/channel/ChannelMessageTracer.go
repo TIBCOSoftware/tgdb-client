@@ -43,17 +43,6 @@ type ChannelMessageTracer struct {
 
 const MaxFileSize int64 = 1 << 20
 
-/**
-public static final int MB = 1 << 20;
-
-protected Queue<TGMessage> queue;
-protected String outputFileName;
-int currentSuffix = 0;
-DataOutputStream dos;
-FileOutputStream fos;
-int foslen = 0;
-*/
-
 func DefaultChannelMessageTracer() *ChannelMessageTracer {
 	// We must register the concrete type for the encoder and decoder (which would
 	// normally be on a separate machine from the encoder). On each end, this tells the

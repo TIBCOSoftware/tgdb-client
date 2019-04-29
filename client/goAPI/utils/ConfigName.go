@@ -1,10 +1,3 @@
-package utils
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -19,12 +12,19 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGConfigName.go
+ * File name: ConfigName.go
  * Created on: Sep 23, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"strings"
+)
 
 const (
 	ChannelDefaultHost = iota
@@ -46,6 +46,11 @@ const (
 	ConnectionPoolDefaultPoolSize
 	ConnectionReserveTimeoutSeconds
 	ConnectionOperationTimeoutSeconds
+	ConnectionDateFormat
+	ConnectionTimeFormat
+	ConnectionTimeStampFormat
+	ConnectionLocale
+	ConnectionDefaultQueryLanguage
 	TlsProviderName
 	TlsProviderClassName
 	TlsProviderConfigFile
@@ -86,24 +91,29 @@ var PreDefinedConfigurations = map[int]ConfigName{
 	ConnectionPoolUseDedicatedChannelPerConnection: {configPropName: "tgdb.connectionpool.useDedicatedChannelPerConnection", aliasName: "useDedicatedChannelPerConnection", defaultValue: "false", description: ""},
 	ConnectionPoolDefaultPoolSize:                  {configPropName: "tgdb.connectionpool.defaultPoolSize", aliasName: "defaultPoolSize", defaultValue: "10", description: "The default connection pool size to use when creating a ConnectionPool"},
 	//0 = mean immediate, Integer Max for indefinite
-	ConnectionReserveTimeoutSeconds:                {configPropName: "tgdb.connectionpool.connectionReserveTimeoutSeconds", aliasName: "connectionReserveTimeoutSeconds", defaultValue: "10", description: "A timeout parameter indicating how long to wait before getting a connection from the pool"},
+	ConnectionReserveTimeoutSeconds: {configPropName: "tgdb.connectionpool.connectionReserveTimeoutSeconds", aliasName: "connectionReserveTimeoutSeconds", defaultValue: "10", description: "A timeout parameter indicating how long to wait before getting a connection from the pool"},
 	//Represented in ms. Default Value is 10sec
-	ConnectionOperationTimeoutSeconds:              {configPropName: "tgdb.connection.operationTimeoutSeconds", aliasName: "connectionOperationTimeoutSeconds", defaultValue: "10", description: "A timeout parameter indicating how long to wait for a operation before giving up. Some queries are long running, and may override this behavior"},
+	ConnectionOperationTimeoutSeconds: {configPropName: "tgdb.connection.operationTimeoutSeconds", aliasName: "connectionOperationTimeoutSeconds", defaultValue: "10", description: "A timeout parameter indicating how long to wait for a operation before giving up. Some queries are long running, and may override this behavior"},
+	ConnectionDateFormat:              {configPropName: "tgdb.connection.dateFormat", aliasName: "dateFormat", defaultValue: "YYYY-MM-DD", description: "Date format for this connection"},
+	ConnectionTimeFormat:              {configPropName: "tgdb.connection.timeFormat", aliasName: "timeFormat", defaultValue: "HH:mm:ss", description: "Date format for this connection"},
+	ConnectionTimeStampFormat:         {configPropName: "tgdb.connection.timeStampFormat", aliasName: "timeStampFormat", defaultValue: "YYYY-MM-DD HH:mm:ss.zzz", description: "Timestamp format for this connection"},
+	ConnectionLocale:                  {configPropName: "tgdb.connection.locale", aliasName: "locale", defaultValue: "en_US", description: "Locale for this connection"},
+	ConnectionDefaultQueryLanguage:    {configPropName: "tgdb.connection.defaultQueryLanguage", aliasName: "queryLanguage", defaultValue: "tgql", description: "Default query lanaguge format for this connection"},
 	// TODO: Ask TGDB Engineering Team
-	TlsProviderName:                                {configPropName: "tgdb.tls.provider.name", aliasName: "tlsProviderName", defaultValue: "SunJSSE", description: "Transport level Security provider. Work with your InfoSec team to change this value"},
+	TlsProviderName: {configPropName: "tgdb.tls.provider.name", aliasName: "tlsProviderName", defaultValue: "SunJSSE", description: "Transport level Security provider. Work with your InfoSec team to change this value"},
 	// TODO: Ask TGDB Engineering Team - The default is the Sun JSSE. One can specify the tibco wrapper class for FIPS
-	TlsProviderClassName:                           {configPropName: "tgdb.tls.provider.className", aliasName: "tlsProviderClassName", defaultValue: "com.sun.net.ssl.internal.ssl.Provider", description: "The underlying Provider implementation. Work with your InfoSec team to change this value"},
-	TlsProviderConfigFile:                          {configPropName: "tgdb.tls.provider.configFile", aliasName: "tlsProviderConfigFile", defaultValue: "", description: "Some providers require extra configuration paramters, and it can be passed as a file"},
-	TlsProtocol:                                    {configPropName: "tgdb.tls.protocol", aliasName: "tlsProtocol", defaultValue: "TLSv1.2", description: "TLSProtocol version. The system only supports 1.2+"},
+	TlsProviderClassName:  {configPropName: "tgdb.tls.provider.className", aliasName: "tlsProviderClassName", defaultValue: "com.sun.net.ssl.internal.ssl.Provider", description: "The underlying Provider implementation. Work with your InfoSec team to change this value"},
+	TlsProviderConfigFile: {configPropName: "tgdb.tls.provider.configFile", aliasName: "tlsProviderConfigFile", defaultValue: "", description: "Some providers require extra configuration paramters, and it can be passed as a file"},
+	TlsProtocol:           {configPropName: "tgdb.tls.protocol", aliasName: "tlsProtocol", defaultValue: "TLSv1.2", description: "TLSProtocol version. The system only supports 1.2+"},
 	//Use the Default Cipher Suites
-	TlsCipherSuites:                                {configPropName: "tgdb.tls.cipherSuites", aliasName: "cipherSuites", defaultValue: "", description: "A list cipher suites that the InfoSec team has cleared. The default list is a common list of JSSE's cipher list and Openssl list that supports 1.2 protocol"},
-	TlsVerifyDatabaseName:                          {configPropName: "tgdb.tls.verifyDBName", aliasName: "verifyDBName", defaultValue: "false", description: "Verify the Database name in the certificate. TGDB provides self signed certificate for easy-to-use SSL"},
-	TlsExpectedHostName:                            {configPropName: "tgdb.tls.expectedHostName", aliasName: "expectedHostName", defaultValue: "", description: "The expected hostName for the certificate. This is for future use"},
-	TlsTrustedCertificates:                         {configPropName: "tgdb.tls.trustedCertificates", aliasName: "trustedCertificates", defaultValue: "", description: "The list of trusted Certificates"},
-	KeyStorePassword:                               {configPropName: "tgdb.security.keyStorePassword", aliasName: "keyStorePassword", defaultValue: "", description: "The Keystore for the password"},
-	EnableConnectionTrace:                          {configPropName: "tgdb.connection.enableTrace", aliasName: "enableTrace", defaultValue: "false", description: "The flag for debugging purpose, to enable the commit trace"},
-	ConnectionTraceDir:                             {configPropName: "tgdb.connection.enableTraceDir", aliasName: "enableTraceDir", defaultValue: ".", description: "The base directory to hold commit trace log"},
-	InvalidName:                                    {configPropName: "", aliasName: "", defaultValue: "", description: ""},
+	TlsCipherSuites:        {configPropName: "tgdb.tls.cipherSuites", aliasName: "cipherSuites", defaultValue: "", description: "A list cipher suites that the InfoSec team has cleared. The default list is a common list of JSSE's cipher list and Openssl list that supports 1.2 protocol"},
+	TlsVerifyDatabaseName:  {configPropName: "tgdb.tls.verifyDBName", aliasName: "verifyDBName", defaultValue: "false", description: "Verify the Database name in the certificate. TGDB provides self signed certificate for easy-to-use SSL"},
+	TlsExpectedHostName:    {configPropName: "tgdb.tls.expectedHostName", aliasName: "expectedHostName", defaultValue: "", description: "The expected hostName for the certificate. This is for future use"},
+	TlsTrustedCertificates: {configPropName: "tgdb.tls.trustedCertificates", aliasName: "trustedCertificates", defaultValue: "", description: "The list of trusted Certificates"},
+	KeyStorePassword:       {configPropName: "tgdb.security.keyStorePassword", aliasName: "keyStorePassword", defaultValue: "", description: "The Keystore for the password"},
+	EnableConnectionTrace:  {configPropName: "tgdb.connection.enableTrace", aliasName: "enableTrace", defaultValue: "false", description: "The flag for debugging purpose, to enable the commit trace"},
+	ConnectionTraceDir:     {configPropName: "tgdb.connection.enableTraceDir", aliasName: "enableTraceDir", defaultValue: ".", description: "The base directory to hold commit trace log"},
+	InvalidName:            {configPropName: "", aliasName: "", defaultValue: "", description: ""},
 }
 
 // Make sure that the ConfigName implements the TGConfigName interface

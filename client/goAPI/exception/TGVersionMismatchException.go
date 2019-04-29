@@ -1,10 +1,3 @@
-package exception
-
-import (
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -19,12 +12,19 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGErrorVersionMismatchException.go
+ * File name: TGVersionMismatchException.go
  * Created on: Feb 20, 2019
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package exception
+
+import (
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+)
 
 type VersionMismatchException struct {
 	*types.TGDBError

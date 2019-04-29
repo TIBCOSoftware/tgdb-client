@@ -1,16 +1,3 @@
-package model
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"reflect"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -31,6 +18,19 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"reflect"
+	"strings"
+)
 
 type FloatAttribute struct {
 	*AbstractAttribute
@@ -159,20 +159,37 @@ func (obj *FloatAttribute) SetValue(value interface{}) types.TGError {
 
 // ReadValue reads the value from input stream
 func (obj *FloatAttribute) ReadValue(is types.TGInputStream) types.TGError {
-	value, err := is.(*iostream.ProtocolDataInputStream).ReadFloat()
-	if err != nil {
-		logger.Error(fmt.Sprint("ERROR: Returning FloatAttribute:ReadValue w/ Error in reading value from message buffer"))
-		return err
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeReadDecrypted(obj, is)
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning FloatAttribute:ReadValue w/ Error in AbstractAttributeReadDecrypted()"))
+			return err
+		}
+	} else {
+		value, err := is.(*iostream.ProtocolDataInputStream).ReadFloat()
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning FloatAttribute:ReadValue w/ Error in reading value from message buffer"))
+			return err
+		}
+		logger.Log(fmt.Sprintf("FloatAttribute::ReadValue - read value: '%+v'", value))
+		obj.attrValue = value
 	}
-	logger.Log(fmt.Sprintf("FloatAttribute::ReadValue - read value: '%+v'", value))
-	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *FloatAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	iValue := reflect.ValueOf(obj.attrValue).Float()
-	os.(*iostream.ProtocolDataOutputStream).WriteFloat(float32(iValue))
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeWriteEncrypted(obj, os)
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning FloatAttribute:WriteValue - Unable to AbstractAttributeWriteEncrypted() w/ Error: '%s'", err.Error()))
+			errMsg := "FloatAttribute::WriteValue - Unable to AbstractAttributeWriteEncrypted()"
+			return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+		}
+	} else {
+		iValue := reflect.ValueOf(obj.attrValue).Float()
+		os.(*iostream.ProtocolDataOutputStream).WriteFloat(float32(iValue))
+	}
 	return nil
 }
 

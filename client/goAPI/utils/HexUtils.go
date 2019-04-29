@@ -1,10 +1,3 @@
-package utils
-
-import (
-	"bytes"
-	"fmt"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -25,6 +18,13 @@ import (
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"bytes"
+	"fmt"
+)
 
 const (
 	NullString string = "0000"

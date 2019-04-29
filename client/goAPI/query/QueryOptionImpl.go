@@ -1,15 +1,3 @@
-package query
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"strconv"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -24,12 +12,24 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGQueryOption.go
+ * File name: QueryOptionImpl.go
  * Created on: Oct 13, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package query
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"strconv"
+)
 
 const (
 	DefaultPrefetchSize    = 1000

@@ -1,12 +1,3 @@
-package model
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"sync/atomic"
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -21,12 +12,21 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGEdge_Test.go
+ * File name: EdgeImpl_Test.go
  * Created on: Nov 17, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"sync/atomic"
+	"testing"
+)
 
 func CreateTestEdgeEntity() *Edge {
 	gmd := CreateTestGraphMetadata()

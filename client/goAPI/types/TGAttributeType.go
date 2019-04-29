@@ -1,7 +1,3 @@
-package types
-
-import "strings"
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -22,6 +18,10 @@ import "strings"
  * SVN id: $id: $
  *
  */
+
+package types
+
+import "strings"
 
 /**	Test Program validated in GO Playground
 import (
@@ -187,4 +187,3 @@ func GetAttributeTypeFromName(aName string) *AttributeType {
 	invalid := PreDefinedAttributeTypes[AttributeTypeInvalid]
 	return &invalid
 }
-

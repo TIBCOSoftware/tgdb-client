@@ -1,15 +1,3 @@
-package iostream
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"math"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -30,6 +18,19 @@ import (
  * SVN id: $id: $
  *
  */
+
+package iostream
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"io"
+	"math"
+	"strings"
+)
 
 /** Test to ensure float/double gets converted to/from int/int64 correctly
 package main
@@ -318,6 +319,16 @@ func (msg *ProtocolDataOutputStream) SkipNBytes(n int) {
 	logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::SkipNBytes('%d') in contents are '%+v'", n, msg))
 }
 
+// ToByteArray returns a new constructed byte array of the data that is being streamed.
+func (msg *ProtocolDataOutputStream) ToByteArray() ([]byte, types.TGError) {
+	buf := make([]byte, msg.oStreamByteCount)
+	_, err := io.Copy(bytes.NewBuffer(buf), bytes.NewBuffer(msg.Buf))
+	if err != nil {
+		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, err.Error(), "")
+	}
+	return buf, nil
+}
+
 // WriteBooleanAt writes boolean at a given position. Buffer should have sufficient space to write the content.
 func (msg *ProtocolDataOutputStream) WriteBooleanAt(pos int, value bool) (int, types.TGError) {
 	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteBooleanAt(Pos '%d' - '%+v') in contents", pos, value))
@@ -469,6 +480,26 @@ func (msg *ProtocolDataOutputStream) WriteIntAt(pos int, value int) (int, types.
 	pos++
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteIntAt(Pos '%d' - '%+v') in contents are '%+v'", pos, value, msg.Buf))
 	return pos, nil
+}
+
+// WriteLongAsBytes writes Long in byte format
+func (msg *ProtocolDataOutputStream) WriteLongAsBytes(value int64) types.TGError {
+	//logger.Log(fmt.Sprintf("Entering ProtocolDataOutputStream::WriteLongAsBytes(Pos '%d' - '%+v') in contents", pos, value))
+	if (msg.oStreamByteCount + 8) > len(msg.Buf) {
+		msg.Ensure(8)
+	}
+	msg.Buf[msg.oStreamByteCount] = byte(value)
+	msg.Buf[msg.oStreamByteCount+1] = byte(value >> 8)
+	msg.Buf[msg.oStreamByteCount+2] = byte(value >> 16)
+	msg.Buf[msg.oStreamByteCount+3] = byte(value >> 24)
+	msg.Buf[msg.oStreamByteCount+4] = byte(value >> 32)
+	msg.Buf[msg.oStreamByteCount+5] = byte(value >> 40)
+	msg.Buf[msg.oStreamByteCount+6] = byte(value >> 48)
+	msg.Buf[msg.oStreamByteCount+7] = byte(value >> 56)
+	msg.oStreamByteCount += 8
+
+	//logger.Log(fmt.Sprintf("Returning ProtocolDataOutputStream::WriteLongAsBytes(Pos '%d' - '%+v') in contents are '%+v'", pos+8, value, msg.Buf)
+	return nil
 }
 
 // WriteLongAt writes Long at the position. Buffer should have sufficient space to write the content.

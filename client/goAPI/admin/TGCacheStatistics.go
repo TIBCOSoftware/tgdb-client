@@ -1,5 +1,3 @@
-package admin
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package admin
  * SVN id: $id: $
  *
  */
+
+package admin
 
 // TGCacheStatistics allows users to retrieve the Cache Statistics from server
 type TGCacheStatistics interface {

@@ -1,19 +1,3 @@
-package connection
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/channel"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"math"
-	"strconv"
-	"sync"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -34,6 +18,22 @@ import (
  * SVN id: $id: $
  *
  */
+
+package connection
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/channel"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"math"
+	"strconv"
+	"sync"
+	"time"
+)
 
 // ======= Various Connection Pool States =======
 const (
@@ -61,7 +61,7 @@ type ConnectionPoolImpl struct {
 	connectReserveTimeOut time.Duration
 	connList              []types.TGConnection // Total Available Connections (Active + Dead/ToBeReused)
 	connType              TypeConnection
-	chanPool              chan *TGDBConnection
+	chanPool              chan types.TGConnection
 	poolProperties        types.TGProperties
 	consumers             map[int64]types.TGConnection        // Active/In-Use Connections
 	exceptionListener     types.TGConnectionExceptionListener // Function Pointer
@@ -97,7 +97,7 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 	logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool w/ Default Connection Pool: '%s'", cp.String()))
 	cp.connType = connType
 	cp.poolProperties = props
-	cp.chanPool = make(chan *TGDBConnection, poolSize+2)
+	cp.chanPool = make(chan types.TGConnection, poolSize+2)
 	cp.poolSize = poolSize
 	timeoutStr := utils.GetConfigFromKey(utils.ConnectionReserveTimeoutSeconds).GetDefaultValue()
 	if timeoutStr == Immediate {
@@ -124,12 +124,12 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 		}
 		//logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to NewTGDBConnection() for Channel: '%+v' and Properties: '%+v'", ch, props))
 		// Create a connection
-		var conn *TGDBConnection
+		var conn types.TGConnection
 		switch connType {
 		case TypeConventional:
 			conn = NewTGDBConnection(cp, ch, props)
-		//case TypeAdmin:
-		//	conn = NewAdminConnection(cp, ch, props)
+		case TypeAdmin:
+			conn = NewAdminConnection(cp, ch, props)
 		default:
 			conn = NewTGDBConnection(cp, ch, props)
 		}
@@ -187,7 +187,7 @@ func (obj *ConnectionPoolImpl) GetConnection() (types.TGConnection, types.TGErro
 	}
 
 	logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:GetConnection - about to pull connection from obj.ConnPool"))
-	var conn *TGDBConnection
+	var conn types.TGConnection
 	// Search through all available connections within the pooled set to find out which one is free to service next
 	select {
 	case conn = <-obj.chanPool:
@@ -205,7 +205,7 @@ func (obj *ConnectionPoolImpl) GetConnection() (types.TGConnection, types.TGErro
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("Returning ConnectionPoolImpl:GetConnection w/ Connection: '%+v'", conn.String()))
+	logger.Log(fmt.Sprintf("Returning ConnectionPoolImpl:GetConnection w/ Connection: '%+v'", conn))
 	return conn, nil
 }
 

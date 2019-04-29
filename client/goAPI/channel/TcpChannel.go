@@ -1,19 +1,3 @@
-package channel
-
-import (
-	"bytes"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"net"
-	"strings"
-	"sync"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -34,6 +18,22 @@ import (
  * SVN id: $id: $
  *
  */
+
+package channel
+
+import (
+	"bytes"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"net"
+	"strings"
+	"sync"
+	"time"
+)
 
 const (
 	dataBufferSize = 32 * 1024 // 32 KB
@@ -554,7 +554,7 @@ func (obj *TCPChannel) CreateSocket() types.TGError {
 	obj.SetChannelLinkState(types.LinkNotConnected)
 	host := obj.channelUrl.urlHost
 	port := obj.channelUrl.urlPort
-	serverAddr := fmt.Sprint(host, ":", port)
+	serverAddr := fmt.Sprintf("%s:%d", host, port)
 	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:CreateSocket attempting to resolve address for '%s'", serverAddr))
 
 	tcpAddr, tErr := net.ResolveTCPAddr(types.ProtocolTCP.String(), serverAddr)

@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package types
  * SVN id: $id: $
  *
  */
+
+package types
 
 type TGGraphObjectFactory interface {
 	// CreateCompositeKey creates a CompositeKey for a SystemTypeNode. The composite key can also be a single key

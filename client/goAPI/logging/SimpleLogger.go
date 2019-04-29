@@ -1,17 +1,3 @@
-package logging
-
-import (
-	"bytes"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"io"
-	"log"
-	"os"
-	"path"
-	"runtime"
-	"syscall"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -32,6 +18,20 @@ import (
  * SVN id: $id: $
  *
  */
+
+package logging
+
+import (
+	"bytes"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"io"
+	"log"
+	"os"
+	"path"
+	"runtime"
+	"syscall"
+)
 
 // This is pretty basic implementation of Logger that uses bare-bone functionality provided in out-of-the-box GO log
 // package. This can easily be extended and/or another implementation based on TGLogger interface can be developed.

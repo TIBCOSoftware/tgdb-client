@@ -1,11 +1,3 @@
-package admin
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -26,6 +18,14 @@ import (
  * SVN id: $id: $
  *
  */
+
+package admin
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+)
 
 type ServerMemoryInfoImpl struct {
 	processMemory *MemoryInfoImpl

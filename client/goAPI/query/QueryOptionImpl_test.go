@@ -1,9 +1,3 @@
-package query
-
-import (
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -18,12 +12,18 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGResultSet_Test.go
+ * File name: QueryOptionImpl_Test.go
  * Created on: Nov 10, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package query
+
+import (
+	"testing"
+)
 
 // This will test both APIs in the following order - (a) Get, (b) Set, and (c) Get
 func TestSetPreFetchSize(t *testing.T) {

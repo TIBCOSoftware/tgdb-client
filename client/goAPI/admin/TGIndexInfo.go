@@ -1,5 +1,3 @@
-package admin
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -21,14 +19,20 @@ package admin
  *
  */
 
+package admin
+
 // TGIndexInfo users to retrieve the index information from server
 type TGIndexInfo interface {
 	// GetAttributes returns a collection of attribute names
 	GetAttributeNames() []string
 	// GetName returns the index name
 	GetName() string
+	// GetNumEntries returns the number of entries for the index
+	GetNumEntries() int64
 	// GetType returns the index type
 	GetType() byte
+	// GetStatus returns the status of the index
+	GetStatus() string
 	// GetSystemId returns the system ID
 	GetSystemId() int
 	// GetNodeTypes returns a collection of node types

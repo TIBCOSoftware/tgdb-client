@@ -1,12 +1,3 @@
-package utils
-
-import (
-	"encoding/binary"
-	"fmt"
-	"reflect"
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -27,6 +18,15 @@ import (
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"encoding/binary"
+	"fmt"
+	"reflect"
+	"testing"
+)
 
 func assertEq(exp, got interface{}) error {
 	if !reflect.DeepEqual(exp, got) {

@@ -1,11 +1,3 @@
-package admin
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -27,6 +19,14 @@ import (
  *
  */
 
+package admin
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+)
+
 type IndexInfoImpl struct {
 	sysId      int
 	indexType  byte
@@ -34,6 +34,8 @@ type IndexInfoImpl struct {
 	uniqueFlag bool
 	attributes []string
 	nodeTypes  []string
+	numEntries int64
+	status     string
 }
 
 // Make sure that the IndexInfoImpl implements the TGIndexInfo interface
@@ -48,15 +50,17 @@ func DefaultIndexInfoImpl() *IndexInfoImpl {
 	return &IndexInfoImpl{}
 }
 
-func NewIndexInfoImpl(_sysId int, _name string, _indexType byte,
-	_isUnique bool, _attributes, _nodeTypes []string) *IndexInfoImpl {
+func NewIndexInfoImpl(sysId int, name string, indexType byte,
+	isUnique bool, attributes, nodeTypes []string, entries int64, status string) *IndexInfoImpl {
 	newConnectionInfo := DefaultIndexInfoImpl()
-	newConnectionInfo.sysId = _sysId
-	newConnectionInfo.indexType = _indexType
-	newConnectionInfo.name = _name
-	newConnectionInfo.uniqueFlag = _isUnique
-	newConnectionInfo.attributes = _attributes
-	newConnectionInfo.nodeTypes = _nodeTypes
+	newConnectionInfo.sysId = sysId
+	newConnectionInfo.indexType = indexType
+	newConnectionInfo.name = name
+	newConnectionInfo.uniqueFlag = isUnique
+	newConnectionInfo.attributes = attributes
+	newConnectionInfo.nodeTypes = nodeTypes
+	newConnectionInfo.numEntries = entries
+	newConnectionInfo.status = status
 	return newConnectionInfo
 }
 
@@ -73,6 +77,8 @@ func (obj *IndexInfoImpl) String() string {
 	buffer.WriteString(fmt.Sprintf(", IsUnique: '%+v'", obj.uniqueFlag))
 	buffer.WriteString(fmt.Sprintf(", Attributes: '%+v'", obj.attributes))
 	buffer.WriteString(fmt.Sprintf(", NodeTypes: '%+v'", obj.nodeTypes))
+	buffer.WriteString(fmt.Sprintf(", NumEntries: '%+v'", obj.numEntries))
+	buffer.WriteString(fmt.Sprintf(", Status: '%+v'", obj.status))
 	buffer.WriteString("}")
 	return buffer.String()
 }
@@ -91,9 +97,19 @@ func (obj *IndexInfoImpl) GetName() string {
 	return obj.name
 }
 
+// GetNumEntries returns the number of entries for the index
+func (obj *IndexInfoImpl) GetNumEntries() int64 {
+	return obj.numEntries
+}
+
 // GetType returns the index type
 func (obj *IndexInfoImpl) GetType() byte {
 	return obj.indexType
+}
+
+// GetStatus returns the status of the index
+func (obj *IndexInfoImpl) GetStatus() string {
+	return obj.status
 }
 
 // GetSystemId returns the system ID

@@ -1,10 +1,3 @@
-package exception
-
-import (
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -25,6 +18,13 @@ import (
  * SVN id: $id: $
  *
  */
+
+package exception
+
+import (
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+)
 
 type Success struct {
 	*types.TGDBError

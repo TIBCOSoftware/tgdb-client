@@ -1,7 +1,3 @@
-package utils
-
-import "testing"
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -16,12 +12,16 @@ import "testing"
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGProtocolVersion_Test.go
+ * File name: TGEnvironment_Test.go
  * Created on: Nov 10, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import "testing"
 
 // TODO: Revisit later - for more testing
 //func TestGetAsSortedProperties(t *testing.T) {

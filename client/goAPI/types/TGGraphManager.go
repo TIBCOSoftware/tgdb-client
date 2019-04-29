@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package types
  * SVN id: $id: $
  *
  */
+
+package types
 
 type TGGraphManager interface {
 	// CreateNode creates Node within this Graph. There is a default Root Graph.

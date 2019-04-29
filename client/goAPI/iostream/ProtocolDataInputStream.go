@@ -1,15 +1,3 @@
-package iostream
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"math"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -30,6 +18,18 @@ import (
  * SVN id: $id: $
  *
  */
+
+package iostream
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"math"
+)
 
 /** Test to ensure float/double gets converted to/from int/int64 correctly
 package main
@@ -509,7 +509,7 @@ func (msg *ProtocolDataInputStream) ReadBytes() ([]byte, types.TGError) {
 		logger.Log(fmt.Sprint("Returning ProtocolDataInputStream::ReadBytes as len == 0"))
 		return emptyByteArray, nil
 	}
-	if length == -1 {
+	if length < -1 {
 		logger.Error(fmt.Sprint("ERROR: Returning ProtocolDataInputStream::ReadBytes as len == -1"))
 		errMsg := fmt.Sprint("Read data corrupt")
 		return emptyByteArray, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")

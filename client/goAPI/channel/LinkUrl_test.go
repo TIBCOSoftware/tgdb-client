@@ -1,10 +1,3 @@
-package channel
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -25,6 +18,13 @@ import (
  * SVN id: $id: $
  *
  */
+
+package channel
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"testing"
+)
 
 const testUrl0 = "foo1.bar.com"
 const testUrl1 = "tcp://foo.bar.com:8700/{userID=scott;ftHosts=foo1.bar.com,foo2.bar.com;sendSize=120}"

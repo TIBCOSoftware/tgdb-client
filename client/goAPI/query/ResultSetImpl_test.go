@@ -1,11 +1,3 @@
-package query
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/model"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,12 +12,20 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGResultSet_Test.go
+ * File name: ResultSetImpl_Test.go
  * Created on: Nov 10, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package query
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/model"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"testing"
+)
 
 func CreateTestGraphMetadata() *model.GraphMetadata {
 	newGraphMetadata := model.NewGraphMetadata(nil)

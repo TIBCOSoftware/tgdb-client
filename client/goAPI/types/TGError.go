@@ -1,9 +1,3 @@
-package types
-
-import (
-	"fmt"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -24,6 +18,12 @@ import (
  * SVN id: $id: $
  *
  */
+
+package types
+
+import (
+	"fmt"
+)
 
 // ======= Various Error Types =======
 type TGExceptionType int

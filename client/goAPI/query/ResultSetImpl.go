@@ -1,12 +1,3 @@
-package query
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -21,19 +12,28 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGResultSet.go
+ * File name: ResultSetImpl.go
  * Created on: Oct 13, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
 
+package query
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+)
+
 type ResultSet struct {
 	conn       types.TGConnection
 	currPos    int
 	isOpen     bool
 	resultId   int
-	resultList []types.TGEntity
+	resultList []interface{}
 }
 
 func DefaultResultSet() *ResultSet {
@@ -46,7 +46,7 @@ func DefaultResultSet() *ResultSet {
 		currPos:    -1,
 		isOpen:     true,
 		resultId:   -1,
-		resultList: make([]types.TGEntity, 0),
+		resultList: make([]interface{}, 0),
 	}
 	return &newResults
 }
@@ -81,7 +81,7 @@ func (obj *ResultSet) GetResultId() int {
 	return obj.resultId
 }
 
-func (obj *ResultSet) GetResults() []types.TGEntity {
+func (obj *ResultSet) GetResults() []interface{} {
 	return obj.resultList
 }
 
@@ -113,7 +113,7 @@ func (obj *ResultSet) Count() int {
 }
 
 // First returns the first entity in the result set
-func (obj *ResultSet) First() types.TGEntity {
+func (obj *ResultSet) First() interface{} {
 	if obj.isOpen == false {
 		return nil
 	}
@@ -124,7 +124,7 @@ func (obj *ResultSet) First() types.TGEntity {
 }
 
 // Last returns the last Entity in the result set
-func (obj *ResultSet) Last() types.TGEntity {
+func (obj *ResultSet) Last() interface{} {
 	if obj.isOpen == false {
 		return nil
 	}
@@ -135,7 +135,7 @@ func (obj *ResultSet) Last() types.TGEntity {
 }
 
 // GetAt gets the entity at the position.
-func (obj *ResultSet) GetAt(position int) types.TGEntity {
+func (obj *ResultSet) GetAt(position int) interface{} {
 	if obj.isOpen == false {
 		return nil
 	}
@@ -179,7 +179,7 @@ func (obj *ResultSet) HasNext() bool {
 }
 
 // Next returns the next entity w.r.t to the current cursor position in the result set
-func (obj *ResultSet) Next() types.TGEntity {
+func (obj *ResultSet) Next() interface{} {
 	if obj.isOpen == false {
 		return nil
 	}
@@ -193,7 +193,7 @@ func (obj *ResultSet) Next() types.TGEntity {
 }
 
 // Skip skips a number of position
-func (obj *ResultSet) Prev() types.TGEntity {
+func (obj *ResultSet) Prev() interface{} {
 	if obj.isOpen == false {
 		return nil
 	}
@@ -214,6 +214,11 @@ func (obj *ResultSet) Skip(position int) types.TGResultSet {
 		obj.currPos = newPos
 	}
 	return obj
+}
+
+// ToCollection converts the result set into a collection
+func (obj *ResultSet) ToCollection() []interface{} {
+	return obj.resultList
 }
 
 func (obj *ResultSet) String() string {

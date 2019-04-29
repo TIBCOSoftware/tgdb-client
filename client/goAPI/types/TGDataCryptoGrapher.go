@@ -24,7 +24,8 @@ package types
 // DataCryptoGrapher is an event listener that gets triggered when that event occurs
 type TGDataCryptoGrapher interface {
 	// Decrypt decrypts the buffer
-	Decrypt(encBuffer []byte) ([]byte, TGError)
+	//Decrypt(encBuffer []byte) ([]byte, TGError)
+	Decrypt(is TGInputStream) ([]byte, TGError)
 	// Encrypt encrypts the buffer
 	Encrypt(decBuffer []byte) ([]byte, TGError)
 }

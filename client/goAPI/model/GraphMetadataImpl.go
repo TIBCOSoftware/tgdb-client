@@ -1,12 +1,3 @@
-package model
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -21,12 +12,21 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGGraphMetadata.go
+ * File name: GraphMetadataImpl.go
  * Created on: Oct 06, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+)
 
 type GraphMetadata struct {
 	initialized     bool

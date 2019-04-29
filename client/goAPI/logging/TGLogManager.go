@@ -1,12 +1,3 @@
-package logging
-
-import (
-	"encoding/gob"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"io"
-	"sync"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -27,6 +18,15 @@ import (
  * SVN id: $id: $
  *
  */
+
+package logging
+
+import (
+	"encoding/gob"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"io"
+	"sync"
+)
 
 type TGLogManager struct {
 	logger types.TGLogger

@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -21,6 +19,8 @@ package types
  *
  */
 
+package types
+
 type TGResultSet interface {
 	// AddEntityToResultSet adds another entity to the result set
 	AddEntityToResultSet(entity TGEntity) TGResultSet
@@ -31,11 +31,11 @@ type TGResultSet interface {
 	// than prefetch count, then all are returned.
 	Count() int
 	// First returns the first entity in the result set
-	First() TGEntity
+	First() interface{}
 	// Last returns the last Entity in the result set
-	Last() TGEntity
+	Last() interface{}
 	// GetAt gets the entity at the position.
-	GetAt(position int) TGEntity
+	GetAt(position int) interface{}
 	// GetExceptions gets the Exceptions in the result set
 	GetExceptions() []TGError
 	// GetPosition gets the Current cursor position. A result set upon creation is set to the position 0.
@@ -45,11 +45,13 @@ type TGResultSet interface {
 	// HasNext Check whether there is next entry in result set
 	HasNext() bool
 	// Next returns the next entity w.r.t to the current cursor position in the result set
-	Next() TGEntity
+	Next() interface{}
 	// Prev returns the prev entity w.r.t to the current cursor position in the result set
-	Prev() TGEntity
+	Prev() interface{}
 	// Skip skips a number of position
 	Skip(position int) TGResultSet
 	// Additional Method to help debugging
 	String() string
+	// ToCollection converts the result set into a collection
+	ToCollection() []interface{}
 }

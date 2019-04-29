@@ -1,14 +1,3 @@
-package channel
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"sync/atomic"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -29,6 +18,17 @@ import (
  * SVN id: $id: $
  *
  */
+
+package channel
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"sync/atomic"
+)
 
 var gReaders int64
 
@@ -98,7 +98,7 @@ func (obj *ChannelReader) readAndProcessLoop() {
 		if err != nil {
 			logger.Error(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop Error in obj.channel.ReadWireMsg() w/ '%+v'", err.Error()))
 			if !obj.isRunning {
-				logger.Log(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop reader is not running (2) '%+v'", obj.isRunning))
+				logger.Log(fmt.Sprintf("INFO: Breaking ChannelReader:readAndProcessLoop reader is not running (2) '%+v'", obj.isRunning))
 				break
 			}
 			exceptionResult := channelHandleException(obj.channel, err, true)
@@ -111,7 +111,7 @@ func (obj *ChannelReader) readAndProcessLoop() {
 				logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop since Reader thread returned w/o Retrying due to error - exceptionResult '%+v'", exceptionResult))
 				break
 			}
-			logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop - Read Wire Message resulted in error: '%+v'", err))
+			logger.Error(fmt.Sprintf("INFO: Breaking ChannelReader:readAndProcessLoop loop - Read Wire Message resulted in error: '%+v'", err))
 			//break
 		}
 

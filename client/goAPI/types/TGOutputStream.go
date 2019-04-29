@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -21,6 +19,8 @@ package types
  *
  */
 
+package types
+
 type TGOutputStream interface {
 	// GetBuffer gets the underlying Buffer
 	GetBuffer() []byte
@@ -30,6 +30,8 @@ type TGOutputStream interface {
 	GetPosition() int
 	// SkipNBytes skips n bytes. Allocate if necessary
 	SkipNBytes(n int)
+	// ToByteArray returns a new constructed byte array of the data that is being streamed.
+	ToByteArray() ([]byte, TGError)
 	// WriteBooleanAt writes boolean at a given position. Buffer should have sufficient space to write the content.
 	WriteBooleanAt(pos int, value bool) (int, TGError)
 	// WriteByteAt writes a byte at the position. Buffer should have sufficient space to write the content.
@@ -48,6 +50,8 @@ type TGOutputStream interface {
 	WriteFloatAt(pos int, value float32) (int, TGError)
 	// WriteIntAt writes Integer at the position.Buffer should have sufficient space to write the content.
 	WriteIntAt(pos int, value int) (int, TGError)
+	// WriteLongAsBytes writes Long in byte format
+	WriteLongAsBytes(value int64) TGError
 	// WriteLongAt writes Long at the position. Buffer should have sufficient space to write the content.
 	WriteLongAt(pos int, value int64) (int, TGError)
 	// WriteShortAt writes a Java Char at the position. Buffer should have sufficient space to write the content.

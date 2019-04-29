@@ -1,3 +1,24 @@
+/**
+ * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
+ * in compliance with the License.
+ * A copy of the License is included in the distribution package with this file.
+ * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * File name: SSLChannel.go
+ * Created on: Dec 01, 2018
+ * Created by: achavan
+ * SVN id: $id: $
+ *
+ */
+
 package channel
 
 import (
@@ -16,27 +37,6 @@ import (
 	"sync"
 	"time"
 )
-
-/**
- * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
- * in compliance with the License.
- * A copy of the License is included in the distribution package with this file.
- * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * File name: TcpChannel.go
- * Created on: Dec 01, 2018
- * Created by: achavan
- * SVN id: $id: $
- *
- */
 
 type SSLChannel struct {
 	*AbstractChannel
@@ -453,10 +453,6 @@ func (obj *SSLChannel) writeLoop(done chan bool) {
 func (obj *SSLChannel) writeToWire(msg types.TGMessage) types.TGError {
 	logger.Log(fmt.Sprintf("======> Entering SSLChannel:writeToWire w/ Msg: '%+v'", msg.String()))
 	obj.DisablePing()
-	//bufLength := msg.GetMessageByteBufLength()
-	//if (gLogger.isEnabled(TGLogger.TGLevel.DebugWire)) {
-	//	gLogger.log(TGLogger.TGLevel.DebugWire, "Send buf : %s", HexUtils.formatHex(buf, bufLen));
-	//}
 	msgBytes, bufLen, err := msg.ToBytes()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::writeToWire unable to convert message into byte format"))
@@ -629,6 +625,7 @@ func (obj *SSLChannel) SendMessage(msg types.TGMessage) types.TGError {
 	return channelSendMessage(obj, msg, true)
 }
 
+// SendRequest sends a Message, waits for a response in the message format, and blocks the thread till it gets the response
 func (obj *SSLChannel) SendRequest(msg types.TGMessage, response types.TGChannelResponse) (types.TGMessage, types.TGError) {
 	return channelSendRequest(obj, msg, response, true)
 }
@@ -747,7 +744,6 @@ func (obj *SSLChannel) CloseSocket() types.TGError {
 	obj.shutdownLock.Lock()
 	defer obj.shutdownLock.Unlock()
 
-	// TODO: Revisit later - Should the error be ignored?
 	if obj.socket != nil {
 		cErr := obj.socket.Close()
 		if cErr != nil {
@@ -811,7 +807,6 @@ func (obj *SSLChannel) OnConnect() types.TGError {
 // ReadWireMsg reads the message from the wire in the form of byte stream
 func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 	logger.Log(fmt.Sprintf("======> Entering SSLChannel:ReadWireMsg w/ SSLChannel as '%+v'", obj.String()))
-
 	obj.input.BufLen = dataBufferSize
 	in := obj.input
 	if in == nil {
@@ -887,7 +882,9 @@ func (obj *SSLChannel) Send(msg types.TGMessage) types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, "")
 	}
 
-	return obj.writeToWire(msg)
+	err := obj.writeToWire(msg)
+	logger.Log(fmt.Sprintf("======> Returning TCPChannel:Send w/ error '%+v'", err))
+	return err
 }
 
 func (obj *SSLChannel) String() string {

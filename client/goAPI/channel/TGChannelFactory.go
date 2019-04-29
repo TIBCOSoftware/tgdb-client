@@ -1,15 +1,3 @@
-package channel
-
-import (
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"sync"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -30,6 +18,18 @@ import (
  * SVN id: $id: $
  *
  */
+
+package channel
+
+import (
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"sync"
+)
 
 var logger = logging.DefaultTGLogManager().GetLogger()
 

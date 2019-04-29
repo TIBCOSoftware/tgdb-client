@@ -1,12 +1,3 @@
-package model
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"sync/atomic"
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -27,6 +18,15 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"sync/atomic"
+	"testing"
+)
 
 func CreateTestAttributeDescriptor(name string, attributeType int) *AttributeDescriptor {
 	newAttributeDescriptor := NewAttributeDescriptorWithType(name, attributeType)

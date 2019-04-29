@@ -1,12 +1,3 @@
-package model
-
-import (
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -27,6 +18,15 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+)
 
 var logger = logging.DefaultTGLogManager().GetLogger()
 

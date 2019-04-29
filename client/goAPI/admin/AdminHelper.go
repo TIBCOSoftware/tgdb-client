@@ -1,14 +1,3 @@
-package admin
-
-import (
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/model"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -29,6 +18,17 @@ import (
  * SVN id: $id: $
  *
  */
+
+package admin
+
+import (
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/model"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"time"
+)
 
 /////////////////////////////////////////////////////////////////
 // Available functions for AdminHelper
@@ -412,7 +412,21 @@ func extractIndexListFromInputStream(is types.TGInputStream) ([]TGIndexInfo, typ
 		}
 		logger.Log(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read blocksize as '%+v'", blocksize))
 
-		indexInfo := NewIndexInfoImpl(indexId, indexName, indexType, isUniqueFlag, attributes, nodes)
+		numEntries, err := is.(*iostream.ProtocolDataInputStream).ReadLong() // num of Entries
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning AdminResponseMessage:ReadPayload w/ Error in reading numEntries from message buffer"))
+			return nil, err
+		}
+		logger.Log(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read numEntries as '%+v'", numEntries))
+
+		status, err := is.(*iostream.ProtocolDataInputStream).ReadBytes() // status
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning AdminResponseMessage:ReadPayload w/ Error in reading status from message buffer"))
+			return nil, err
+		}
+		logger.Log(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read status as '%+v'", status))
+
+		indexInfo := NewIndexInfoImpl(indexId, indexName, indexType, isUniqueFlag, attributes, nodes, numEntries, string(status))
 		indexList = append(indexList, indexInfo)
 	}
 	return indexList, nil

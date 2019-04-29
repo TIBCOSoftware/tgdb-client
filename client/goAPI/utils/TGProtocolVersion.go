@@ -1,9 +1,3 @@
-package utils
-
-import (
-	"encoding/binary"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -24,6 +18,12 @@ import (
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"encoding/binary"
+)
 
 const (
 	TgMajorVersion uint8 = 1

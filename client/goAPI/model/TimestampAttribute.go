@@ -1,17 +1,3 @@
-package model
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"reflect"
-	"strings"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -32,6 +18,20 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"reflect"
+	"strings"
+	"time"
+)
 
 type TimestampAttribute struct {
 	*AbstractAttribute
@@ -171,6 +171,15 @@ func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 
 // ReadValue reads the value from input stream
 func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeReadDecrypted(obj, is)
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning StringAttribute:ReadValue w/ Error in AbstractAttributeReadDecrypted()"))
+			return err
+		}
+		return nil
+	}
+
 	var v time.Time
 	var year, mon, dom, hr, min, sec, ms, tzType int
 	era, err := is.(*iostream.ProtocolDataInputStream).ReadBoolean()
@@ -277,6 +286,16 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 
 // WriteValue writes the value to output stream
 func (obj *TimestampAttribute) WriteValue(os types.TGOutputStream) types.TGError {
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeWriteEncrypted(obj, os)
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning StringAttribute:WriteValue - Unable to AbstractAttributeWriteEncrypted() w/ Error: '%s'", err.Error()))
+			errMsg := "StringAttribute::WriteValue - Unable to AbstractAttributeWriteEncrypted()"
+			return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+		}
+		return nil
+	}
+
 	era := true // Corresponding to GregorianCalendar.AD = 1
 	logger.Log(fmt.Sprintf("Object value '%+v' is of type: '%+v'\n", obj.GetValue(), reflect.TypeOf(obj.GetValue()).Kind()))
 	v := obj.GetValue().(time.Time)

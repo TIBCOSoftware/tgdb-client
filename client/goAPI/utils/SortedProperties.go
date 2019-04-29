@@ -1,15 +1,3 @@
-package utils
-
-import (
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"sort"
-	"strconv"
-	"strings"
-	"sync"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -24,12 +12,24 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGProperties.go (Always Sorted by key)
+ * File name: SortedProperties.go
  * Created on: Oct 27, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+)
 
 /******* Sample code tested in GO Playground *******
 package main

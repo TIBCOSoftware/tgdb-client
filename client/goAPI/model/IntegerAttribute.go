@@ -1,16 +1,3 @@
-package model
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"reflect"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -31,6 +18,19 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"reflect"
+	"strings"
+)
 
 type IntegerAttribute struct {
 	*AbstractAttribute
@@ -167,20 +167,37 @@ func (obj *IntegerAttribute) SetValue(value interface{}) types.TGError {
 
 // ReadValue reads the value from input stream
 func (obj *IntegerAttribute) ReadValue(is types.TGInputStream) types.TGError {
-	value, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
-	if err != nil {
-		logger.Error(fmt.Sprint("ERROR: Returning IntegerAttribute:SetValue - unable to extract attribute value in string format/type"))
-		return err
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeReadDecrypted(obj, is)
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning IntegerAttribute:ReadValue w/ Error in AbstractAttributeReadDecrypted()"))
+			return err
+		}
+	} else {
+		value, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning IntegerAttribute:SetValue - unable to extract attribute value in string format/type"))
+			return err
+		}
+		logger.Log(fmt.Sprintf("IntegerAttribute::ReadValue - read value: '%+v'", value))
+		obj.attrValue = value
 	}
-	logger.Log(fmt.Sprintf("IntegerAttribute::ReadValue - read value: '%+v'", value))
-	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *IntegerAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	iValue := reflect.ValueOf(obj.attrValue).Int()
-	os.(*iostream.ProtocolDataOutputStream).WriteInt(int(iValue))
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeWriteEncrypted(obj, os)
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning IntegerAttribute:WriteValue - Unable to AbstractAttributeWriteEncrypted() w/ Error: '%s'", err.Error()))
+			errMsg := "IntegerAttribute::WriteValue - Unable to AbstractAttributeWriteEncrypted()"
+			return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+		}
+	} else {
+		iValue := reflect.ValueOf(obj.attrValue).Int()
+		os.(*iostream.ProtocolDataOutputStream).WriteInt(int(iValue))
+	}
 	return nil
 }
 

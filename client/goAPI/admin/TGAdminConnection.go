@@ -1,7 +1,3 @@
-package admin
-
-import "github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -23,12 +19,16 @@ import "github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
  *
  */
 
+package admin
+
+import "github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+
 type TGAdminConnection interface {
 	types.TGConnection
 	// CheckpointServer allows the programmatic control to do a checkpoint on server
 	CheckpointServer() types.TGError
 
-	// DumpServerStackTrace prints the stack trace
+	// DumpServerStackTrace allows the programmatic control to dump the stack trace on the server console
 	DumpServerStackTrace() types.TGError
 
 	// GetAttributeDescriptors gets the list of attribute descriptors
@@ -40,18 +40,19 @@ type TGAdminConnection interface {
 	// GetIndices gets the list of all indices
 	GetIndices() ([]TGIndexInfo, types.TGError)
 
-	// GetInfo gets the information about this connection type
+	// GetInfo retrieves the server information (including the server status, listener information,
+	// memory information, transaction statistics, cache statistics, database statistics)
 	GetInfo() (TGServerInfo, types.TGError)
 
 	// GetUsers gets the list of users
 	GetUsers() ([]TGUserInfo, types.TGError)
 
-	// KillConnection terminates the connection forcefully
+	// KillConnection allows the programmatic control to stop a particular connection instance
 	KillConnection(sessionId int64) types.TGError
 
-	// SetServerLogLevel set the log level
+	// SetServerLogLevel sets the appropriate log level on server
 	SetServerLogLevel(logLevel int, logComponent int64) types.TGError
 
-	// StopServer stops the admin connection
+	// StopServer allows the programmatic-stop of the server execution
 	StopServer() types.TGError
 }

@@ -1,7 +1,3 @@
-package utils
-
-import "fmt"
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -22,6 +18,10 @@ import "fmt"
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import "fmt"
 
 /**
 package main

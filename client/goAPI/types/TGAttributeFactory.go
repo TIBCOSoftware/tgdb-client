@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package types
  * SVN id: $id: $
  *
  */
+
+package types
 
 // An AttributeFactory is a convenient mechanism to create Attribute(s) of various types
 type TGAttributeFactory interface {

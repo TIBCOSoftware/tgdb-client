@@ -1,18 +1,3 @@
-package model
-
-import (
-	"encoding/binary"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"math"
-	"math/big"
-	"strconv"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -33,6 +18,21 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"encoding/binary"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"math"
+	"math/big"
+	"strconv"
+	"time"
+)
 
 func BigDecimalToByteArray(bd float64) ([]byte, error) {
 	strVal := utils.NewTGDecimalFromFloat(bd).String()
@@ -143,7 +143,7 @@ func StringToCharacter(s string) (string, error) {
 }
 
 func ObjectFromByteArray(value []byte, attrType int) (interface{}, types.TGError) {
-	if value == nil {
+	if value == nil || len(value) == 0 {
 		errMsg := fmt.Sprint("Invalid/Null attribute value received")
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.TGDB_CLIENT_READEXTERNAL, errMsg, "")
 	}

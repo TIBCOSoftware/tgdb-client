@@ -1,11 +1,3 @@
-package types
-
-import (
-	"bytes"
-	"io"
-	"log"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -26,6 +18,14 @@ import (
  * SVN id: $id: $
  *
  */
+
+package types
+
+import (
+	"bytes"
+	"io"
+	"log"
+)
 
 // Log4J:: A log request of level p in a logger with level q is enabled if p >= q.
 // This rule is at the heart of log4j. It assumes that levels are ordered.

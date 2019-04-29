@@ -1,13 +1,3 @@
-package admin
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -28,6 +18,16 @@ import (
  * SVN id: $id: $
  *
  */
+
+package admin
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"time"
+)
 
 type ServerStatusImpl struct {
 	name      string

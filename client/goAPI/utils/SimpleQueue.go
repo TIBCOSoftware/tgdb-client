@@ -1,7 +1,3 @@
-package utils
-
-import "sync"
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -22,6 +18,10 @@ import "sync"
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import "sync"
 
 /**
 package main

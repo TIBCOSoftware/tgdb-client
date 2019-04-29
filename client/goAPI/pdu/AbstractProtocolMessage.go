@@ -1,20 +1,3 @@
-package pdu
-
-import (
-	"bytes"
-	"encoding/binary"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"reflect"
-	"sync"
-	"sync/atomic"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -35,6 +18,23 @@ import (
  * SVN id: $id: $
  *
  */
+
+package pdu
+
+import (
+	"bytes"
+	"encoding/binary"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"reflect"
+	"sync"
+	"sync/atomic"
+	"time"
+)
 
 /**
  * The Server describes the pdu header as below.

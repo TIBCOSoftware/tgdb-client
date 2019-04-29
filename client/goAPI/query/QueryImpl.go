@@ -1,14 +1,3 @@
-package query
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -23,12 +12,23 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGQuery.go
+ * File name: QueryImpl.go
  * Created on: Oct 13, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package query
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/logging"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"time"
+)
 
 var logger = logging.DefaultTGLogManager().GetLogger()
 

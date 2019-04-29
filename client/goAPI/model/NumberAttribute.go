@@ -1,18 +1,3 @@
-package model
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"reflect"
-	"strconv"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -33,6 +18,21 @@ import (
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"reflect"
+	"strconv"
+	"strings"
+)
 
 type NumberAttribute struct {
 	*AbstractAttribute
@@ -87,36 +87,6 @@ func (obj *NumberAttribute) SetDecimal(b utils.TGDecimal, precision, scale int) 
 	logger.Log(fmt.Sprintf("Inside NumberAttribute::SetDecimal attrValue is '%+v'", obj.attrValue))
 	obj.setIsModified(true)
 }
-
-//func roundU(val float64) int {
-//	if val > 0 {
-//		return int(val + 1.0)
-//	}
-//	return int(val)
-//}
-//
-//func roundD(val float64) int {
-//	if val < 0 {
-//		return int(val - 1.0)
-//	}
-//	return int(val)
-//}
-//
-//func round(val float64) int {
-//	if val < 0 {
-//		return int(val - 0.5)
-//	}
-//	return int(val + 0.5)
-//}
-//
-//func round1(num float64) int {
-//	return int(num + math.Copysign(0.5, num))
-//}
-//
-//func toFixed(num float64, precision int) float64 {
-//	output := math.Power(10, float64(precision))
-//	return float64(round(num*output)) / output
-//}
 
 /////////////////////////////////////////////////////////////////
 // Implement functions from Interface ==> TGAttribute
@@ -247,6 +217,15 @@ func (obj *NumberAttribute) SetValue(value interface{}) types.TGError {
 
 // ReadValue reads the value from input stream
 func (obj *NumberAttribute) ReadValue(is types.TGInputStream) types.TGError {
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeReadDecrypted(obj, is)
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning ShortAttribute:ReadValue w/ Error in AbstractAttributeReadDecrypted()"))
+			return err
+		}
+		return nil
+	}
+
 	precision, err := is.(*iostream.ProtocolDataInputStream).ReadShort() // precision
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning NumberAttribute:ReadValue w/ Error in reading precision from message buffer"))
@@ -273,6 +252,16 @@ func (obj *NumberAttribute) ReadValue(is types.TGInputStream) types.TGError {
 
 // WriteValue writes the value to output stream
 func (obj *NumberAttribute) WriteValue(os types.TGOutputStream) types.TGError {
+	if obj.GetAttributeDescriptor().IsEncrypted() {
+		err := AbstractAttributeWriteEncrypted(obj, os)
+		if err != nil {
+			logger.Error(fmt.Sprintf("ERROR: Returning StringAttribute:WriteValue - Unable to AbstractAttributeWriteEncrypted() w/ Error: '%s'", err.Error()))
+			errMsg := "StringAttribute::WriteValue - Unable to AbstractAttributeWriteEncrypted()"
+			return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, err.GetErrorDetails())
+		}
+		return nil
+	}
+
 	os.(*iostream.ProtocolDataOutputStream).WriteShort(int(obj.GetAttributeDescriptor().GetPrecision()))
 	os.(*iostream.ProtocolDataOutputStream).WriteShort(int(obj.GetAttributeDescriptor().GetScale()))
 	logger.Log(fmt.Sprintf("Inside NumberAttribute::WriteValue attrValue is '%+v'", obj.attrValue))

@@ -1,14 +1,3 @@
-package channel
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"sync"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -29,6 +18,17 @@ import (
  * SVN id: $id: $
  *
  */
+
+package channel
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"sync"
+	"time"
+)
 
 type BlockingChannelResponse struct {
 	status    types.ChannelResponseStatus

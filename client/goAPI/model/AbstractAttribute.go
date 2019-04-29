@@ -1,15 +1,3 @@
-package model
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"log"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -24,12 +12,24 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: AbstractEntity.go
+ * File name: AbstractAttribute.go
  * Created on: Oct 13, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package model
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"log"
+)
 
 const (
 	DATE_ONLY    = 0
@@ -233,42 +233,16 @@ func ReadExternalForEntity(owner types.TGEntity, is types.TGInputStream) (types.
 
 func AbstractAttributeReadDecrypted(obj types.TGAttribute, is types.TGInputStream) types.TGError {
 	conn := obj.GetOwner().GetGraphMetadata().GetConnection()
-	sysType := obj.GetOwner().GetEntityType().GetSystemType()
-	decryptBuf := make([]byte, 0)
-	switch sysType {
-	case types.SystemTypeNode:
-		entityId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
-		if err != nil {
-			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in reading entityId from message buffer: %s", err.Error()))
-			return err
-		}
-		decryptBuf, err = conn.DecryptEntity(entityId)
-		if err != nil {
-			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in conn.DecryptEntity(entityId): %s", err.Error()))
-			return err
-		}
-	case types.SystemTypeEdge:
-		encryptedBuf, err := is.(*iostream.ProtocolDataInputStream).ReadBytes()
-		if err != nil {
-			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in reading encryptedBuf from message buffer: %s", err.Error()))
-			return err
-		}
-		decryptBuf, err = conn.DecryptBuffer(encryptedBuf)
-		if err != nil {
-			logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in conn.DecryptBuffer(encryptedBuf): %s", err.Error()))
-			return err
-		}
-	default:
-		logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted - Decryption not supported for entity type:'%d'", sysType))
-		errMsg := fmt.Sprintf("Decryption not supported for entity type:'%d'", sysType)
-		return exception.GetErrorByType(types.TGErrorIOException, types.TGDB_CLIENT_READEXTERNAL, errMsg, "")
+	decryptBuf, err := conn.DecryptBuffer(is)
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in conn.DecryptBuffer(encryptedBuf): %s", err.Error()))
+		return err
 	}
 	value, err := ObjectFromByteArray(decryptBuf, obj.GetAttributeDescriptor().GetAttrType())
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractAttribute:AbstractAttributeReadDecrypted w/ Error in ObjectFromByteArray(): %s", err.Error()))
 		return err
 	}
-
 	return obj.SetValue(value)
 }
 
@@ -285,7 +259,9 @@ func AbstractAttributeReadExternal(obj types.TGAttribute, is types.TGInputStream
 		obj.(*AbstractAttribute).attrValue = nil
 		return nil
 	}
-	if obj.GetAttributeDescriptor().IsEncrypted() {
+	if obj.GetAttributeDescriptor().IsEncrypted() &&
+		obj.GetAttributeDescriptor().GetAttrType() != types.AttributeTypeBlob &&
+		obj.GetAttributeDescriptor().GetAttrType() != types.AttributeTypeClob {
 		return AbstractAttributeReadDecrypted(obj, is)
 	}
 	logger.Log(fmt.Sprint("Returning AbstractAttribute::AbstractAttributeReadExternal after reading the attribute value"))
@@ -370,6 +346,10 @@ func (obj *AbstractAttribute) SetOwner(ownerEntity types.TGEntity) {
 // SetValue sets the value for this attribute. Appropriate data conversion to its attribute desc will be performed
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *AbstractAttribute) SetValue(value interface{}) types.TGError {
+	if value == nil {
+		obj.setNull()
+		return nil
+	}
 	return obj.setValue(value)
 }
 

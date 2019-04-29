@@ -1,7 +1,3 @@
-package admin
-
-import "time"
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -22,6 +18,10 @@ import "time"
  * SVN id: $id: $
  *
  */
+
+package admin
+
+import "time"
 
 // ======= Link State Types =======
 type ServerStates int

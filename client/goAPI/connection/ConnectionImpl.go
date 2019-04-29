@@ -1,20 +1,3 @@
-package connection
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/channel"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/model"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/query"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"sync/atomic"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -36,6 +19,24 @@ import (
  *
  */
 
+package connection
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/channel"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/model"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/query"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"strings"
+	"sync/atomic"
+)
+
 //static TGLogger gLogger        = TGLogManager.getInstance().getLogger();
 var connectionIds int64
 var requestIds int64
@@ -45,6 +46,8 @@ var requestIds int64
 const (
 	CREATE = 1 + iota
 	EXECUTE
+	EXECUTEGREMLIN
+	EXECUTEGREMLINSTR
 	EXECUTED
 	CLOSE
 )
@@ -93,10 +96,6 @@ func NewTGDBConnection(conPool *ConnectionPoolImpl, channel types.TGChannel, pro
 // Helper functions for TGConnection
 /////////////////////////////////////////////////////////////////
 
-func (obj *TGDBConnection) GetConnectionId() int64 {
-	return obj.connId
-}
-
 func (obj *TGDBConnection) GetConnectionPool() types.TGConnectionPool {
 	return obj.connPoolImpl
 }
@@ -126,7 +125,7 @@ func (obj *TGDBConnection) InitMetadata() types.TGError {
 }
 
 // SetConnectionPool sets connection pool
-func (obj *TGDBConnection) SetConnectionPool(connPool *ConnectionPoolImpl) {
+func (obj *TGDBConnection) SetConnectionPool(connPool types.TGConnectionPool) {
 	obj.connPoolImpl = connPool
 }
 
@@ -201,7 +200,7 @@ func createChannelRequest(obj types.TGConnection, verb int) (types.TGMessage, ty
 	cn := utils.GetConfigFromKey(utils.ConnectionOperationTimeoutSeconds)
 	//logger.Log(fmt.Sprintf("Inside AbstractChannel::channelTryRepeatConnect config for ConnectionOperationTimeoutSeconds is '%+v", cn))
 	timeout := obj.GetConnectionProperties().GetPropertyAsInt(cn)
-	requestId := atomic.AddInt64(&connectionIds, 1)
+	requestId := atomic.AddInt64(&requestIds, 1)
 
 	//logger.Log(fmt.Sprint("Inside TGDBConnection::createChannelRequest about to create channel.NewBlockingChannelResponse()"))
 	// Create a non-blocking channel response
@@ -813,44 +812,46 @@ func (obj *TGDBConnection) CreateQuery(expr string) (types.TGQuery, types.TGErro
 }
 
 // DecryptBuffer decrypts the encrypted buffer by sending a DecryptBufferRequest to the server
-func (obj *TGDBConnection) DecryptBuffer(encryptedBuf []byte) ([]byte, types.TGError) {
+func (obj *TGDBConnection) DecryptBuffer(is types.TGInputStream) ([]byte, types.TGError) {
 	logger.Log(fmt.Sprint("Entering TGDBConnection:DecryptBuffer w/ EncryptedBuffer"))
-	err := obj.InitMetadata()
-	if err != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to initialize metadata w/ error: '%s'", err.Error()))
-		return nil, err
-	}
-	obj.connPoolImpl.AdminLock()
-	defer obj.connPoolImpl.AdminUnlock()
-
-	logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to createChannelRequest() for: pdu.VerbDecryptBufferRequest"))
-	// Create a channel request
-	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbDecryptBufferRequest)
-	if cErr != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to createChannelRequest(pdu.VerbDecryptBufferRequest w/ error: '%s'", cErr.Error()))
-		return nil, cErr
-	}
-	decryptRequest := msgRequest.(*pdu.DecryptBufferRequestMessage)
-	decryptRequest.SetEncryptedBuffer(encryptedBuf)
-
-	logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to obj.GetChannel().SendRequest() for: pdu.VerbDecryptBufferRequest"))
-	// Execute request on channel and get the response
-	msgResponse, channelErr := obj.GetChannel().SendRequest(decryptRequest, channelResponse.(*channel.BlockingChannelResponse))
-	if channelErr != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
-		return nil, channelErr
-	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::DecryptBuffer received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
-	response := msgResponse.(*pdu.DecryptBufferResponseMessage)
-
-	if response == nil {
-		errMsg := "TGDBConnection::DecryptBuffer does not have any results in GetLargeObjectResponseMessage"
-		logger.Error(errMsg)
-		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
-	}
-
-	logger.Log(fmt.Sprintf("Returning TGDBConnection:DecryptBuffer w/ '%+v'", response.GetDecryptedBuffer()))
-	return response.GetDecryptedBuffer(), nil
+	//err := obj.InitMetadata()
+	//if err != nil {
+	//	logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to initialize metadata w/ error: '%s'", err.Error()))
+	//	return nil, err
+	//}
+	//obj.connPoolImpl.AdminLock()
+	//defer obj.connPoolImpl.AdminUnlock()
+	//
+	//logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to createChannelRequest() for: pdu.VerbDecryptBufferRequest"))
+	//// Create a channel request
+	//msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbDecryptBufferRequest)
+	//if cErr != nil {
+	//	logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to createChannelRequest(pdu.VerbDecryptBufferRequest w/ error: '%s'", cErr.Error()))
+	//	return nil, cErr
+	//}
+	//decryptRequest := msgRequest.(*pdu.DecryptBufferRequestMessage)
+	//decryptRequest.SetEncryptedBuffer(encryptedBuf)
+	//
+	//logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to obj.GetChannel().SendRequest() for: pdu.VerbDecryptBufferRequest"))
+	//// Execute request on channel and get the response
+	//msgResponse, channelErr := obj.GetChannel().SendRequest(decryptRequest, channelResponse.(*channel.BlockingChannelResponse))
+	//if channelErr != nil {
+	//	logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
+	//	return nil, channelErr
+	//}
+	//logger.Log(fmt.Sprintf("Inside TGDBConnection::DecryptBuffer received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
+	//response := msgResponse.(*pdu.DecryptBufferResponseMessage)
+	//
+	//if response == nil {
+	//	errMsg := "TGDBConnection::DecryptBuffer does not have any results in GetLargeObjectResponseMessage"
+	//	logger.Error(errMsg)
+	//	return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
+	//}
+	//
+	//logger.Log(fmt.Sprintf("Returning TGDBConnection:DecryptBuffer w/ '%+v'", response.GetDecryptedBuffer()))
+	//return response.GetDecryptedBuffer(), nil
+	cryptoGrapher := obj.GetChannel().GetDataCryptoGrapher()
+	return cryptoGrapher.Decrypt(is)
 }
 
 // DecryptEntity decrypts the encrypted entity using channel's data cryptographer
@@ -860,7 +861,7 @@ func (obj *TGDBConnection) DecryptEntity(entityId int64) ([]byte, types.TGError)
 		return nil, err
 	}
 	cryptoGrapher := obj.GetChannel().GetDataCryptoGrapher()
-	return cryptoGrapher.Decrypt(buf)
+	return cryptoGrapher.Decrypt(iostream.NewProtocolDataInputStream(buf))
 }
 
 // DeleteEntity marks an ENTITY for delete operation. Upon commit, the entity will be deleted from the database
@@ -909,8 +910,8 @@ func (obj *TGDBConnection) ExecuteGremlinQuery(expr string, collection []interfa
 		return nil, cErr
 	}
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
-	queryRequest.SetCommand(EXECUTE)
-	queryRequest.SetQuery("gbc : " + expr)
+	queryRequest.SetCommand(EXECUTEGREMLIN)
+	queryRequest.SetQuery(expr)
 	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
@@ -929,16 +930,20 @@ func (obj *TGDBConnection) ExecuteGremlinQuery(expr string, collection []interfa
 		return nil, nil
 	}
 
-	// TODO: Revisit later once Gremlin Package and GremlinQueryResult are implemented
-	//respStream := response.GetEntityStream()
-	//GremlinResult.fillCollection(entityStream, gof, collection);
+	respStream := response.GetEntityStream()
 	logger.Log(fmt.Sprintf("Returning TGDBConnection:ExecuteGremlinQuery w/ '%+v'", response))
+	err = query.FillCollection(respStream, obj.graphObjFactory, collection)
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinQuery - unable to query.FillCollection w/ error: '%s'", err.Error()))
+		return nil, err
+	}
+	logger.Log(fmt.Sprintf("Returning TGDBConnection:ExecuteGremlinQuery w/ '%+v'", collection))
 	return collection, nil
 }
 
-// ExecuteQuery executes an immediate query with associated query options
-func (obj *TGDBConnection) ExecuteQuery(expr string, options types.TGQueryOption) (types.TGResultSet, types.TGError) {
-	logger.Log(fmt.Sprintf("Entering TGDBConnection:ExecuteQuery for Query: '%+v'", expr))
+// ExecuteGremlinStrQuery executes a Gremlin Grammer-Based string query with  query options
+func (obj *TGDBConnection) ExecuteGremlinStrQuery(strQuery string, options types.TGQueryOption) (types.TGResultSet, types.TGError) {
+	logger.Log(fmt.Sprintf("Entering TGDBConnection:ExecuteGremlinStrQuery for Query: '%+v'", strQuery))
 	err := obj.InitMetadata()
 	if err != nil {
 		return nil, err
@@ -946,35 +951,119 @@ func (obj *TGDBConnection) ExecuteQuery(expr string, options types.TGQueryOption
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteQuery - unable to createChannelRequest(pdu.VerbQueryRequest w/ error: '%s'", cErr.Error()))
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinStrQuery - unable to createChannelRequest(pdu.VerbQueryRequest w/ error: '%s'", cErr.Error()))
+		return nil, cErr
+	}
+	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
+	queryRequest.SetCommand(EXECUTEGREMLINSTR)
+	queryRequest.SetQuery(strQuery)
+	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	configureQueryRequest(queryRequest, options)
+
+	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	// Execute request on channel and get the response
+	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
+	if channelErr != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinStrQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
+		return nil, channelErr
+	}
+	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteGremlinStrQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	response := msgResponse.(*pdu.QueryResponseMessage)
+
+	if !response.GetHasResult() {
+		logger.Warning(fmt.Sprint("WARNING: Returning TGDBConnection::ExecuteGremlinStrQuery - The query does not have any results in QueryResponseMessage"))
+		return nil, nil
+	}
+
+	// TODO: Revisit later once Gremlin Package and GremlinQueryResult are implemented
+	//This is just a dummy value where > 0 means it has results
+	//resultCount := response.GetResultCount()
+	resultSet := query.NewResultSet(obj, 0)
+	respStream := response.GetEntityStream()
+	err = query.FillCollection(respStream, obj.graphObjFactory, resultSet.GetResults())
+	if err != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinQuery - unable to query.FillCollection w/ error: '%s'", err.Error()))
+		return nil, err
+	}
+	logger.Log(fmt.Sprintf("Returning TGDBConnection:ExecuteGremlinStrQuery w/ '%+v'", resultSet))
+	return resultSet, nil
+}
+
+// ExecuteQuery executes an immediate query with associated query options
+func (obj *TGDBConnection) ExecuteQuery(expr string, options types.TGQueryOption) (types.TGResultSet, types.TGError) {
+	logger.Log(fmt.Sprintf("Entering TGDBConnection:ExecuteQuery for Query: '%+v'", expr))
+
+	// TODO: Revisit later once Gremlin Package and GremlinQueryResult are implemented
+	cn := utils.GetConfigFromKey(utils.ConnectionDefaultQueryLanguage)
+	queryLang := obj.GetConnectionProperties().GetProperty(cn, "tgql")
+
+	idx := strings.Index(expr, "://")
+	if idx != -1 {
+		tokens := strings.Split(expr, "://")
+		switch tokens[0] {
+		case "tgql":
+			return obj.ExecuteTGDBQuery(tokens[1], options)
+		case "gremlin":
+			return obj.ExecuteGremlinStrQuery(tokens[1], options)
+		default:
+			return query.NewResultSet(obj, 0), nil
+		}
+	} else {
+		switch queryLang {
+		case "tgql":
+			return obj.ExecuteTGDBQuery(expr, options)
+		case "gremlin":
+			return obj.ExecuteGremlinStrQuery(expr, options)
+		default:
+			return query.NewResultSet(obj, 0), nil
+		}
+	}
+	return nil, nil
+}
+
+// ExecuteTGDBQuery executes an immediate query with associated query options
+func (obj *TGDBConnection) ExecuteTGDBQuery(expr string, options types.TGQueryOption) (types.TGResultSet, types.TGError) {
+	logger.Log(fmt.Sprintf("Entering TGDBConnection:ExecuteTGDBQuery for Query: '%+v'", expr))
+	err := obj.InitMetadata()
+	if err != nil {
+		return nil, err
+	}
+	obj.connPoolImpl.AdminLock()
+	defer obj.connPoolImpl.AdminUnlock()
+
+	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	// Create a channel request
+	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
+	if cErr != nil {
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteTGDBQuery - unable to createChannelRequest(pdu.VerbQueryRequest w/ error: '%s'", cErr.Error()))
 		return nil, cErr
 	}
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTE)
 	queryRequest.SetQuery(expr)
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
+		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteTGDBQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteTGDBQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
-		logger.Warning(fmt.Sprint("WARNING: Returning TGDBConnection::ExecuteQuery - The query does not have any results in QueryResponseMessage"))
+		logger.Warning(fmt.Sprint("WARNING: Returning TGDBConnection::ExecuteTGDBQuery - The query does not have any results in QueryResponseMessage"))
 		return nil, nil
 	}
 
-	logger.Log(fmt.Sprintf("Returning TGDBConnection:ExecuteQuery w/ '%+v'", response))
+	logger.Log(fmt.Sprintf("Returning TGDBConnection:ExecuteTGDBQuery w/ '%+v'", response))
 	return obj.populateResultSetFromQueryResponse(0, response)
 }
 
@@ -1077,6 +1166,11 @@ func (obj *TGDBConnection) GetChangedList() map[int64]types.TGEntity {
 // GetChangedList gets the communication channel associated with this connection
 func (obj *TGDBConnection) GetChannel() types.TGChannel {
 	return obj.channel
+}
+
+// GetConnectionId gets connection identifier
+func (obj *TGDBConnection) GetConnectionId() int64 {
+	return obj.connId
 }
 
 // GetConnectionProperties gets a list of connection properties

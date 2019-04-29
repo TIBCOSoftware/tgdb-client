@@ -1,9 +1,3 @@
-package exception
-
-import (
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -18,12 +12,18 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGExceptionFactory.go
+ * File name: ExceptionFactory.go
  * Created on: Oct 20, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package exception
+
+import (
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+)
 
 // Create new exception instance based on the input type
 func CreateExceptionByType(excpTypeId int) types.TGError {

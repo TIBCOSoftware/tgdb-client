@@ -1,14 +1,3 @@
-package pdu
-
-import (
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"math/rand"
-	"reflect"
-	"testing"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -23,12 +12,23 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: MessageFactory_Test.go
+ * File name: ProtocolMessageFactory_Test.go
  * Created on: Nov 10, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package pdu
+
+import (
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"math/rand"
+	"reflect"
+	"testing"
+	"time"
+)
 
 func createTestAbstractMessage() *AbstractProtocolMessage {
 	authToken := rand.Int63()

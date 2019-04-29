@@ -1,7 +1,3 @@
-package types
-
-import "bytes"
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -22,6 +18,10 @@ import "bytes"
  * SVN id: $id: $
  *
  */
+
+package types
+
+import "bytes"
 
 // ======= Various Direction Types for EDGE (Entity) type =======
 type TGDirectionType int

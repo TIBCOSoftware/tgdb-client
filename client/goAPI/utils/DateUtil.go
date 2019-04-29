@@ -1,14 +1,3 @@
-package utils
-
-import (
-	"errors"
-	"fmt"
-	"math/rand"
-	"strconv"
-	"strings"
-	"time"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -29,6 +18,17 @@ import (
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"errors"
+	"fmt"
+	"math/rand"
+	"strconv"
+	"strings"
+	"time"
+)
 
 const (
 	OUTPUTDESIREDTSLAYOUT = time.RFC3339              // Format is same as TROPOS Log TS format i.e. yyyy-mm-ddTHH:MM:SSZ<TZ Diff>

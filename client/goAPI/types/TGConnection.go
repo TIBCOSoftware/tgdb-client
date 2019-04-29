@@ -1,5 +1,3 @@
-package types
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -21,6 +19,8 @@ package types
  *
  */
 
+package types
+
 type TGConnection interface {
 	// Commit commits the current transaction on this connection
 	Commit() (TGResultSet, TGError)
@@ -31,7 +31,7 @@ type TGConnection interface {
 	// CreateQuery creates a reusable query object that can be used to execute one or more statement
 	CreateQuery(expr string) (TGQuery, TGError)
 	// DecryptBuffer decrypts the encrypted buffer by sending a DecryptBufferRequest to the server
-	DecryptBuffer(encryptedBuf []byte) ([]byte, TGError)
+	DecryptBuffer(is TGInputStream) ([]byte, TGError)
 	// DecryptEntity decrypts the encrypted entity using channel's data cryptographer
 	DecryptEntity(entityId int64) ([]byte, TGError)
 	// DeleteEntity marks an ENTITY for delete operation. Upon commit, the entity will be deleted from the database
@@ -42,7 +42,11 @@ type TGConnection interface {
 	EncryptEntity(rawBuffer []byte) ([]byte, TGError)
 	// ExecuteGremlinQuery executes a Gremlin Grammer-Based query with  query options
 	ExecuteGremlinQuery(expr string, collection []interface{}, options TGQueryOption) ([]interface{}, TGError)
-	// ExecuteQuery executes an immediate query with associated query options
+	// ExecuteQuery executes a query in either tqql or gremlin format.
+	// Format is determined by either 'tgql://' or 'gremlin://' prefixes in the 'expr' argument.
+	// The format can also be specified by using 'tgdb.connection.defaultQueryLanguage'
+	// connection property with value 'tgql' or 'gremlin'. Prefix in the query expression is no needed
+	// if connection property is used.
 	ExecuteQuery(expr string, options TGQueryOption) (TGResultSet, TGError)
 	// ExecuteQueryWithFilter executes an immediate query with specified filter & query options
 	// The query option is place holder at this time
@@ -60,6 +64,8 @@ type TGConnection interface {
 	GetChangedList() map[int64]TGEntity
 	// GetChangedList gets the communication channel associated with this connection
 	GetChannel() TGChannel
+	// GetConnectionId gets connection identifier
+	GetConnectionId() int64
 	// GetConnectionProperties gets a list of connection properties
 	GetConnectionProperties() TGProperties
 	// GetEntities gets a result set of entities given an non-uniqueKey
@@ -79,9 +85,9 @@ type TGConnection interface {
 	// Rollback rolls back the current transaction on this connection
 	Rollback() TGError
 	// SetConnectionPool sets connection pool
-	//SetConnectionPool(connPool TGConnectionPool)
+	SetConnectionPool(connPool TGConnectionPool)
 	// SetConnectionProperties sets connection properties
-	//SetConnectionProperties(connProps *utils.SortedProperties)
+	SetConnectionProperties(connProps TGProperties)
 	// SetExceptionListener sets exception listener
 	SetExceptionListener(listener TGConnectionExceptionListener)
 	// UpdateEntity marks an ENTITY for update operation. Upon commit, the entity will be updated in the database

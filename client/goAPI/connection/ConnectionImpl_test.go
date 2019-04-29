@@ -1,5 +1,3 @@
-package connection
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package connection
  * SVN id: $id: $
  *
  */
+
+package connection
 
 const (
 	url = "tcp://scott@localhost:8222"

@@ -1,5 +1,3 @@
-package pdu
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -20,6 +18,8 @@ package pdu
  * SVN id: $id: $
  *
  */
+
+package pdu
 
 //type VerbId int
 
@@ -106,8 +106,8 @@ var PreDefinedVerbs = map[int]CommandVerbs{
 	VerbQueryResponse:               {id: VerbQueryResponse, name: "VerbQueryResponse", implementor: "pdu.VerbQueryResponse"},
 	VerbTraverseRequest:             {id: VerbTraverseRequest, name: "VerbTraverseRequest", implementor: "pdu.VerbTraverseRequest"},
 	VerbTraverseResponse:            {id: VerbTraverseResponse, name: "VerbTraverseResponse", implementor: "pdu.VerbTraverseResponse"},
-	VerbAdminRequest:                {id: VerbAdminRequest, name: "VerbAdminRequest", implementor: "pdu.VerbAdminRequest"},
-	VerbAdminResponse:               {id: VerbAdminResponse, name: "VerbAdminResponse", implementor: "pdu.VerbAdminResponse"},
+	VerbAdminRequest:                {id: VerbAdminRequest, name: "VerbAdminRequest", implementor: "admin.VerbAdminRequest"},
+	VerbAdminResponse:               {id: VerbAdminResponse, name: "VerbAdminResponse", implementor: "admin.VerbAdminResponse"},
 	VerbMetadataRequest:             {id: VerbMetadataRequest, name: "VerbMetadataRequest", implementor: "pdu.VerbMetadataRequest"},
 	VerbMetadataResponse:            {id: VerbMetadataResponse, name: "VerbMetadataResponse", implementor: "pdu.VerbMetadataResponse"},
 	VerbGetEntityRequest:            {id: VerbGetEntityRequest, name: "VerbGetEntityRequest", implementor: "pdu.VerbGetEntityRequest"},    //0 = mean immediate, AttributeTypeInteger Max for indefinite

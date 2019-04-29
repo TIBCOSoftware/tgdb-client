@@ -1,9 +1,3 @@
-package utils
-
-import (
-	"testing"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -18,12 +12,18 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: TGProtocolVersion_Test.go
+ * File name: ConfigName_Test.go
  * Created on: Nov 10, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package utils
+
+import (
+	"testing"
+)
 
 func TestGetConfigFromKey(t *testing.T) {
 	cn := GetConfigFromKey(ChannelPingInterval)

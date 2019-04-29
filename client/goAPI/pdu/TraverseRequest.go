@@ -1,16 +1,3 @@
-package pdu
-
-import (
-	"bytes"
-	"encoding/gob"
-	"fmt"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
-	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
-	"reflect"
-	"strings"
-)
-
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
@@ -25,12 +12,25 @@ import (
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name: VerbTraverseRequest.go
+ * File name: TraverseRequest.go
  * Created on: Sep 30, 2018
  * Created by: achavan
  * SVN id: $id: $
  *
  */
+
+package pdu
+
+import (
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/exception"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/iostream"
+	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
+	"reflect"
+	"strings"
+)
 
 type TraverseRequestMessage struct {
 	*AbstractProtocolMessage
