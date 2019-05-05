@@ -12,6 +12,7 @@ This is a comprehensive collection of client API referred as 'TGDB-GO-Client' th
 The entire GO API client implementation has been organized in an easy-to-understand folder structure.
 
 ## Folder Structure Overview
+* `admin` - A folder that hosts various administrative function implementations
 * `channel` - A folder that hosts various channel implementations
 * `connection` - A folder where bulk of the connection functionality is consolidated
 * `exception` - A folder that has various error message types have been implemented
@@ -98,4 +99,4 @@ with TIBCO Graph Database server engine.
 
 The following are still being implemented and tested:
 * Support for communication via SSL (TLSv1.2+) over TCP
-* Support for administrative API that will mimic 'tgdb-admin' functionality
+* Support for encrypted data values for attributes via built-in data cryptographer
