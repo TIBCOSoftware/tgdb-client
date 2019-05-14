@@ -292,7 +292,7 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 			logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read entityId: '%d', kindId: '%s', entity: '%+v'", entityId, kindId.String(), entity))
 			switch kindId {
 			case types.EntityKindNode:
-				var node model.Node
+				var node *model.Node
 				if entity == nil {
 					node, nErr := obj.graphObjFactory.CreateNode()
 					if nErr != nil {
@@ -300,26 +300,26 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 						// TODO: Revisit later - Should we continue OR break after throwing/logging an error?
 						//continue
 						errMsg := "TGDBConnection::populateResultSetFromQueryResponse unable to create a new node from the response stream"
-						return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, nErr.Error())
+						return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, nErr.GetErrorDetails())
 					}
 					entity = node
 					fetchedEntities[entityId] = node
-					if currResultCount < resultCount {
-						rSet.AddEntityToResultSet(node)
-					}
 					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse created new node: '%+v' FetchedEntityCount: '%d'", node, len(fetchedEntities)))
 				}
-				node = *(entity.(*model.Node))
+				node = entity.(*model.Node)
 				err := node.ReadExternal(respStream)
 				if err != nil {
-					errMsg := "TGDBConnection::populateResultSetFromQueryResponse unable to node.ReadExternal() from the response stream"
+					errMsg := fmt.Sprintf("TGDBConnection::populateResultSetFromQueryResponse unable to node.ReadExternal() from the response stream w/ error: '%s'", err.Error())
 					logger.Error(errMsg)
 					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.GetErrorDetails())
+				}
+				if currResultCount < resultCount {
+					rSet.AddEntityToResultSet(node)
 				}
 				//logger.Log(fmt.Sprintf("======> ======> After node.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
 				logger.Log(fmt.Sprintf("======> ======> Node w/ Edges: '%+v'\n", node.GetEdges()))
 			case types.EntityKindEdge:
-				var edge model.Edge
+				var edge *model.Edge
 				if entity == nil {
 					//edge, eErr := obj.graphObjFactory.CreateEdgeWithDirection(nil, nil, types.DirectionTypeBiDirectional)
 					edge, eErr := obj.graphObjFactory.CreateEntity(types.EntityKindEdge)
@@ -328,21 +328,21 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 						// TODO: Revisit later - Should we continue OR break after throwing/logging an error?
 						//continue
 						errMsg := "TGDBConnection::populateResultSetFromQueryResponse unable to create a new bi-directional edge from the response stream"
-						return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, eErr.Error())
+						return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, eErr.GetErrorDetails())
 					}
 					entity = edge
 					fetchedEntities[entityId] = edge
-					if currResultCount < resultCount {
-						rSet.AddEntityToResultSet(edge)
-					}
 					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse created new edge: '%+v' FetchedEntityCount: '%d'", edge, len(fetchedEntities)))
 				}
-				edge = *(entity.(*model.Edge))
+				edge = entity.(*model.Edge)
 				err := edge.ReadExternal(respStream)
 				if err != nil {
 					errMsg := fmt.Sprintf("TGDBConnection::populateResultSetFromQueryResponse unable to edge.ReadExternal() from the response stream w/ error: '%s'", err.Error())
 					logger.Error(errMsg)
-					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
+					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.GetErrorDetails())
+				}
+				if currResultCount < resultCount {
+					rSet.AddEntityToResultSet(edge)
 				}
 				//logger.Log(fmt.Sprintf("======> ======> After edge.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
 				logger.Log(fmt.Sprintf("======> ======> Edge w/ Vertices: '%+v'\n", edge.GetVertices()))
@@ -431,7 +431,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 			logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
 			switch kindId {
 			case types.EntityKindNode:
-				var node model.Node
+				var node *model.Node
 				if entity == nil {
 					node, nErr := obj.graphObjFactory.CreateNode()
 					if nErr != nil {
@@ -445,7 +445,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 					fetchedEntities[entityId] = node
 					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse created new node: '%+v'", node))
 				}
-				node = *(entity.(*model.Node))
+				node = entity.(*model.Node)
 				err := node.ReadExternal(respStream)
 				if err != nil {
 					errMsg := fmt.Sprintf("TGDBConnection::populateResultSetFromGetEntitiesResponse unable to node.ReadExternal() from the response stream w/ error: '%s'", err.Error())
@@ -453,11 +453,11 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 				}
 				if isResult {
-					rSet.AddEntityToResultSet(entity)
+					rSet.AddEntityToResultSet(node)
 					currResultCount++
 				}
 			case types.EntityKindEdge:
-				var edge model.Edge
+				var edge *model.Edge
 				if entity == nil {
 					edge, eErr := obj.graphObjFactory.CreateEdgeWithDirection(nil, nil, types.DirectionTypeBiDirectional)
 					if eErr != nil {
@@ -471,7 +471,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 					fetchedEntities[entityId] = edge
 					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse created new edge: '%+v'", edge))
 				}
-				edge = *(entity.(*model.Edge))
+				edge = entity.(*model.Edge)
 				err := edge.ReadExternal(respStream)
 				if err != nil {
 					errMsg := fmt.Sprintf("TGDBConnection::populateResultSetFromGetEntitiesResponse unable to edge.ReadExternal() from the response stream w/ error: '%s'", err.Error())
@@ -479,7 +479,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 				}
 				if isResult {
-					rSet.AddEntityToResultSet(entity)
+					rSet.AddEntityToResultSet(edge)
 					currResultCount++
 				}
 			case types.EntityKindGraph:
@@ -538,7 +538,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 				switch kindId {
 				case types.EntityKindNode:
 					// Need to put shell object into map to be deserialized later
-					var node model.Node
+					var node *model.Node
 					if entity == nil {
 						node, nErr := obj.graphObjFactory.CreateNode()
 						if nErr != nil {
@@ -555,7 +555,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 						}
 						logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse created new node: '%+v'", entity))
 					}
-					node = *(entity.(*model.Node))
+					node = entity.(*model.Node)
 					err := node.ReadExternal(respStream)
 					if err != nil {
 						errMsg := fmt.Sprintf("TGDBConnection::populateResultSetFromGetEntityResponse unable to node.ReadExternal() from the response stream w/ error: '%s'", err.Error())
@@ -563,7 +563,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 						return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 					}
 				case types.EntityKindEdge:
-					var edge model.Edge
+					var edge *model.Edge
 					if entity == nil {
 						edge, eErr := obj.graphObjFactory.CreateEdgeWithDirection(nil, nil, types.DirectionTypeBiDirectional)
 						if eErr != nil {
@@ -580,7 +580,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 						}
 						logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse created new edge: '%+v'", edge))
 					}
-					edge = *(entity.(*model.Edge))
+					edge = entity.(*model.Edge)
 					err := edge.ReadExternal(respStream)
 					if err != nil {
 						errMsg := fmt.Sprintf("TGDBConnection::populateResultSetFromGetEntityResponse unable to edge.ReadExternal() from the response stream w/ error: '%s'", err.Error())
