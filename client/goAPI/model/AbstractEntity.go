@@ -181,7 +181,11 @@ func (obj *AbstractEntity) setAttributes(attrs map[string]types.TGAttribute) {
 }
 
 func (obj *AbstractEntity) setEntityId(id int64) {
-	obj.virtualId = 0
+	if obj.getIsNew() {
+		obj.virtualId = id
+	} else {
+		obj.virtualId = 0
+	}
 	obj.entityId = id
 }
 
