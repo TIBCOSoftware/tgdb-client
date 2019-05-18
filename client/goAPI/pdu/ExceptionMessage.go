@@ -114,20 +114,20 @@ func (msg *ExceptionMessage) FromBytes(buffer []byte) (types.TGMessage, types.TG
 		logger.Error(fmt.Sprint("ERROR: Returning ExceptionMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside ExceptionMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside ExceptionMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside ExceptionMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside ExceptionMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside ExceptionMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside ExceptionMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
@@ -143,14 +143,14 @@ func (msg *ExceptionMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering ExceptionMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside ExceptionMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside ExceptionMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside ExceptionMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside ExceptionMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -293,14 +293,14 @@ func (msg *ExceptionMessage) ReadPayload(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprint("ERROR: Returning ExceptionMessage:ReadPayload w/ Error in reading bType from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("ExceptionMessage:ReadPayload read bType as '%+v'", bType))
+	logger.Debug(fmt.Sprintf("ExceptionMessage:ReadPayload read bType as '%+v'", bType))
 
 	exMsg, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning ExceptionMessage:ReadPayload w/ Error in reading exMsg from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("ExceptionMessage:ReadPayload read exMsg as '%+v'", exMsg))
+	logger.Debug(fmt.Sprintf("ExceptionMessage:ReadPayload read exMsg as '%+v'", exMsg))
 
 	msg.SetExceptionMsg(exMsg)
 	msg.SetExceptionType(int(bType))

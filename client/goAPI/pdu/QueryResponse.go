@@ -142,27 +142,27 @@ func (msg *QueryResponseMessage) FromBytes(buffer []byte) (types.TGMessage, type
 		logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside QueryResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside QueryResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside QueryResponseMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside QueryResponseMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside QueryResponseMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside QueryResponseMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("QueryResponseMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning QueryResponseMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -171,14 +171,14 @@ func (msg *QueryResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering QueryResponseMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside QueryResponseMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside QueryResponseMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside QueryResponseMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside QueryResponseMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -190,7 +190,7 @@ func (msg *QueryResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("QueryResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning QueryResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -325,9 +325,9 @@ func (msg *QueryResponseMessage) ReadPayload(is types.TGInputStream) types.TGErr
 		logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:ReadPayload w/ Error in reading available bytes from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("QueryResponseMessage:ReadPayload read avail as '%+v'", avail))
+	logger.Debug(fmt.Sprintf("Inside QueryResponseMessage:ReadPayload read avail as '%+v'", avail))
 	if avail == 0 {
-		logger.Log(fmt.Sprintf("Query response has no data"))
+		logger.Warning(fmt.Sprint("WARNING: Query response has no data"))
 		errMsg := fmt.Sprint("Query response has no data")
 		return exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
@@ -350,28 +350,28 @@ func (msg *QueryResponseMessage) ReadPayload(is types.TGInputStream) types.TGErr
 		logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:ReadPayload w/ Error in reading query result from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("QueryResponseMessage:ReadPayload read result as '%+v'", result))
+	logger.Debug(fmt.Sprintf("Inside QueryResponseMessage:ReadPayload read result as '%+v'", result))
 
 	hashId, err := is.(*iostream.ProtocolDataInputStream).ReadLong() // query hash id
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:ReadPayload w/ Error in reading query hashId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("QueryResponseMessage:ReadPayload read hashId as '%+v'", hashId))
+	logger.Debug(fmt.Sprintf("Inside QueryResponseMessage:ReadPayload read hashId as '%+v'", hashId))
 
 	syntax, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:ReadPayload w/ Error in reading syntax from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("QueryResponseMessage:ReadPayload read syntax as '%+v'", syntax))
+	logger.Debug(fmt.Sprintf("Inside QueryResponseMessage:ReadPayload read syntax as '%+v'", syntax))
 
 	resultCount, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:ReadPayload w/ Error in reading resultCount from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("QueryResponseMessage:ReadPayload read resultCount as '%+v'", resultCount))
+	logger.Debug(fmt.Sprintf("Inside QueryResponseMessage:ReadPayload read resultCount as '%+v'", resultCount))
 	if resultCount > 0 {
 		msg.SetHasResult(true)
 	}
@@ -382,7 +382,7 @@ func (msg *QueryResponseMessage) ReadPayload(is types.TGInputStream) types.TGErr
 			logger.Error(fmt.Sprint("ERROR: Returning QueryResponseMessage:ReadPayload w/ Error in reading totalCount from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("QueryResponseMessage:ReadPayload read totalCount as '%+v'", totalCount))
+		logger.Debug(fmt.Sprintf("Inside QueryResponseMessage:ReadPayload read totalCount as '%+v'", totalCount))
 		msg.SetTotalCount(totalCount)
 		logger.Log(fmt.Sprintf("Query has '%d' result entities and %d total entities", resultCount, totalCount))
 	} else {

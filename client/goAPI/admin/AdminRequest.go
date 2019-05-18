@@ -104,20 +104,20 @@ func (msg *AdminRequestMessage) FromBytes(buffer []byte) (types.TGMessage, types
 		logger.Error(fmt.Sprint("ERROR: Returning AdminRequest:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AdminRequest:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside AdminRequest:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminRequest:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside AdminRequest:FromBytes - about to APMReadHeader"))
 	err = pdu.APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminRequest:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside AdminRequest:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
@@ -133,14 +133,14 @@ func (msg *AdminRequestMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering AdminRequest:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside AdminRequest:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside AdminRequest:ToBytes - about to APMWriteHeader"))
 	err := pdu.APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminRequest:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside AdminRequest:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)

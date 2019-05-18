@@ -179,7 +179,7 @@ func (obj *IntegerAttribute) ReadValue(is types.TGInputStream) types.TGError {
 			logger.Error(fmt.Sprint("ERROR: Returning IntegerAttribute:SetValue - unable to extract attribute value in string format/type"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("IntegerAttribute::ReadValue - read value: '%+v'", value))
+		logger.Log(fmt.Sprintf("Returning IntegerAttribute::ReadValue - read value: '%+v'", value))
 		obj.attrValue = value
 	}
 	return nil

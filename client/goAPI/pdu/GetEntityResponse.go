@@ -132,27 +132,27 @@ func (msg *GetEntityResponseMessage) FromBytes(buffer []byte) (types.TGMessage, 
 		logger.Error(fmt.Sprint("ERROR: Returning GetEntityResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside GetEntityResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside GetEntityResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside GetEntityResponseMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside GetEntityResponseMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside GetEntityResponseMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside GetEntityResponseMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("GetEntityResponseMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning GetEntityResponseMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -161,14 +161,14 @@ func (msg *GetEntityResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering GetEntityResponseMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside GetEntityResponseMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside GetEntityResponseMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside GetEntityResponseMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside GetEntityResponseMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -180,7 +180,7 @@ func (msg *GetEntityResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning GetEntityResponseMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("GetEntityResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning GetEntityResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -314,7 +314,7 @@ func (msg *GetEntityResponseMessage) ReadPayload(is types.TGInputStream) types.T
 		logger.Error(fmt.Sprint("ERROR: Returning GetEntityResponseMessage:ReadPayload w/ Error in reading available bytes from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside GetEntityResponseMessage:ReadPayload read avail as '%+v'", avail))
+	logger.Debug(fmt.Sprintf("Inside GetEntityResponseMessage:ReadPayload read avail as '%+v'", avail))
 	if avail == 0 {
 		errMsg := fmt.Sprint("Get entity response has no data")
 		return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -327,7 +327,7 @@ func (msg *GetEntityResponseMessage) ReadPayload(is types.TGInputStream) types.T
 		logger.Error(fmt.Sprint("ERROR: Returning GetEntityResponseMessage:ReadPayload w/ Error in reading resultId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside GetEntityResponseMessage:ReadPayload read resultId as '%+v'", resultId))
+	logger.Debug(fmt.Sprintf("Inside GetEntityResponseMessage:ReadPayload read resultId as '%+v'", resultId))
 
 	pos := is.(*iostream.ProtocolDataInputStream).GetPosition()
 
@@ -339,7 +339,7 @@ func (msg *GetEntityResponseMessage) ReadPayload(is types.TGInputStream) types.T
 	if totCount > 0 {
 		msg.SetHasResult(true)
 	}
-	logger.Log(fmt.Sprintf("Inside GetEntityResponseMessage:ReadPayload read totCount as '%+v'", totCount))
+	logger.Debug(fmt.Sprintf("Inside GetEntityResponseMessage:ReadPayload read totCount as '%+v'", totCount))
 
 	is.(*iostream.ProtocolDataInputStream).SetPosition(pos)
 

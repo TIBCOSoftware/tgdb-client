@@ -98,7 +98,6 @@ func NewLinkUrl(sUrl string) *LinkUrl {
 		newChannelUrl.urlProps = props.(*utils.SortedProperties)
 	}
 	newChannelUrl.urlUser = user
-	//logger.Log(fmt.Sprintf("Configuration name for ChannelUserID is '%+v'", utils.GetConfigFromKey(utils.ChannelUserID)))
 	newChannelUrl.urlProps.AddProperty(utils.GetConfigFromKey(utils.ChannelUserID).GetName(), user)
 	return newChannelUrl
 }
@@ -190,7 +189,6 @@ func parseProtocol(sUrl string) (types.TGProtocol, string, types.TGError) {
 	// (c) tcp://scott@10.20.30.40:8123/...	                        <== protocol://User/IPv4/Port/...
 	// (d) ssl://scott@10.20.30.40/...	                            <== protocol://User/IPv4//...
 
-	//logger.Log(fmt.Sprintf("ParseProtocol has incoming URL string as: '%+v'", sUrl))
 	idx := strings.IndexAny(sUrl, "://")
 	if idx > 0 {
 		strComponents := strings.Split(sUrl, "://")
@@ -244,7 +242,7 @@ func parseUserAndHostAndPort(sUrl string) (string, string, int, bool, string, ty
 	// (k) 1234:567;2345:678::2342:453:2341]:3456/...	        <== IPv6/Port/...
 	// (l) 1234:567:2345:678::2342:453:2341]/...	            <== IPv6//...
 
-	//logger.Log(fmt.Sprintf("ParseUserAndHostAndPort has incoming URL string as: '%+v'", sUrl))
+	//logger.Debug(fmt.Sprintf("ParseUserAndHostAndPort has incoming URL string as: '%+v'", sUrl))
 	if strings.Contains(sUrl, "/") {
 		strComponents := strings.Split(sUrl, "/")
 		urlSubstring = strComponents[1] // Remaining string that may have properties in N1'V1,N2=V2,... format
@@ -254,7 +252,7 @@ func parseUserAndHostAndPort(sUrl string) (string, string, int, bool, string, ty
 		userHostPortStr = sUrl
 	}
 
-	//logger.Log(fmt.Sprintf("ParseUserAndHostAndPort userHostPortStr string as: '%+v'", userHostPortStr))
+	//logger.Debug(fmt.Sprintf("ParseUserAndHostAndPort userHostPortStr string as: '%+v'", userHostPortStr))
 	// The following if block takes care of formats a through f - to extract user as part of host-port string
 	if strings.Contains(userHostPortStr, "@") {
 		userHostPortComps := strings.Split(userHostPortStr, "@")
@@ -269,7 +267,7 @@ func parseUserAndHostAndPort(sUrl string) (string, string, int, bool, string, ty
 		// At this point, user is still NOT specified as shown in formats g through l above
 		hostPortStr = userHostPortStr
 	}
-	//logger.Log(fmt.Sprintf("ParseUserAndHostAndPort hostPortStr string as: '%+v'", hostPortStr))
+	//logger.Debug(fmt.Sprintf("ParseUserAndHostAndPort hostPortStr string as: '%+v'", hostPortStr))
 
 	// At this point, it is either host:port or only host w/o port - Hence separate out port first
 	if strings.Contains(hostPortStr, ":") {
@@ -333,7 +331,6 @@ func parseProperties(sUrl string) (types.TGProperties, []types.TGChannelUrl, typ
 		return nil, nil, exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	//logger.Log(fmt.Sprintf("ParseProperties has incoming URL string as: '%+v'", sUrl))
 	sUrl = sUrl[1 : len(sUrl)-1] // Strip '{' and '}' from both ends
 	nvPairs := strings.Split(sUrl, ";")
 	if len(nvPairs) == 0 {
@@ -346,27 +343,27 @@ func parseProperties(sUrl string) (types.TGProperties, []types.TGChannelUrl, typ
 		kvp := strings.Split(nvPair, "=")
 		props.AddProperty(kvp[0], kvp[1])
 	}
-	//logger.Log(fmt.Sprintf("Url Properties parsed from input URL are: '%+v'", props))
+	//logger.Debug(fmt.Sprintf("Url Properties parsed from input URL are: '%+v'", props))
 
 	// Once all the properties are scanned and parsed, check whether any of the supplied properties was ftHosts
 	if utils.DoesPropertyExist(props, "ftHosts") {
-		//logger.Log(fmt.Sprintf("Url Properties does have an existing property named / aliased as 'ftHosts'"))
+		//logger.Debug(fmt.Sprintf("Url Properties does have an existing property named / aliased as 'ftHosts'"))
 		cn := utils.GetConfigFromName("ftHosts")
 		if cn == nil || cn.GetName() == "" {
 			ftUrls = nil
 		} else {
 			ftUrlStr := props.GetProperty(cn, "")
 			ftUs := ftUrlStr
-			//logger.Log(fmt.Sprintf("ftus: '%+v'", ftus))
+			//logger.Debug(fmt.Sprintf("ftus: '%+v'", ftus))
 			if len(ftUs) == 0 {
 				ftUrls = nil
 			} else {
 				fts := strings.Split(ftUs, ",")
 				for _, fUrl := range fts {
 					if fUrl != "" {
-						//logger.Log(fmt.Sprintf("ParseProperties trying to create new LinkURL for FtUrl '%+v'", fUrl))
+						//logger.Debug(fmt.Sprintf("ParseProperties trying to create new LinkURL for FtUrl '%+v'", fUrl))
 						newLinkUrl := NewLinkUrl(fUrl)
-						//logger.Log(fmt.Sprintf("ParseProperties created new LinkURL '%+v' for FtUrl '%+v'", newLinkUrl, fUrl))
+						//logger.Debug(fmt.Sprintf("ParseProperties created new LinkURL '%+v' for FtUrl '%+v'", newLinkUrl, fUrl))
 						ftUrls = append(ftUrls, newLinkUrl)
 					}
 				}

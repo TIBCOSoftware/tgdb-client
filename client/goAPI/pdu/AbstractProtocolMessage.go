@@ -268,7 +268,7 @@ func (msg *AbstractProtocolMessage) APMMessageToString() string {
 /////////////////////////////////////////////////////////////////
 
 func APMReadHeader(msg types.TGMessage, is types.TGInputStream) types.TGError {
-	logger.Error(fmt.Sprint("Entering AbstractProtocolMessage:APMReadHeader"))
+	logger.Log(fmt.Sprint("Entering AbstractProtocolMessage:APMReadHeader"))
 	// First member attribute / element of message header is BufLength
 	// It has already been read before reaching here - in FromBytes()
 
@@ -281,7 +281,7 @@ func APMReadHeader(msg types.TGMessage, is types.TGInputStream) types.TGError {
 		errMsg := fmt.Sprint("Bad Magic id")
 		return exception.GetErrorByType(types.TGErrorBadMagic, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read MagicId as '%d'", magic))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read MagicId as '%d'", magic))
 
 	protocolVersion, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
 	if err != nil {
@@ -292,7 +292,7 @@ func APMReadHeader(msg types.TGMessage, is types.TGInputStream) types.TGError {
 		errMsg := fmt.Sprint("Unsupported protocol version")
 		return exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read ProtocolVersion as '%d'", protocolVersion))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read ProtocolVersion as '%d'", protocolVersion))
 
 	verbId, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
 	if err != nil {
@@ -303,49 +303,49 @@ func APMReadHeader(msg types.TGMessage, is types.TGInputStream) types.TGError {
 		errMsg := fmt.Sprint("Incorrect Message Type")
 		return exception.GetErrorByType(types.TGErrorBadVerb, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read VerbId as '%d'", verbId))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read VerbId as '%d'", verbId))
 
 	sequenceNo, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:APMReadHeader w/ Error in reading sequenceNo from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read SequenceNo as '%d'", sequenceNo))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read SequenceNo as '%d'", sequenceNo))
 
 	timestamp, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:APMReadHeader w/ Error in reading timestamp from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read Timestamp as '%d'", timestamp))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read Timestamp as '%d'", timestamp))
 
 	requestId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:APMReadHeader w/ Error in reading requestId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read RequestId as '%d'", requestId))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read RequestId as '%d'", requestId))
 
 	authToken, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:APMReadHeader w/ Error in reading authToken from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read AuthToken as '%d'", authToken))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read AuthToken as '%d'", authToken))
 
 	sessionId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:APMReadHeader w/ Error in reading sessionId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read SessionId as '%d'", sessionId))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read SessionId as '%d'", sessionId))
 
 	dataOffset, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:APMReadHeader w/ Error in reading protocolVersion from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read DataOffset as '%d'", dataOffset))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:APMReadHeader read DataOffset as '%d'", dataOffset))
 
 	// (Re)Set the message attributes with correct values from input stream
 	//msg.MagicId = magic
@@ -404,7 +404,7 @@ func VerbIdFromBytes(buffer []byte) (*CommandVerbs, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:VerbIdFromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted bufLen: '%d'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted bufLen: '%d'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -416,7 +416,7 @@ func VerbIdFromBytes(buffer []byte) (*CommandVerbs, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:VerbIdFromBytes w/ Error in reading magicId from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted magic id: '%d'", magic))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted magic id: '%d'", magic))
 	if magic != utils.GetMagic() {
 		errMsg := fmt.Sprint("Bad Magic id")
 		return nil, exception.GetErrorByType(types.TGErrorBadMagic, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -428,7 +428,7 @@ func VerbIdFromBytes(buffer []byte) (*CommandVerbs, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:VerbIdFromBytes w/ Error in reading protocolVersion from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted protocolVersion: '%d'", protocolVersion))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted protocolVersion: '%d'", protocolVersion))
 	if protocolVersion != int16(utils.GetProtocolVersion()) {
 		errMsg := fmt.Sprint("Unsupported protocol version")
 		return nil, exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -464,20 +464,20 @@ func (msg *AbstractProtocolMessage) FromBytes(buffer []byte) (types.TGMessage, t
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractProtocolMessage:FromBytes read bufLen as '%d'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:FromBytes read bufLen as '%d'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AbstractProtocolMessage:FromBytes about to read Header data elements"))
+	logger.Debug(fmt.Sprint("Inside AbstractProtocolMessage:FromBytes about to read Header data elements"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, err.GetErrorDetails())
 	}
 
-	logger.Log(fmt.Sprint("Inside AbstractProtocolMessage:FromBytes about to read Payload data elements"))
+	logger.Debug(fmt.Sprint("Inside AbstractProtocolMessage:FromBytes about to read Payload data elements"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)

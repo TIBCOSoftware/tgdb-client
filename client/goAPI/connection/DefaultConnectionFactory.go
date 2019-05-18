@@ -268,7 +268,7 @@ func (obj *TGConnectionFactory) CreateConnection(url, user, pwd string, env map[
 		logger.Error(fmt.Sprintf("ERROR: Returning TGConnectionFactory:CreateConnection - unable to create connection pool - '%+v", err.Error()))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside TGConnectionFactory:CreateConnection - about to connPool.Get()"))
+	logger.Debug(fmt.Sprintf("Inside TGConnectionFactory:CreateConnection - about to connPool.Get()"))
 	conn, err := connPool.Get()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGConnectionFactory:CreateConnection - unable to connPool.Get() - '%+v", err.Error()))
@@ -286,7 +286,7 @@ func (obj *TGConnectionFactory) CreateAdminConnection(url, user, pwd string, env
 		logger.Error(fmt.Sprintf("ERROR: Returning TGConnectionFactory:CreateAdminConnection - unable to create connection pool - '%+v", err.Error()))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside TGConnectionFactory:CreateAdminConnection - about to connPool.Get()"))
+	logger.Debug(fmt.Sprintf("Inside TGConnectionFactory:CreateAdminConnection - about to connPool.Get()"))
 	conn, err := connPool.Get()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGConnectionFactory:CreateAdminConnection - unable to connPool.Get() - '%+v", err.Error()))

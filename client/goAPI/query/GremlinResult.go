@@ -73,14 +73,14 @@ func (elementType ElementType) String() string {
 /////////////////////////////////////////////////////////////////
 
 func FillCollection(entityStream types.TGInputStream, gof types.TGGraphObjectFactory, col []interface{}) types.TGError {
-	logger.Log(fmt.Sprint("Entering GremlinResult:FillCollection"))
+	//logger.Log(fmt.Sprint("Entering GremlinResult:FillCollection"))
 	eleType, err := entityStream.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GremlinResult:FillCollection - unable to read eleType in the response stream w/ error: '%s'", err.Error()))
 		errMsg := "GremlinResult:FillCollection - unable to read element type in the response stream"
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted eleType: '%+v'", eleType))
+	logger.Debug(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted eleType: '%+v'", eleType))
 
 	if ElementType(eleType) == ElementTypeList {
 		return ConstructList(entityStream, gof, col)
@@ -100,7 +100,7 @@ func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFact
 		errMsg := "GremlinResult:ConstructList unable to read size in the response stream"
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted size: '%+v'", size))
+	logger.Debug(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted size: '%+v'", size))
 
 	eleType, err := entityStream.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
@@ -108,7 +108,7 @@ func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFact
 		errMsg := "GremlinResult:ConstructList unable to read element type in the response stream"
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside Returning GremlinResult:ConstructList extracted eleType: '%+v'", eleType))
+	logger.Debug(fmt.Sprintf("Inside Returning GremlinResult:ConstructList extracted eleType: '%+v'", eleType))
 
 	var dummyNode types.TGNode
 	if ElementType(eleType) == ElementTypeAttr || ElementType(eleType) == ElementTypeAttrValue || ElementType(eleType) == ElementTypeAttrValueTransient {
@@ -203,7 +203,7 @@ func ConstructMap(entityStream types.TGInputStream, gof types.TGGraphObjectFacto
 		errMsg := "GremlinResult:ConstructMap unable to read size in the response stream"
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted size: '%+v'", size))
+	logger.Debug(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted size: '%+v'", size))
 
 	for i:=0; i<size; i++ {
 		key, err := entityStream.(*iostream.ProtocolDataInputStream).ReadUTF()
@@ -212,7 +212,7 @@ func ConstructMap(entityStream types.TGInputStream, gof types.TGGraphObjectFacto
 			errMsg := "GremlinResult:ConstructMap - unable to read key in the entity stream"
 			return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
-		logger.Log(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted key: '%+v'", key))
+		logger.Debug(fmt.Sprintf("Inside Returning GremlinResult:FillCollection extracted key: '%+v'", key))
 
 		eleType, err := entityStream.(*iostream.ProtocolDataInputStream).ReadByte()
 		if err != nil {
@@ -220,7 +220,7 @@ func ConstructMap(entityStream types.TGInputStream, gof types.TGGraphObjectFacto
 			errMsg := "GremlinResult:ConstructMap unable to read element type in the response stream"
 			return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
-		logger.Log(fmt.Sprintf("Inside Returning GremlinResult:ConstructMap extracted eleType: '%+v'", eleType))
+		logger.Debug(fmt.Sprintf("Inside Returning GremlinResult:ConstructMap extracted eleType: '%+v'", eleType))
 
 		var dummyNode types.TGNode
 		if ElementType(eleType) == ElementTypeAttr || ElementType(eleType) == ElementTypeAttrValue || ElementType(eleType) == ElementTypeAttrValueTransient {

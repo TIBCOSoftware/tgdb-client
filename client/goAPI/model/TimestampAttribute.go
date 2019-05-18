@@ -137,7 +137,7 @@ func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 		return nil
 	}
 
-	logger.Log(fmt.Sprintf("Input value '%+v' is of type: '%+v'\n", value, reflect.TypeOf(value).Kind()))
+	logger.Log(fmt.Sprintf("Entering TimestampAttribute:SetValue w/ Input value '%+v' is of type: '%+v'\n", value, reflect.TypeOf(value).Kind()))
 	if reflect.TypeOf(value).Kind() != reflect.Int32 &&
 		reflect.TypeOf(value).Kind() != reflect.Int64 &&
 		reflect.TypeOf(value).Kind() != reflect.String {
@@ -153,13 +153,13 @@ func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 			errMsg := fmt.Sprint("Failure to covert string to TimestampAttribute")
 			return exception.GetErrorByType(types.TGErrorTypeCoercionNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 		}
-		logger.Log(fmt.Sprintf("Transformed value '%+v' is of type: '%+v'\n", v, reflect.TypeOf(v).Kind()))
+		logger.Debug(fmt.Sprintf("Inside TimestampAttribute:SetValue - Transformed value '%+v' is of type: '%+v'\n", v, reflect.TypeOf(v).Kind()))
 		obj.SetCalendar(v)
 		return nil
 	} else if reflect.TypeOf(value).Kind() == reflect.Int32 ||
 		reflect.TypeOf(value).Kind() == reflect.Int64 {
 		v := LongToCalendar(value.(int64))
-		logger.Log(fmt.Sprintf("Transformed value '%+v' is of type: '%+v'\n", v, reflect.TypeOf(v).Kind()))
+		logger.Debug(fmt.Sprintf("Inside TimestampAttribute:SetValue - Transformed value '%+v' is of type: '%+v'\n", v, reflect.TypeOf(v).Kind()))
 		obj.SetCalendar(v)
 		return nil
 	} else {
@@ -171,6 +171,7 @@ func (obj *TimestampAttribute) SetValue(value interface{}) types.TGError {
 
 // ReadValue reads the value from input stream
 func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
+	logger.Log(fmt.Sprint("Entering TimestampAttribute::ReadValue"))
 	if obj.GetAttributeDescriptor().IsEncrypted() {
 		err := AbstractAttributeReadDecrypted(obj, is)
 		if err != nil {
@@ -187,7 +188,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprint("ERROR: Returning TimestampAttribute:ReadValue w/ Error in reading era from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read era: '%+v'", era))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read era: '%+v'", era))
 
 	yr, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
 	if err != nil {
@@ -195,7 +196,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	year = int(yr)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read year: '%+v'", year))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read year: '%+v'", year))
 
 	mth, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
@@ -203,7 +204,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	mon = int(mth)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read mth: '%+v'", mth))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read mth: '%+v'", mth))
 
 	day, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
@@ -211,7 +212,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	dom = int(day)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read dom: '%+v'", dom))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read dom: '%+v'", dom))
 
 	hour, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
@@ -219,7 +220,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	hr = int(hour)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read hr: '%+v'", hr))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read hr: '%+v'", hr))
 
 	mts, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
@@ -227,7 +228,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	min = int(mts)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read min: '%+v'", min))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read min: '%+v'", min))
 
 	secs, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
@@ -235,7 +236,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	sec = int(secs)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read sec: '%+v'", sec))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read sec: '%+v'", sec))
 
 	mSec, err := is.(*iostream.ProtocolDataInputStream).ReadUnsignedShort()
 	if err != nil {
@@ -243,7 +244,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	ms = int(mSec)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read ms: '%+v'", ms))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read ms: '%+v'", ms))
 
 	tz, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
@@ -251,7 +252,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	tzType = int(tz)
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read tzType: '%+v'", tzType))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read tzType: '%+v'", tzType))
 
 	if tzType != -1 {
 		tzId, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
@@ -259,10 +260,10 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 			logger.Error(fmt.Sprint("ERROR: Returning TimestampAttribute:ReadValue w/ Error in reading tzId from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read tzId: '%+v'", tzId))
+		logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read tzId: '%+v'", tzId))
 	}
 
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - attribute type: '%+v'", obj.attrDesc.GetAttrType()))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - attribute type: '%+v'", obj.attrDesc.GetAttrType()))
 	switch obj.attrDesc.GetAttrType() {
 	case types.AttributeTypeDate:
 		v = time.Date(year, time.Month(mon), dom, 0, 0, 0, 0, time.Local)
@@ -277,7 +278,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		errMsg := fmt.Sprintf("Bad Descriptor: %s", string(obj.attrDesc.GetAttrType()))
 		return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, "")
 	}
-	logger.Log(fmt.Sprintf("TimestampAttribute::ReadValue - read v: '%+v'", v))
+	logger.Log(fmt.Sprintf("Returning TimestampAttribute::ReadValue - read v: '%+v'", v))
 
 	//obj.AttrValue = v.In(loc)		// TODO: Revisit later to use this once location/zone information is available
 	obj.attrValue = v
@@ -286,6 +287,7 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 
 // WriteValue writes the value to output stream
 func (obj *TimestampAttribute) WriteValue(os types.TGOutputStream) types.TGError {
+	logger.Log(fmt.Sprint("Entering TimestampAttribute::WriteValue"))
 	if obj.GetAttributeDescriptor().IsEncrypted() {
 		err := AbstractAttributeWriteEncrypted(obj, os)
 		if err != nil {
@@ -297,7 +299,7 @@ func (obj *TimestampAttribute) WriteValue(os types.TGOutputStream) types.TGError
 	}
 
 	era := true // Corresponding to GregorianCalendar.AD = 1
-	logger.Log(fmt.Sprintf("Object value '%+v' is of type: '%+v'\n", obj.GetValue(), reflect.TypeOf(obj.GetValue()).Kind()))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::WriteValue - Object value '%+v' is of type: '%+v'\n", obj.GetValue(), reflect.TypeOf(obj.GetValue()).Kind()))
 	v := obj.GetValue().(time.Time)
 	yr, mth, day := v.Date()
 	hr := v.Hour()
@@ -342,6 +344,7 @@ func (obj *TimestampAttribute) WriteValue(os types.TGOutputStream) types.TGError
 		errMsg := fmt.Sprintf("Bad Descriptor: %s", string(obj.attrDesc.GetAttrType()))
 		return exception.GetErrorByType(types.TGErrorIOException, "TGErrorIOException", errMsg, "")
 	}
+	logger.Log(fmt.Sprint("Entering TimestampAttribute::WriteValue"))
 	return nil
 }
 

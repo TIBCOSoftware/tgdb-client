@@ -95,7 +95,7 @@ func (obj *NodeType) UpdateMetadata(gmd *GraphMetadata) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside NodeType:UpdateMetadata, updated base entity type's attributes"))
+	logger.Debug(fmt.Sprint("Inside NodeType:UpdateMetadata, updated base entity type's attributes"))
 	for id, key := range obj.pKeys {
 		attrDesc, err := gmd.GetAttributeDescriptor(key.GetName())
 		if err == nil {
@@ -104,7 +104,6 @@ func (obj *NodeType) UpdateMetadata(gmd *GraphMetadata) types.TGError {
 		}
 		if attrDesc.GetAttrType() == types.AttributeTypeInvalid {
 			logger.Warning(fmt.Sprint("WARNING: Continuing loop NodeType:UpdateMetadata as attrDesc.GetAttrType() == types.AttributeTypeInvalid"))
-			//gLogger.log(TGLevel.Warning, "Cannot find '%s' attribute descriptor", attrName)
 			continue
 		}
 		obj.pKeys[id] = attrDesc.(*AttributeDescriptor)
@@ -219,19 +218,21 @@ func (obj *NodeType) ReadExternal(is types.TGInputStream) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside NodeType:ReadExternal, read base entity type's attributes"))
+	logger.Debug(fmt.Sprint("Inside NodeType:ReadExternal, read base entity type's attributes"))
 
 	attrCount, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning NodeType:ReadExternal - unable to read attrCount w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside NodeType:ReadExternal read attrCount as '%d'", attrCount))
 	for i := 0; i < int(attrCount); i++ {
 		attrName, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning NodeType:ReadExternal - unable to read attrName w/ Error: '%+v'", err.Error()))
 			return err
 		}
+		logger.Debug(fmt.Sprintf("Inside NodeType:ReadExternal read attrName as '%s'", attrName))
 		attrDesc := NewAttributeDescriptorWithType(attrName, types.AttributeTypeString)
 		obj.pKeys = append(obj.pKeys, attrDesc)
 	}
@@ -241,6 +242,7 @@ func (obj *NodeType) ReadExternal(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning NodeType:ReadExternal - unable to read idxCount w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside NodeType:ReadExternal read idxCount as '%d'", idxCount))
 	for i := 0; i < int(idxCount); i++ {
 		// TODO: Revisit later to get meta data needs to return index definitions
 		indexId, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
@@ -248,6 +250,7 @@ func (obj *NodeType) ReadExternal(is types.TGInputStream) types.TGError {
 			logger.Error(fmt.Sprintf("ERROR: Returning NodeType:ReadExternal - unable to read indexId w/ Error: '%+v'", err.Error()))
 			return err
 		}
+		logger.Debug(fmt.Sprintf("Inside NodeType:ReadExternal read indexId as '%d'", indexId))
 		obj.idxIds = append(obj.idxIds, indexId)
 	}
 
@@ -256,6 +259,7 @@ func (obj *NodeType) ReadExternal(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning NodeType:ReadExternal - unable to read numEntries w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside NodeType:ReadExternal read numEntries as '%d'", numEntries))
 
 	obj.SetNumEntries(numEntries)
 	logger.Log(fmt.Sprintf("Returning NodeType:ReadExternal w/ NO error, for NodeType: '%+v'", obj))

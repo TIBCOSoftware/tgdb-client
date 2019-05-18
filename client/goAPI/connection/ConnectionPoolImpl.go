@@ -94,7 +94,7 @@ func defaultTGConnectionPool() *ConnectionPoolImpl {
 func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.SortedProperties, connType TypeConnection) *ConnectionPoolImpl {
 	logger.Log(fmt.Sprintf("Entering ConnectionPoolImpl:NewTGConnectionPool w/ ChannelURL: '%+v', Poolsize: '%d'", url.GetUrlAsString(), poolSize))
 	cp := defaultTGConnectionPool()
-	logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool w/ Default Connection Pool: '%s'", cp.String()))
+	logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool w/ Default Connection Pool: '%s'", cp.String()))
 	cp.connType = connType
 	cp.poolProperties = props
 	cp.chanPool = make(chan types.TGConnection, poolSize+2)
@@ -112,7 +112,7 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 	channelFactory := channel.GetChannelFactoryInstance()
 	for i := 0; i < cp.poolSize; i++ {
 		if ch == nil || cp.useDedicateChannel {
-			logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to channelFactory.CreateChannelWithUrlProperties() for URL: '%s'", url.GetUrlAsString()))
+			logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to channelFactory.CreateChannelWithUrlProperties() for URL: '%s'", url.GetUrlAsString()))
 			// Create a channel from channel factory
 			channel1, err := channelFactory.CreateChannelWithUrlProperties(url, props)
 			if err != nil {
@@ -122,7 +122,7 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 			}
 			ch = channel1
 		}
-		//logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to NewTGDBConnection() for Channel: '%+v' and Properties: '%+v'", ch, props))
+		//logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to NewTGDBConnection() for Channel: '%+v' and Properties: '%+v'", ch, props))
 		// Create a connection
 		var conn types.TGConnection
 		switch connType {
@@ -137,7 +137,7 @@ func NewTGConnectionPool(url types.TGChannelUrl, poolSize int, props *utils.Sort
 		conn.SetConnectionProperties(props)
 		// Add it in the pool to initialize the pool with a set number of initialized connections
 		cp.connList = append(cp.connList, conn)
-		//logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to add conn: '%+v' to the pool", conn.String()))
+		//logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl:NewTGConnectionPool - about to add conn: '%+v' to the pool", conn.String()))
 		cp.chanPool <- conn
 	} // End of For loop for Pool Size
 	cp.poolState = ConnectionPoolInitialized
@@ -186,12 +186,12 @@ func (obj *ConnectionPoolImpl) GetConnection() (types.TGConnection, types.TGErro
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl:GetConnection - about to pull connection from obj.ConnPool"))
+	logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl:GetConnection - about to pull connection from obj.ConnPool"))
 	var conn types.TGConnection
 	// Search through all available connections within the pooled set to find out which one is free to service next
 	select {
 	case conn = <-obj.chanPool:
-		//logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl::GetConnection about to verify the state of the connection: '%+v' pulled from obj.ConnPool:", conn))
+		//logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl::GetConnection about to verify the state of the connection: '%+v' pulled from obj.ConnPool:", conn))
 		// Proceed with the connection that is NOT being used already a.k.a. part of consumer connection map
 		if _, ok := obj.consumers[conn.GetConnectionId()]; !ok {
 			// Add it in the pool to initialize the pool with a set number of initialized connections
@@ -245,7 +245,7 @@ func (obj *ConnectionPoolImpl) Connect() types.TGError {
 			continue // Skip this connection and go to next one in the pool
 		}
 		// Proceed when the connection is either in Initialized OR Disconnected (OR Stopped???) state
-		logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl::Connect Consumer Loop about to conn.Connect() using connection: '%+v'", conn))
+		logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl::Connect Consumer Loop about to conn.Connect() using connection: '%+v'", conn))
 		err := conn.Connect()
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning ConnectionPoolImpl:Connect - unable to conn.Connect() w/ '%s'", err.Error()))
@@ -277,7 +277,7 @@ func (obj *ConnectionPoolImpl) Disconnect() types.TGError {
 
 	// Attempt to connect using each of the active connections in the pool
 	for _, conn := range obj.connList {
-		logger.Log(fmt.Sprintf("Inside ConnectionPoolImpl::Disconnect active connection Loop about to conn.Disconnect() using connection: '%+v'", conn))
+		logger.Debug(fmt.Sprintf("Inside ConnectionPoolImpl::Disconnect active connection Loop about to conn.Disconnect() using connection: '%+v'", conn))
 		err := conn.Disconnect()
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning ConnectionPoolImpl:Disconnect - unable to conn.Disconnect() w/ '%s'", err.Error()))
@@ -313,9 +313,9 @@ func (obj *ConnectionPoolImpl) ReleaseConnection(conn types.TGConnection) (types
 	obj.adminLock.RLock()
 	defer obj.adminLock.RUnlock()
 
-	logger.Log(fmt.Sprint("Inside ConnectionPoolImpl::ReleaseConnection Consumer Loop about to remove connection from consumer list"))
+	logger.Debug(fmt.Sprint("Inside ConnectionPoolImpl::ReleaseConnection Consumer Loop about to remove connection from consumer list"))
 	delete(obj.consumers, conn.(*TGDBConnection).GetConnectionId())
-	logger.Log(fmt.Sprint("Inside ConnectionPoolImpl::ReleaseConnection Consumer Loop about to return connection to obj.ConnPool"))
+	logger.Debug(fmt.Sprint("Inside ConnectionPoolImpl::ReleaseConnection Consumer Loop about to return connection to obj.ConnPool"))
 	obj.chanPool <- conn.(*TGDBConnection)
 
 	logger.Log(fmt.Sprint("Returning ConnectionPoolImpl:ReleaseConnection"))

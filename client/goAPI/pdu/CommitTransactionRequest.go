@@ -114,7 +114,6 @@ func (msg *CommitTransactionRequest) FromBytes(buffer []byte) (types.TGMessage, 
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionRequest:FromBytes w/ Error: Invalid Message Buffer"))
 		return nil, exception.CreateExceptionByType(types.TGErrorInvalidMessageLength)
 	}
-	logger.Log(fmt.Sprint("Entering CommitTransactionRequest::FromBytes"))
 
 	is := iostream.NewProtocolDataInputStream(buffer)
 
@@ -124,20 +123,20 @@ func (msg *CommitTransactionRequest) FromBytes(buffer []byte) (types.TGMessage, 
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionRequest:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside CommitTransactionRequest:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionRequest:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionRequest:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionRequest:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionRequest:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
@@ -153,14 +152,14 @@ func (msg *CommitTransactionRequest) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering CommitTransactionRequest::ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionRequest:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionRequest:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionRequest:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionRequest:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -340,7 +339,7 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 				newAttrCount++
 			}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:ReadPayload - There are '%d' new attribute descriptors", newAttrCount))
+		logger.Debug(fmt.Sprintf("Inside CommitTransactionRequest:ReadPayload - There are '%d' new attribute descriptors", newAttrCount))
 		os.(*iostream.ProtocolDataOutputStream).WriteInt(newAttrCount)
 		for _, attrDesc := range msg.attrDescSet {
 				err := attrDesc.WriteExternal(os)
@@ -350,7 +349,7 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 				}
 			//}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:ReadPayload - '%d' attribute descriptors are written in byte format", len(msg.attrDescSet)))
+		logger.Debug(fmt.Sprintf("Inside CommitTransactionRequest:ReadPayload - '%d' attribute descriptors are written in byte format", len(msg.attrDescSet)))
 	}
 	if len(msg.addedList) > 0 {
 		os.(*iostream.ProtocolDataOutputStream).WriteShort(0x1011) // For entity creation
@@ -362,7 +361,7 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 				return err
 			}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' new entities are written in byte format", len(msg.addedList)))
+		logger.Debug(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' new entities are written in byte format", len(msg.addedList)))
 	}
 	//TODO: Ask TGDB Engineering Team - Need to write only the modified attributes
 	if len(msg.updatedList) > 0 {
@@ -375,7 +374,7 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 				return err
 			}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' updateable entities are written in byte format", len(msg.updatedList)))
+		logger.Debug(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' updateable entities are written in byte format", len(msg.updatedList)))
 	}
 	//TODO: Ask TGDB Engineering Team - Need to write the id only
 	if len(msg.removedList) > 0 {
@@ -388,7 +387,7 @@ func (msg *CommitTransactionRequest) WritePayload(os types.TGOutputStream) types
 				return err
 			}
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' removable entities are written in byte format", len(msg.removedList)))
+		logger.Debug(fmt.Sprintf("Inside CommitTransactionRequest:WritePayload - '%d' removable entities are written in byte format", len(msg.removedList)))
 	}
 	currPos := os.GetPosition()
 	length := currPos - startPos

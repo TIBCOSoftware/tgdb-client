@@ -79,27 +79,27 @@ func (msg *TraverseResponseMessage) FromBytes(buffer []byte) (types.TGMessage, t
 		logger.Error(fmt.Sprint("ERROR: Returning TraverseResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside TraverseResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside TraverseResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside TraverseResponseMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside TraverseResponseMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside TraverseResponseMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside TraverseResponseMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("TraverseResponseMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning TraverseResponseMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -108,14 +108,14 @@ func (msg *TraverseResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering TraverseResponseMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside TraverseResponseMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside TraverseResponseMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside TraverseResponseMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside TraverseResponseMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -127,7 +127,7 @@ func (msg *TraverseResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning TraverseResponseMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("TraverseResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning TraverseResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 

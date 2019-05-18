@@ -122,7 +122,7 @@ func (msg *HandShakeResponseMessage) FromBytes(buffer []byte) (types.TGMessage, 
 		logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:FromBytes w/ Error: Invalid Message Buffer"))
 		return nil, exception.CreateExceptionByType(types.TGErrorInvalidMessageLength)
 	}
-	logger.Log(fmt.Sprintf("Entering HandShakeResponseMessage:FromBytes - received input buffer as '%+v'", buffer))
+	logger.Debug(fmt.Sprintf("Entering HandShakeResponseMessage:FromBytes - received input buffer as '%+v'", buffer))
 
 	is := iostream.NewProtocolDataInputStream(buffer)
 
@@ -132,27 +132,27 @@ func (msg *HandShakeResponseMessage) FromBytes(buffer []byte) (types.TGMessage, 
 		logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside HandShakeResponseMessage:FromBytes read bufLen as '%d'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside HandShakeResponseMessage:FromBytes read bufLen as '%d'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside HandShakeResponseMessage:FromBytes about to read Header data elements"))
+	logger.Debug(fmt.Sprint("Inside HandShakeResponseMessage:FromBytes about to read Header data elements"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside HandShakeResponseMessage:FromBytes about to read Payload data elements"))
+	logger.Debug(fmt.Sprint("Inside HandShakeResponseMessage:FromBytes about to read Payload data elements"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("HandShakeResponseMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning HandShakeResponseMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -161,14 +161,14 @@ func (msg *HandShakeResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering HandShakeResponseMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside HandShakeResponseMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside HandShakeResponseMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside HandShakeResponseMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside HandShakeResponseMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -180,7 +180,7 @@ func (msg *HandShakeResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("HandShakeResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning HandShakeResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -311,14 +311,14 @@ func (msg *HandShakeResponseMessage) ReadPayload(is types.TGInputStream) types.T
 		logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:ReadPayload w/ Error in reading rStatus from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read rStatus as '%+v'", rStatus))
+	logger.Debug(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read rStatus as '%+v'", rStatus))
 
 	challenge, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:ReadPayload w/ Error in reading challenge from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read challenge as '%+v'", challenge))
+	logger.Debug(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read challenge as '%+v'", challenge))
 
 	if int(rStatus) == ResponseChallengeFailed {
 		errMsgBytes, err := is.(*iostream.ProtocolDataInputStream).ReadBytes()
@@ -326,7 +326,7 @@ func (msg *HandShakeResponseMessage) ReadPayload(is types.TGInputStream) types.T
 			logger.Error(fmt.Sprint("ERROR: Returning HandShakeResponseMessage:ReadPayload w/ Error in reading errMsgBytes from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read rStatus as '%+v'", errMsgBytes))
+		logger.Debug(fmt.Sprintf("Inside HandShakeResponseMessage:ReadPayload read rStatus as '%+v'", errMsgBytes))
 		msg.SetErrorMessage(string(errMsgBytes))
 	}
 	msg.SetResponseStatus(int(rStatus))

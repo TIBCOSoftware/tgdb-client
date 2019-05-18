@@ -64,7 +64,6 @@ func DefaultTCPChannel() *TCPChannel {
 }
 
 func NewTCPChannel(linkUrl *LinkUrl, props *utils.SortedProperties) *TCPChannel {
-	//logger.Log(fmt.Sprintf("======> Entering TCPChannel:NewTCPChannel w/ linkUrl: '%s'", linkUrl.String()))
 	newChannel := TCPChannel{
 		AbstractChannel: NewAbstractChannel(linkUrl, props),
 		msgCh:           make(chan types.TGMessage),
@@ -96,13 +95,13 @@ func (obj *TCPChannel) doAuthenticate() types.TGError {
 	msgRequest.(*pdu.AuthenticateRequestMessage).SetUserName(obj.getChannelUserName())
 	msgRequest.(*pdu.AuthenticateRequestMessage).SetPassword(obj.getChannelPassword())
 
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:doAuthenticate about to request reply for request '%+v'", msgRequest.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:doAuthenticate about to request reply for request '%+v'", msgRequest.String()))
 	msgResponse, err := channelRequestReply(obj, msgRequest)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::doAuthenticate channelRequestReply failed w/ '%+v'", err.Error()))
 		return err
 	}
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:doAuthenticate received reply as '%+v'", msgResponse.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:doAuthenticate received reply as '%+v'", msgResponse.String()))
 	if ! msgResponse.(*pdu.AuthenticateResponseMessage).IsSuccess() {
 		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::doAuthenticate msgResponse.(*pdu.AuthenticateResponseMessage).IsSuccess() failed"))
 		return exception.NewTGBadAuthenticationWithRealm(types.INTERNAL_SERVER_ERROR, types.TGErrorBadAuthentication, "Bad username/password combination", "", "tgdb")
@@ -132,13 +131,13 @@ func (obj *TCPChannel) performHandshake(sslMode bool) types.TGError {
 
 	msgRequest.(*pdu.HandShakeRequestMessage).SetRequestType(pdu.InitiateRequest)
 
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:performHandshake about to request reply for InitiateRequest '%+v'", msgRequest.String()))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:performHandshake about to request reply for InitiateRequest '%+v'", msgRequest.String()))
 	msgResponse, err := channelRequestReply(obj, msgRequest)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::doAuthenticate channelRequestReply failed w/ '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:performHandshake received reply as '%+v'", msgResponse.String()))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:performHandshake received reply as '%+v'", msgResponse.String()))
 	if msgResponse.GetVerbId() != pdu.VerbHandShakeResponse {
 		logger.Error(fmt.Sprint("ERROR: Returning TCPChannel::performHandshake HandshakeResponse message response NOT received"))
 		if msgResponse.GetVerbId() == pdu.VerbSessionForcefullyTerminated {
@@ -173,13 +172,13 @@ func (obj *TCPChannel) performHandshake(sslMode bool) types.TGError {
 	msgRequest.(*pdu.HandShakeRequestMessage).SetSslMode(sslMode)
 	msgRequest.(*pdu.HandShakeRequestMessage).SetChallenge(challenge)
 
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:performHandshake about to request reply for ChallengeAccepted '%+v'", msgRequest.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:performHandshake about to request reply for ChallengeAccepted '%+v'", msgRequest.String()))
 	msgResponse, err = channelRequestReply(obj, msgRequest)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::performHandshake channelRequestReply failed w/ '%+v'", err.Error()))
 		return err
 	}
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:performHandshake received reply (2) as '%+v'", msgResponse.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:performHandshake received reply (2) as '%+v'", msgResponse.String()))
 	if msgResponse.GetVerbId() != pdu.VerbHandShakeResponse {
 		logger.Error(fmt.Sprint("ERROR: Returning TCPChannel::performHandshake HandshakeResponse message response NOT received"))
 		if msgResponse.GetVerbId() == pdu.VerbSessionForcefullyTerminated {
@@ -285,14 +284,14 @@ func (obj *TCPChannel) validateHandshakeResponseVersion(sVersion int64, cVersion
 	}
 
 	errMsg := fmt.Sprintf("======> Inside SSLChannel:validateHandshakeResponseVersion - Version mismatch between client(%s) & server(%s)", cStrVer, sStrVer)
-	logger.Log(errMsg)
+	logger.Debug(errMsg)
 	return exception.GetErrorByType(types.TGErrorVersionMismatchException, "", errMsg, "")
 }
 
 func (obj *TCPChannel) writeLoop(done chan bool) {
 	logger.Log(fmt.Sprint("======> Entering TCPChannel:writeLoop"))
 	for {
-		logger.Log(fmt.Sprintf("======> Inside TCPChannel:writeLoop entering infinite loop"))
+		logger.Debug(fmt.Sprintf("======> Inside TCPChannel:writeLoop entering infinite loop"))
 		select { // Non-blocking channel operation
 		case msg, ok := <-obj.msgCh: // Retrieve the message from the channel
 			if !ok {
@@ -302,7 +301,7 @@ func (obj *TCPChannel) writeLoop(done chan bool) {
 				logger.Error(fmt.Sprint("ERROR: Returning TCPChannel:writeLoop unable to retrieve message from obj.msgCh"))
 				return
 			}
-			logger.Log(fmt.Sprintf("======> Inside TCPChannel:writeLoop retrieved message from obj.msgCh as '%+v'", msg.String()))
+			logger.Debug(fmt.Sprintf("======> Inside TCPChannel:writeLoop retrieved message from obj.msgCh as '%+v'", msg.String()))
 
 			err := obj.writeToWire(msg)
 			if err != nil {
@@ -311,7 +310,7 @@ func (obj *TCPChannel) writeLoop(done chan bool) {
 				return
 			}
 
-			logger.Log(fmt.Sprintf("======> Inside TCPChannel:writeLoop successfully wrote message '%+v' on the socket", msg.String()))
+			logger.Debug(fmt.Sprintf("======> Inside TCPChannel:writeLoop successfully wrote message '%+v' on the socket", msg.String()))
 			break
 		default:
 			// TODO: Revisit later - Do something
@@ -349,7 +348,7 @@ func (obj *TCPChannel) writeToWire(msg types.TGMessage) types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, sErr.Error())
 	}
 
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:writeToWire about to write message bytes on the socket as '%+v'", msgBytes[0:bufLen]))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:writeToWire about to write message bytes on the socket as '%+v'", msgBytes[0:bufLen]))
 	// Put the data packet on the socket for network transmission
 	_, sErr = obj.socket.Write(msgBytes[0:bufLen])
 	if sErr != nil {
@@ -555,7 +554,7 @@ func (obj *TCPChannel) CreateSocket() types.TGError {
 	host := obj.channelUrl.urlHost
 	port := obj.channelUrl.urlPort
 	serverAddr := fmt.Sprintf("%s:%d", host, port)
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:CreateSocket attempting to resolve address for '%s'", serverAddr))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:CreateSocket attempting to resolve address for '%s'", serverAddr))
 
 	tcpAddr, tErr := net.ResolveTCPAddr(types.ProtocolTCP.String(), serverAddr)
 	if tErr != nil {
@@ -563,7 +562,7 @@ func (obj *TCPChannel) CreateSocket() types.TGError {
 		errMsg := fmt.Sprintf("TCPChannel:CreateSocket unable to resolve channel address '%s'", serverAddr)
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, tErr.Error())
 	}
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:CreateSocket resolved TCP address for '%s' as '%+v'", serverAddr, tcpAddr))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:CreateSocket resolved TCP address for '%s' as '%+v'", serverAddr, tcpAddr))
 
 	tcpConn, cErr := net.DialTCP(types.ProtocolTCP.String(), nil, tcpAddr)
 	if cErr != nil {
@@ -571,7 +570,7 @@ func (obj *TCPChannel) CreateSocket() types.TGError {
 		failureMessage := fmt.Sprintf("Failed to connect to the server at '%s'" + serverAddr)
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", failureMessage, cErr.Error())
 	}
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:CreateSocket created TCP connection for '%s' as '%+v'", serverAddr, tcpConn))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:CreateSocket created TCP connection for '%s' as '%+v'", serverAddr, tcpConn))
 
 	timeout := utils.NewTGEnvironment().GetChannelConnectTimeout()
 	dErr := tcpConn.SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
@@ -634,7 +633,7 @@ func (obj *TCPChannel) OnConnect() types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
 	}
 	if msg != nil {
-		logger.Log(fmt.Sprintf("======> Inside TCPChannel:OnConnect tryRead() read Message as '%+v'", msg.String()))
+		logger.Debug(fmt.Sprintf("======> Inside TCPChannel:OnConnect tryRead() read Message as '%+v'", msg.String()))
 	}
 
 	if msg != nil && msg.GetVerbId() == pdu.VerbSessionForcefullyTerminated {
@@ -642,7 +641,7 @@ func (obj *TCPChannel) OnConnect() types.TGError {
 		return exception.NewTGChannelDisconnectedWithMsg(msg.(*pdu.SessionForcefullyTerminatedMessage).GetKillString())
 	}
 
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:OnConnect about to performHandshake"))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:OnConnect about to performHandshake"))
 	err = obj.performHandshake(false)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::OnConnect obj.performHandshake() failed w/ '%+v'", err.Error()))
@@ -650,7 +649,7 @@ func (obj *TCPChannel) OnConnect() types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:OnConnect about to doAuthenticate"))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:OnConnect about to doAuthenticate"))
 	err = obj.doAuthenticate()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::OnConnect obj.doAuthenticate() failed w/ '%+v'", err.Error()))
@@ -689,20 +688,20 @@ func (obj *TCPChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 		errMsg := "TCPChannel::ReadWireMsg obj.socket.Read failed"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, sErr.Error())
 	}
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Read '%d' bytes from the wire in buff '%+v'", n, buff[:(2*n)]))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Read '%d' bytes from the wire in buff '%+v'", n, buff[:(2*n)]))
 	copy(in.Buf, buff[:n])
 	in.BufLen = n
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Input Stream Buffer('%d') is '%+v'", in.BufLen, in.Buf[:(2*n)]))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Input Stream Buffer('%d') is '%+v'", in.BufLen, in.Buf[:(2*n)]))
 
 	// Needed to avoid dirty data in the buffer when we handle the message
 	buffer := make([]byte, n)
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg in.ReadFullyAtPos read msgBytes as '%+v'", msgBytes))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg in.ReadFullyAtPos read msgBytes as '%+v'", msgBytes))
 	copy(buffer, buff[:n])
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg copied into buffer as '%+v'", buffer))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg copied into buffer as '%+v'", buffer))
 
 	//intToBytes(size, msgBytes, 0)
 	//bytesRead, _ := utils.FormatHex(msgBytes)
-	//logger.Log(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg bytes read: '%s'", bytesRead))
+	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg bytes read: '%s'", bytesRead))
 
 	msg, err := pdu.CreateMessageFromBuffer(buffer, 0, n)
 	if err != nil {
@@ -710,7 +709,7 @@ func (obj *TCPChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 		errMsg := "TCPChannel::ReadWireMsg unable to create a message from the input stream bytes"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.GetErrorMsg())
 	}
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Created Message from buffer as '%+v'", msg.String()))
+	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Created Message from buffer as '%+v'", msg.String()))
 
 	if msg.GetVerbId() == pdu.VerbExceptionMessage {
 		logger.Error(fmt.Sprint("ERROR: Returning TCPChannel::ReadWireMsg msg.GetVerbId() == pdu.VerbExceptionMessage"))

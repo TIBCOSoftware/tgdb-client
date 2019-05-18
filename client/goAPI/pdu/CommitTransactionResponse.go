@@ -221,13 +221,13 @@ func (msg *CommitTransactionResponse) FromBytes(buffer []byte) (types.TGMessage,
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionResponse:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionResponse:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		//errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
@@ -235,7 +235,7 @@ func (msg *CommitTransactionResponse) FromBytes(buffer []byte) (types.TGMessage,
 		return nil, err
 	}
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionResponse:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionResponse:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		//errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
@@ -243,7 +243,7 @@ func (msg *CommitTransactionResponse) FromBytes(buffer []byte) (types.TGMessage,
 		return nil, err
 	}
 
-	logger.Log(fmt.Sprintf("CommitTransactionResponse::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning CommitTransactionResponse::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -252,14 +252,14 @@ func (msg *CommitTransactionResponse) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering CommitTransactionResponse:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionResponse:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionResponse:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionResponse:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionResponse:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -271,7 +271,7 @@ func (msg *CommitTransactionResponse) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("CommitTransactionResponse::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning CommitTransactionResponse::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -424,23 +424,23 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ReadPayload w/ Error in reading bLen from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read buf length as '%+v'", bLen))
+	logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read buf length as '%+v'", bLen))
 
 	checkSum, err := is.(*iostream.ProtocolDataInputStream).ReadInt() // checksum
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ReadPayload w/ Error in reading checkSum from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read checkSum as '%+v'", checkSum))
+	logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read checkSum as '%+v'", checkSum))
 
 	status, err := is.(*iostream.ProtocolDataInputStream).ReadInt() // status code - currently zero
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ReadPayload w/ Error in reading status from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read status as '%+v'", status))
+	logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read status as '%+v'", status))
 
-	logger.Log(fmt.Sprint("Inside CommitTransactionResponse:ReadPayload - about to ProcessTransactionStatus"))
+	logger.Debug(fmt.Sprint("Inside CommitTransactionResponse:ReadPayload - about to ProcessTransactionStatus"))
 	txnException := ProcessTransactionStatus(is, status)
 	if txnException != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ReadPayload w/ txnException"))
@@ -456,14 +456,14 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 		if avail <= 0 {
 			break
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read avail as '%+v'", avail))
+		logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read avail as '%+v'", avail))
 
 		opCode, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ReadPayload w/ Error in reading opCode from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read opCode as '%+v'", opCode))
+		logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read opCode as '%+v'", opCode))
 
 		switch opCode {
 		case 0x1010:
@@ -473,13 +473,13 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 				return err
 			}
 			msg.attrDescCount = attrDescCount
-			logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read attrDescCount for opCode=0x1010 as '%+v'", attrDescCount))
+			logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read attrDescCount for opCode=0x1010 as '%+v'", attrDescCount))
 			for i := 0; i < attrDescCount; i++ {
 				tempId, _ := is.(*iostream.ProtocolDataInputStream).ReadInt()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read tempId for opCode=0x1010 as '%+v'", tempId))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read tempId for opCode=0x1010 as '%+v'", tempId))
 				msg.attrDescIdList = append(msg.attrDescIdList, int64(tempId))
 				realId, _ := is.(*iostream.ProtocolDataInputStream).ReadInt()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read realId for opCode=0x1010 as '%+v'", realId))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read realId for opCode=0x1010 as '%+v'", realId))
 				msg.attrDescIdList = append(msg.attrDescIdList, int64(realId))
 			}
 			break
@@ -490,16 +490,16 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 				return err
 			}
 			msg.addedCount = addedCount
-			logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read addedCount for opCode=0x1011 as '%+v'", addedCount))
+			logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read addedCount for opCode=0x1011 as '%+v'", addedCount))
 			for i := 0; i < addedCount; i++ {
 				longTempId, _ := is.(*iostream.ProtocolDataInputStream).ReadLong()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read longTempId for opCode=0x1011 as '%+v'", longTempId))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read longTempId for opCode=0x1011 as '%+v'", longTempId))
 				msg.addedIdList = append(msg.addedIdList, longTempId)
 				longRealId, _ := is.(*iostream.ProtocolDataInputStream).ReadLong()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read longRealId for opCode=0x1011 as '%+v'", longRealId))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read longRealId for opCode=0x1011 as '%+v'", longRealId))
 				msg.addedIdList = append(msg.addedIdList, longRealId)
 				longVersion, _ := is.(*iostream.ProtocolDataInputStream).ReadLong()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read longVersion for opCode=0x1011 as '%+v'", longVersion))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read longVersion for opCode=0x1011 as '%+v'", longVersion))
 				msg.addedIdList = append(msg.addedIdList, longVersion)
 			}
 			break
@@ -510,13 +510,13 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 				return err
 			}
 			msg.updatedCount = updatedCount
-			logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read updatedCount for opCode=0x1012 as '%+v'", updatedCount))
+			logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read updatedCount for opCode=0x1012 as '%+v'", updatedCount))
 			for i := 0; i < updatedCount; i++ {
 				id, _ := is.(*iostream.ProtocolDataInputStream).ReadLong()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read id for opCode=0x1012 as '%+v'", id))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read id for opCode=0x1012 as '%+v'", id))
 				msg.updatedIdList = append(msg.updatedIdList, id)
 				version, _ := is.(*iostream.ProtocolDataInputStream).ReadLong()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read version for opCode=0x1012 as '%+v'", version))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read version for opCode=0x1012 as '%+v'", version))
 				msg.updatedIdList = append(msg.updatedIdList, version)
 			}
 			break
@@ -527,23 +527,23 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 				return err
 			}
 			msg.removedCount = removedCount
-			logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read removedCount for opCode=0x1013 as '%+v'", removedCount))
+			logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read removedCount for opCode=0x1013 as '%+v'", removedCount))
 			for i := 0; i < removedCount; i++ {
 				id, _ := is.(*iostream.ProtocolDataInputStream).ReadLong()
-				logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read id for opCode=0x1013 as '%+v'", id))
+				logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read id for opCode=0x1013 as '%+v'", id))
 				msg.removedIdList = append(msg.removedIdList, id)
 			}
 			break
 		case 0x6789:
 			msg.entityStream = is
 			pos := is.(*iostream.ProtocolDataInputStream).GetPosition()
-			logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read pos for opCode=0x6789 as '%+v'", pos))
+			logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read pos for opCode=0x6789 as '%+v'", pos))
 			count, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 			if err != nil {
 				logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ReadPayload w/ Error in reading count from message buffer"))
 				return err
 			}
-			logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read count for opCode=0x6789 as '%+v'", count))
+			logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read count for opCode=0x6789 as '%+v'", count))
 			is.(*iostream.ProtocolDataInputStream).SetPosition(pos)
 			break
 		default:

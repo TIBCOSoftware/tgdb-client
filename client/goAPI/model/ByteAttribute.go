@@ -128,7 +128,7 @@ func (obj *ByteAttribute) SetOwner(ownerEntity types.TGEntity) {
 // SetValue sets the value for this attribute. Appropriate data conversion to its attribute desc will be performed
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *ByteAttribute) SetValue(value interface{}) types.TGError {
-	logger.Log(fmt.Sprintf("ByteAttribute::SetValue trying to set attribute value '%+v' of type '%+v'", value, reflect.TypeOf(value).Kind()))
+	logger.Log(fmt.Sprintf("Entering ByteAttribute::SetValue trying to set attribute value '%+v' of type '%+v'", value, reflect.TypeOf(value).Kind()))
 	if value == nil {
 		//errMsg := fmt.Sprintf("Attribute value is required")
 		//return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -189,7 +189,7 @@ func (obj *ByteAttribute) SetValue(value interface{}) types.TGError {
 		obj.SetByte(uint8(v1))
 	} else {
 		v := uint8(reflect.ValueOf(value).Uint())
-		logger.Log(fmt.Sprintf("CharAttribute::SetValue finally trying to set attribute value '%+v' of type '%+v'", v, reflect.TypeOf(v).Kind()))
+		logger.Log(fmt.Sprintf("Returning CharAttribute::SetValue - trying to set attribute value '%+v' of type '%+v'", v, reflect.TypeOf(v).Kind()))
 		obj.SetByte(v)
 	}
 
@@ -203,7 +203,7 @@ func (obj *ByteAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprint("ERROR: Returning ByteAttribute:ReadValue w/ Error in reading value from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("ByteAttribute::ReadValue - read value: '%+v'", value))
+	logger.Log(fmt.Sprintf("Returning ByteAttribute::ReadValue - read value: '%+v'", value))
 	obj.attrValue = value
 	return nil
 }

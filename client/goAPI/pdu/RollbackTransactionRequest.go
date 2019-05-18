@@ -79,27 +79,27 @@ func (msg *RollbackTransactionRequestMessage) FromBytes(buffer []byte) (types.TG
 		logger.Error(fmt.Sprint("ERROR: Returning RollbackTransactionRequestMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside RollbackTransactionRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside RollbackTransactionRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside RollbackTransactionRequestMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside RollbackTransactionRequestMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside RollbackTransactionRequestMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside RollbackTransactionRequestMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("RollbackTransactionRequestMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning RollbackTransactionRequestMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -108,14 +108,14 @@ func (msg *RollbackTransactionRequestMessage) ToBytes() ([]byte, int, types.TGEr
 	logger.Log(fmt.Sprint("Entering RollbackTransactionRequestMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside RollbackTransactionRequestMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside RollbackTransactionRequestMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside RollbackTransactionRequestMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside RollbackTransactionRequestMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -127,7 +127,7 @@ func (msg *RollbackTransactionRequestMessage) ToBytes() ([]byte, int, types.TGEr
 		logger.Error(fmt.Sprint("ERROR: Returning RollbackTransactionRequestMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("RollbackTransactionRequestMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning RollbackTransactionRequestMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 

@@ -123,27 +123,27 @@ func (msg *AuthenticateRequestMessage) FromBytes(buffer []byte) (types.TGMessage
 	if err != nil {
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AuthenticateRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AuthenticateRequestMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside AuthenticateRequestMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AuthenticateRequestMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside AuthenticateRequestMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("AuthenticateRequestMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning AuthenticateRequestMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -152,14 +152,14 @@ func (msg *AuthenticateRequestMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering AuthenticateRequestMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside AuthenticateRequestMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside AuthenticateRequestMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AuthenticateRequestMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside AuthenticateRequestMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -171,7 +171,7 @@ func (msg *AuthenticateRequestMessage) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("AuthenticateRequestMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning AuthenticateRequestMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -305,7 +305,7 @@ func (msg *AuthenticateRequestMessage) ReadPayload(is types.TGInputStream) types
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:ReadPayload w/ Error in reading clientId flag from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("AuthenticateRequestMessage:ReadPayload read bIsClientId as '%+v'", bIsClientId))
+	logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:ReadPayload read bIsClientId as '%+v'", bIsClientId))
 	strClient := ""
 	if ! bIsClientId {
 		strClient, err = is.(*iostream.ProtocolDataInputStream).ReadUTF()
@@ -313,7 +313,7 @@ func (msg *AuthenticateRequestMessage) ReadPayload(is types.TGInputStream) types
 			logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:ReadPayload w/ Error in reading clientId from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("AuthenticateRequestMessage:ReadPayload read strClient as '%+v'", strClient))
+		logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:ReadPayload read strClient as '%+v'", strClient))
 	}
 
 	inboxAddr, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
@@ -321,21 +321,21 @@ func (msg *AuthenticateRequestMessage) ReadPayload(is types.TGInputStream) types
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:ReadPayload w/ Error in reading inboxAddr flag from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("AuthenticateRequestMessage:ReadPayload read inboxAddr as '%+v'", inboxAddr))
+	logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:ReadPayload read inboxAddr as '%+v'", inboxAddr))
 
 	userName, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:ReadPayload w/ Error in reading username from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("AuthenticateRequestMessage:ReadPayload read userName as '%+v'", userName))
+	logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:ReadPayload read userName as '%+v'", userName))
 
 	password, err := is.(*iostream.ProtocolDataInputStream).ReadBytes()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:ReadPayload w/ Error in reading password from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("AuthenticateRequestMessage:ReadPayload read password as '%+v'", password))
+	logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:ReadPayload read password as '%+v'", password))
 
 	msg.SetClientId(strClient)
 	msg.SetInboxAddr(inboxAddr)

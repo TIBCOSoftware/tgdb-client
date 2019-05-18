@@ -202,18 +202,18 @@ func ReadExternalForEntity(owner types.TGEntity, is types.TGInputStream) (types.
 	if err != nil {
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("AbstractAttribute::ReadExternalForEntity - read attrId: '%+v'", attrId))
+	logger.Debug(fmt.Sprintf("Inside AbstractAttribute::ReadExternalForEntity - read attrId: '%+v'", attrId))
 	gmd := owner.(*AbstractEntity).GetGraphMetadata()
 	if gmd == nil {
 		errMsg := fmt.Sprintf("Invalid graph meta data associated with owner: '%+v'", owner.(*AbstractEntity))
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
-	//logger.Log(fmt.Sprintf("AbstractAttribute::ReadExternalForEntity - read gmd: '%+v'", gmd))
+	//logger.Debug(fmt.Sprintf("Inside AbstractAttribute::ReadExternalForEntity - read gmd: '%+v'", gmd))
 	attrDesc, err := gmd.GetAttributeDescriptorById(int64(attrId))
 	if err != nil {
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("AbstractAttribute::ReadExternalForEntity - read attrDesc: '%+v'", attrDesc))
+	logger.Debug(fmt.Sprintf("Inside AbstractAttribute::ReadExternalForEntity - read attrDesc: '%+v'", attrDesc))
 	if attrDesc == nil {
 		errMsg := fmt.Sprintf("Invalid attributeId:'%d' encountered while deserialized", attrId)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.TGDB_CLIENT_READEXTERNAL, errMsg, "")
@@ -222,12 +222,12 @@ func ReadExternalForEntity(owner types.TGEntity, is types.TGInputStream) (types.
 	if err != nil {
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("AbstractAttribute::ReadExternalForEntity - created new attribute newAttr: '%+v'", newAttr))
+	logger.Debug(fmt.Sprintf("Inside AbstractAttribute::ReadExternalForEntity - created new attribute newAttr: '%+v'", newAttr))
 	err = newAttr.ReadExternal(is)
 	if err != nil {
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("AbstractAttribute::ReadExternalForEntity - updated newAttr from stream: '%+v'", newAttr))
+	logger.Log(fmt.Sprintf("Returning AbstractAttribute::ReadExternalForEntity - updated newAttr from stream: '%+v'", newAttr))
 	return newAttr, nil
 }
 
@@ -254,7 +254,7 @@ func AbstractAttributeReadExternal(obj types.TGAttribute, is types.TGInputStream
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractAttribute:AbstractAttributeReadExternal w/ Error in reading isNull from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("AbstractAttribute::AbstractAttributeReadExternal - read isnull: '%+v'", isNull))
+	logger.Debug(fmt.Sprintf("Inside AbstractAttribute::AbstractAttributeReadExternal - read isnull: '%+v'", isNull))
 	if isNull {
 		obj.(*AbstractAttribute).attrValue = nil
 		return nil

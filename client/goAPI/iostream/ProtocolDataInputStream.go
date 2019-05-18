@@ -182,7 +182,7 @@ func (msg *ProtocolDataInputStream) ReadFullyAtPos(b []byte, readCurPos, readLen
 	}
 	// Copy in input buffer b at offset for length
 	copy(b, msg.Buf[msg.iStreamCurPos:(msg.iStreamCurPos +readLen)])
-	//logger.Log(fmt.Sprintf("Inside ProtocolDataInputStream::ReadFullyAtPos() temp / b is '%+v'", b))
+	//logger.Debug(fmt.Sprintf("Inside ProtocolDataInputStream::ReadFullyAtPos() temp / b is '%+v'", b))
 	msg.iStreamCurPos = msg.iStreamCurPos + readLen
 	//logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadFullyAtPos('%d') for length '%d' from '%+v' in contents", readCurPos, readLen, b))
 	return b, nil
@@ -285,7 +285,7 @@ func (msg *ProtocolDataInputStream) ReadUTF() (string, types.TGError) {
 		msg.iStreamCurPos = start
 		return "", err
 	}
-	logger.Log(fmt.Sprintf("Inside ProtocolDataInputStream::ReadUTF() utfLength to read: '%d'", utfLen))
+	logger.Debug(fmt.Sprintf("Inside ProtocolDataInputStream::ReadUTF() utfLength to read: '%d'", utfLen))
 	str, err := msg.ReadUTFString(int(utfLen))
 	logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::ReadUTF from the contents w/ ('%s') & error ('%+v')", str, err))
 	return str, err
@@ -312,7 +312,7 @@ func (msg *ProtocolDataInputStream) ReadUTFString(utfLen int) (string, types.TGE
 			break
 		}
 		c = int(msg.Buf[msg.iStreamCurPos]) & 0xff
-		//logger.Log(fmt.Sprintf("ProtocolDataInputStream::ReadUTFString - Inside Loop msg.CurPos '%d' lastPos '%d' c '%d' cVal '%d' char2 '%d' char3 '%d'", msg.CurPos, lastPos, c, cVal, char2, char3))
+		//logger.Debug(fmt.Sprintf("ProtocolDataInputStream::ReadUTFString - Inside Loop msg.CurPos '%d' lastPos '%d' c '%d' cVal '%d' char2 '%d' char3 '%d'", msg.CurPos, lastPos, c, cVal, char2, char3))
 		msg.iStreamCurPos += 1
 		cVal = c >> 4
 		if cVal <= 7 { // 0xxxxxxx
@@ -383,7 +383,7 @@ func (msg *ProtocolDataInputStream) SkipBytes(n int) (int, types.TGError) {
 		return 0, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 	avail := msg.BufLen - msg.iStreamCurPos
-	logger.Log(fmt.Sprintf("ProtocolDataInputStream::SkipBytes - Available bytes ('%d') compared w/ To-Be-Skipped '%d'", avail, n))
+	logger.Debug(fmt.Sprintf("Inside ProtocolDataInputStream::SkipBytes - Available bytes ('%d') compared w/ To-Be-Skipped '%d'", avail, n))
 	if avail <= n {
 		logger.Log(fmt.Sprintf("Returning ProtocolDataInputStream::SkipBytes as avail <= n from the contents w/ ('%d')", avail))
 		msg.iStreamCurPos = msg.BufLen

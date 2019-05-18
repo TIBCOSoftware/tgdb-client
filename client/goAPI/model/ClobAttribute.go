@@ -187,7 +187,7 @@ func (obj *ClobAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprint("ERROR: Returning ClobAttribute:ReadValue w/ Error in reading entityId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("BlobAttribute::ReadValue - read entityId: '%+v'", entityId))
+	logger.Log(fmt.Sprintf("Returning BlobAttribute::ReadValue - read entityId: '%+v'", entityId))
 	obj.entityId = entityId
 	obj.isCached = false
 	return nil

@@ -297,7 +297,7 @@ func (obj *GraphMetadata) GetNodeTypeById(id int) (types.TGNodeType, types.TGErr
 		return nil, nil
 	}
 	node := obj.nodeTypesById[id]
-	logger.Log(fmt.Sprintf("Inside GraphMetadata:GetNodeTypeById read node as '%+v'", node))
+	logger.Log(fmt.Sprintf("Returning GraphMetadata:GetNodeTypeById read node as '%+v'", node))
 	//if node.GetSystemType() == types.SystemTypeInvalid {
 	//	errMsg := fmt.Sprintf("There are no Nodes")
 	//	return nil, exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")

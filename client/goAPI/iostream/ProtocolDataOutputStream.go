@@ -558,7 +558,7 @@ func (msg *ProtocolDataOutputStream) WriteUTFString(str string) (int, types.TGEr
 
 	for {
 		if ! (i < sLen) {
-			//logger.Log(fmt.Sprintf("ProtocolDataOutputStream::WriteUTFString - Breaking loop i='%d', c='%d', msg.Count='%d', msg.Buf[msg.Count]='%d'", i, c, msg.Count, msg.Buf[msg.Count]))
+			//logger.Debug(fmt.Sprintf("ProtocolDataOutputStream::WriteUTFString - Breaking loop i='%d', c='%d', msg.Count='%d', msg.Buf[msg.Count]='%d'", i, c, msg.Count, msg.Buf[msg.Count]))
 			break
 		}
 		c = int(writeBuf[i])
@@ -579,7 +579,7 @@ func (msg *ProtocolDataOutputStream) WriteUTFString(str string) (int, types.TGEr
 			msg.Buf[msg.oStreamByteCount] = byte(0x80 | ((c >> 0) & 0x3F))
 			msg.oStreamByteCount++
 		}
-		//logger.Log(fmt.Sprintf("ProtocolDataOutputStream::WriteUTFString - Inside loop i='%d', c='%d', msg.Count='%d', msg.Buf[msg.Count]='%d'", i, c, msg.Count, msg.Buf[msg.Count]))
+		//logger.Debug(fmt.Sprintf("ProtocolDataOutputStream::WriteUTFString - Inside loop i='%d', c='%d', msg.Count='%d', msg.Buf[msg.Count]='%d'", i, c, msg.Count, msg.Buf[msg.Count]))
 	}
 
 	writtenLen := msg.oStreamByteCount - start

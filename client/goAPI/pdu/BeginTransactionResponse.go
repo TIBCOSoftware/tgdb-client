@@ -93,27 +93,27 @@ func (msg *BeginTransactionResponseMessage) FromBytes(buffer []byte) (types.TGMe
 		logger.Error(fmt.Sprint("ERROR: Returning BeginTransactionResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside BeginTransactionResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside BeginTransactionResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside BeginTransactionResponseMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside BeginTransactionResponseMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside BeginTransactionResponseMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside BeginTransactionResponseMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("BeginTransactionResponseMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning BeginTransactionResponseMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -122,14 +122,14 @@ func (msg *BeginTransactionResponseMessage) ToBytes() ([]byte, int, types.TGErro
 	logger.Log(fmt.Sprint("Entering BeginTransactionResponseMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside BeginTransactionResponseMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside BeginTransactionResponseMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside BeginTransactionResponseMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside BeginTransactionResponseMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -141,7 +141,7 @@ func (msg *BeginTransactionResponseMessage) ToBytes() ([]byte, int, types.TGErro
 		logger.Error(fmt.Sprint("ERROR: Returning BeginTransactionResponseMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("BeginTransactionResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning BeginTransactionResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -271,7 +271,7 @@ func (msg *BeginTransactionResponseMessage) ReadPayload(is types.TGInputStream) 
 		logger.Error(fmt.Sprint("ERROR: Returning BeginTransactionResponseMessage:ReadPayload w/ Error in reading txnId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("AuthenticateRequestMessage:ReadPayload read txnId as '%+v'", txnId))
+	logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:ReadPayload read txnId as '%+v'", txnId))
 	msg.SetTransactionId(txnId)
 	logger.Log(fmt.Sprint("Returning BeginTransactionResponseMessage:ReadPayload"))
 	return nil

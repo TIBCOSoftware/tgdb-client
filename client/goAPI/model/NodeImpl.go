@@ -269,28 +269,28 @@ func (obj *Node) ReadExternal(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning Node:ReadExternal - unable to read length w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Node:ReadExternal read nodeBufLen as '%+v'", nodeBufLen))
+	logger.Debug(fmt.Sprintf("Inside Node:ReadExternal read nodeBufLen as '%+v'", nodeBufLen))
 
 	err = obj.AbstractEntityReadExternal(is)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Node:ReadExternal - unable to obj.AbstractEntityReadExternal(is) w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside Node:ReadExternal read abstractEntity"))
+	logger.Debug(fmt.Sprint("Inside Node:ReadExternal read abstractEntity"))
 
 	edgeCount, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Node:ReadExternal - unable to read edgeCount w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Node:ReadExternal read edgeCount as '%d'", edgeCount))
+	logger.Debug(fmt.Sprintf("Inside Node:ReadExternal read edgeCount as '%d'", edgeCount))
 	for i := 0; i < edgeCount; i++ {
 		edgeId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning Node:ReadExternal - unable to read entId w/ Error: '%+v'", err.Error()))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside Node:ReadExternal read edgeId as '%d'", edgeId))
+		logger.Debug(fmt.Sprintf("Inside Node:ReadExternal read edgeId as '%d'", edgeId))
 		var edge *Edge
 		var entity types.TGEntity
 		refMap := is.(*iostream.ProtocolDataInputStream).GetReferenceMap()
@@ -305,12 +305,12 @@ func (obj *Node) ReadExternal(is types.TGInputStream) types.TGError {
 				refMap[edgeId] = edge1
 			}
 			edge = edge1
-			logger.Log(fmt.Sprintf("Inside Node:ReadExternal created new edge: '%+v'", edge))
+			logger.Debug(fmt.Sprintf("Inside Node:ReadExternal created new edge: '%+v'", edge))
 		} else {
 			edge = entity.(*Edge)
 		}
 		obj.edges = append(obj.edges, edge)
-		logger.Log(fmt.Sprintf("Inside Node:ReadExternal Node has '%d' edges & StreamEntityCount is '%d'", len(obj.edges), len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
+		logger.Debug(fmt.Sprintf("Inside Node:ReadExternal Node has '%d' edges & StreamEntityCount is '%d'", len(obj.edges), len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
 	}
 
 	obj.SetIsInitialized(true)
@@ -328,7 +328,7 @@ func (obj *Node) WriteExternal(os types.TGOutputStream) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside Node:WriteExternal - exported base entity attributes"))
+	logger.Debug(fmt.Sprint("Inside Node:WriteExternal - exported base entity attributes"))
 	newCount := 0
 	for _, edge := range obj.edges {
 		if edge.GetIsNew() {
@@ -336,14 +336,14 @@ func (obj *Node) WriteExternal(os types.TGOutputStream) types.TGError {
 		}
 	}
 	os.(*iostream.ProtocolDataOutputStream).WriteInt(newCount)
-	logger.Log(fmt.Sprintf("Inside Node:WriteExternal - exported new edge count '%d'", newCount))
+	logger.Debug(fmt.Sprintf("Inside Node:WriteExternal - exported new edge count '%d'", newCount))
 	// Write the edges ids - ONLY include new edges
 	for _, edge := range obj.edges {
 		if ! edge.GetIsNew() {
 			continue
 		}
 		os.(*iostream.ProtocolDataOutputStream).WriteLong(obj.GetVirtualId())
-		logger.Log(fmt.Sprintf("Inside Node:WriteExternal - exported a new edge: '%+v'", edge))
+		logger.Debug(fmt.Sprintf("Inside Node:WriteExternal - exported a new edge: '%+v'", edge))
 	}
 	currPos := os.(*iostream.ProtocolDataOutputStream).GetPosition()
 	length := currPos - startPos

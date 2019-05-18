@@ -166,7 +166,7 @@ func (obj *AdminConnectionImpl) executeAdminRequest(command admin.AdminCommand, 
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteAdminRequest about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteAdminRequest about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbAdminRequest)
 	if cErr != nil {
@@ -175,17 +175,17 @@ func (obj *AdminConnectionImpl) executeAdminRequest(command admin.AdminCommand, 
 	}
 	adminRequest := msgRequest.(*admin.AdminRequestMessage)
 	adminRequest.SetCommand(command)
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteAdminRequest about to obj.configureQueryRequest() for: admin.AdminRequestMessage"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteAdminRequest about to obj.configureQueryRequest() for: admin.AdminRequestMessage"))
 	configureAdminRequest(adminRequest, parameters)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteAdminRequest about to obj.GetChannel().SendRequest() for: pdu.VerbAdminRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteAdminRequest about to obj.GetChannel().SendRequest() for: pdu.VerbAdminRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(adminRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:ExecuteAdminRequest - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteAdminRequest received response for: pdu.VerbAdminRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteAdminRequest received response for: pdu.VerbAdminRequest as '%+v'", msgResponse))
 	response := msgResponse.(*admin.AdminResponseMessage)
 
 	//if !response.GetHasResult() {
@@ -243,14 +243,14 @@ func (obj *AdminConnectionImpl) populateResultSetFromQueryResponse(resultId int,
 
 	currResultCount := 0
 	resultCount := msgResponse.GetResultCount()
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read resultCount: '%d' FetchedEntityCount: '%d'", resultCount, len(fetchedEntities)))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read resultCount: '%d' FetchedEntityCount: '%d'", resultCount, len(fetchedEntities)))
 	if resultCount > 0 {
 		respStream.SetReferenceMap(fetchedEntities)
 		rSet = query.NewResultSet(obj, resultId)
 	}
 
 	totalCount := msgResponse.GetTotalCount()
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read totalCount: '%d'", totalCount))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read totalCount: '%d'", totalCount))
 	for i := 0; i < totalCount; i++ {
 		entityType, err := respStream.(*iostream.ProtocolDataInputStream).ReadByte()
 		if err != nil {
@@ -259,7 +259,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromQueryResponse(resultId int,
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
 		kindId := types.TGEntityKind(entityType)
-		logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read #'%d'-entityType: '%+v', kindId: '%s'", i, entityType, kindId.String()))
+		logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read #'%d'-entityType: '%+v', kindId: '%s'", i, entityType, kindId.String()))
 		if kindId != types.EntityKindInvalid {
 			entityId, err := respStream.(*iostream.ProtocolDataInputStream).ReadLong()
 			if err != nil {
@@ -268,7 +268,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromQueryResponse(resultId int,
 				return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 			}
 			entity := fetchedEntities[entityId]
-			logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read entityId: '%d', kindId: '%s', entity: '%+v'", entityId, kindId.String(), entity))
+			logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse read entityId: '%d', kindId: '%s', entity: '%+v'", entityId, kindId.String(), entity))
 			switch kindId {
 			case types.EntityKindNode:
 				var node model.Node
@@ -286,7 +286,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromQueryResponse(resultId int,
 					if currResultCount < resultCount {
 						rSet.AddEntityToResultSet(node)
 					}
-					logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse created new node: '%+v' FetchedEntityCount: '%d'", node, len(fetchedEntities)))
+					logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromQueryResponse created new node: '%+v' FetchedEntityCount: '%d'", node, len(fetchedEntities)))
 				}
 				node = *(entity.(*model.Node))
 				err := node.ReadExternal(respStream)
@@ -295,8 +295,8 @@ func (obj *AdminConnectionImpl) populateResultSetFromQueryResponse(resultId int,
 					logger.Error(errMsg)
 					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.GetErrorDetails())
 				}
-				//logger.Log(fmt.Sprintf("======> ======> After node.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
-				logger.Log(fmt.Sprintf("======> ======> Node w/ Edges: '%+v'\n", node.GetEdges()))
+				//logger.Debug(fmt.Sprintf("======> ======> After node.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
+				logger.Debug(fmt.Sprintf("======> ======> Node w/ Edges: '%+v'\n", node.GetEdges()))
 			case types.EntityKindEdge:
 				var edge model.Edge
 				if entity == nil {
@@ -323,24 +323,24 @@ func (obj *AdminConnectionImpl) populateResultSetFromQueryResponse(resultId int,
 					logger.Error(errMsg)
 					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 				}
-				//logger.Log(fmt.Sprintf("======> ======> After edge.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
-				logger.Log(fmt.Sprintf("======> ======> Edge w/ Vertices: '%+v'\n", edge.GetVertices()))
+				//logger.Debug(fmt.Sprintf("======> ======> After edge.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
+				logger.Debug(fmt.Sprintf("======> ======> Edge w/ Vertices: '%+v'\n", edge.GetVertices()))
 			case types.EntityKindGraph:
 				// TODO: Revisit later - Should we break after throwing/logging an error
 				continue
 			}
 			//if entity != nil {
-			//	logger.Log(fmt.Sprintf("======> AdminConnectionImpl::populateResultSetFromQueryResponse entityId: '%d', kindId: '%d', entityType: '%+v'\n", entityId, kindId, kindId.String()))
+			//	logger.Debug(fmt.Sprintf("======> AdminConnectionImpl::populateResultSetFromQueryResponse entityId: '%d', kindId: '%d', entityType: '%+v'\n", entityId, kindId, kindId.String()))
 			//	attrList, _ := entity.GetAttributes()
 			//	for _, attrib := range attrList {
-			//		logger.Log(fmt.Sprintf("======> Attribute Value: '%+v'\n", attrib.GetValue()))
+			//		logger.Debug(fmt.Sprintf("======> Attribute Value: '%+v'\n", attrib.GetValue()))
 			//	}
 			//	if kindId == types.EntityKindNode {
 			//		edges := (entity.(*model.Node)).GetEdges()
-			//		logger.Log(fmt.Sprintf("======> Node w/ Edges: '%+v'\n", edges))
+			//		logger.Debug(fmt.Sprintf("======> Node w/ Edges: '%+v'\n", edges))
 			//	} else if kindId == types.EntityKindEdge {
 			//		vertices := (entity.(*model.Edge)).GetVertices()
-			//		logger.Log(fmt.Sprintf("======> Edge w/ Vertices: '%+v'\n", vertices))
+			//		logger.Debug(fmt.Sprintf("======> Edge w/ Vertices: '%+v'\n", vertices))
 			//	}
 			//}
 		} else {
@@ -368,7 +368,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntitiesResponse(msgResp
 		errMsg := "AdminConnectionImpl::populateResultSetFromGetEntitiesResponse unable to read total count of entities in the response stream"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse extracted totalCount: '%d'", totalCount))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse extracted totalCount: '%d'", totalCount))
 	if totalCount > 0 {
 		respStream.SetReferenceMap(fetchedEntities)
 	}
@@ -390,7 +390,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntitiesResponse(msgResp
 			errMsg := "AdminConnectionImpl::populateResultSetFromGetEntitiesResponse unable to read count of result entities in the response stream"
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
-		logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse read isResult: '%+v'", isResult))
+		logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse read isResult: '%+v'", isResult))
 		entityType, err := respStream.(*iostream.ProtocolDataInputStream).ReadByte()
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:populateResultSetFromGetEntitiesResponse - unable to read entityType in the response stream w/ error: '%s'", err.Error()))
@@ -398,7 +398,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntitiesResponse(msgResp
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
 		kindId := types.TGEntityKind(entityType)
-		logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
+		logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
 		if kindId != types.EntityKindInvalid {
 			entityId, err := respStream.(*iostream.ProtocolDataInputStream).ReadLong()
 			if err != nil {
@@ -407,7 +407,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntitiesResponse(msgResp
 				return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 			}
 			entity := fetchedEntities[entityId]
-			logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
+			logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
 			switch kindId {
 			case types.EntityKindNode:
 				var node model.Node
@@ -422,7 +422,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntitiesResponse(msgResp
 					}
 					entity = node
 					fetchedEntities[entityId] = node
-					logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse created new node: '%+v'", node))
+					logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse created new node: '%+v'", node))
 				}
 				node = *(entity.(*model.Node))
 				err := node.ReadExternal(respStream)
@@ -448,7 +448,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntitiesResponse(msgResp
 					}
 					entity = edge
 					fetchedEntities[entityId] = edge
-					logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse created new edge: '%+v'", edge))
+					logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntitiesResponse created new edge: '%+v'", edge))
 				}
 				edge = *(entity.(*model.Edge))
 				err := edge.ReadExternal(respStream)
@@ -493,7 +493,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntityResponse(msgRespon
 		errMsg := "AdminConnectionImpl::populateResultSetFromGetEntityResponse unable to read count of entities in the response stream"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse extracted Count: '%d'", count))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse extracted Count: '%d'", count))
 	if count > 0 {
 		respStream.SetReferenceMap(fetchedEntities)
 		for i := 0; i < count; i++ {
@@ -504,7 +504,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntityResponse(msgRespon
 				return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 			}
 			kindId := types.TGEntityKind(entityType)
-			logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
+			logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
 			if kindId != types.EntityKindInvalid {
 				entityId, err := respStream.(*iostream.ProtocolDataInputStream).ReadLong()
 				if err != nil {
@@ -513,7 +513,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntityResponse(msgRespon
 					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 				}
 				entity := fetchedEntities[entityId]
-				logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
+				logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
 				switch kindId {
 				case types.EntityKindNode:
 					// Need to put shell object into map to be deserialized later
@@ -532,7 +532,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntityResponse(msgRespon
 						if entityFound == nil {
 							entityFound = node
 						}
-						logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse created new node: '%+v'", entity))
+						logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse created new node: '%+v'", entity))
 					}
 					node = *(entity.(*model.Node))
 					err := node.ReadExternal(respStream)
@@ -557,7 +557,7 @@ func (obj *AdminConnectionImpl) populateResultSetFromGetEntityResponse(msgRespon
 						if entityFound == nil {
 							entityFound = edge
 						}
-						logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse created new edge: '%+v'", edge))
+						logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::populateResultSetFromGetEntityResponse created new edge: '%+v'", edge))
 					}
 					edge = *(entity.(*model.Edge))
 					err := edge.ReadExternal(respStream)
@@ -602,7 +602,7 @@ func (obj *AdminConnectionImpl) DumpServerStackTrace() types.TGError {
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::DumpServerStackTrace about to createChannelRequest() for: pdu.DumpServerStackTrace"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::DumpServerStackTrace about to createChannelRequest() for: pdu.DumpServerStackTrace"))
 	// Create a channel request
 	msgRequest, _, cErr := createChannelRequest(obj, pdu.VerbDumpStacktraceRequest)
 	if cErr != nil {
@@ -611,7 +611,7 @@ func (obj *AdminConnectionImpl) DumpServerStackTrace() types.TGError {
 	}
 	dumpStackRequest := msgRequest.(*pdu.DumpStacktraceRequestMessage)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::DumpServerStackTrace about to obj.GetChannel().SendRequest() for: pdu.VerbDumpStacktraceRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::DumpServerStackTrace about to obj.GetChannel().SendRequest() for: pdu.VerbDumpStacktraceRequest"))
 	// Execute request on channel and get the response
 	channelErr := obj.GetChannel().SendMessage(dumpStackRequest)
 	if channelErr != nil {
@@ -619,6 +619,7 @@ func (obj *AdminConnectionImpl) DumpServerStackTrace() types.TGError {
 		return channelErr
 	}
 
+	logger.Log(fmt.Sprint("Returning AdminConnectionImpl:DumpServerStackTrace for Admin Command: DumpServerStackTrace"))
 	return nil
 }
 
@@ -705,7 +706,7 @@ func (obj *AdminConnectionImpl) Commit() (types.TGResultSet, types.TGError) {
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit - about to loop through addedList to include existing nodes to the changed list if it's part of a new edge"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit - about to loop through addedList to include existing nodes to the changed list if it's part of a new edge"))
 	// Include existing nodes to the changed list if it's part of a new edge
 	for _, addEntity := range obj.GetAddedList() {
 		if addEntity.GetEntityKind() == types.EntityKindEdge {
@@ -722,7 +723,7 @@ func (obj *AdminConnectionImpl) Commit() (types.TGResultSet, types.TGError) {
 		}
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit - about to loop through changedList to include existing nodes to the changed list even for edge update"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit - about to loop through changedList to include existing nodes to the changed list even for edge update"))
 	// Need to include existing node to the changed list even for edge update
 	for _, modEntity := range obj.GetChangedList() {
 		if modEntity.GetEntityKind() == types.EntityKindEdge {
@@ -739,7 +740,7 @@ func (obj *AdminConnectionImpl) Commit() (types.TGResultSet, types.TGError) {
 		}
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit - about to loop through removedList to include existing nodes to the changed list even for edge update"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit - about to loop through removedList to include existing nodes to the changed list even for edge update"))
 	// Need to include existing node to the changed list even for edge update
 	for _, delEntity := range obj.GetRemovedList() {
 		if delEntity.GetEntityKind() == types.EntityKindEdge {
@@ -759,7 +760,7 @@ func (obj *AdminConnectionImpl) Commit() (types.TGResultSet, types.TGError) {
 	}
 	//For deleted edge and node, we don't immediately change the effected nodes or edges.
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit about to createChannelRequest() for: pdu.VerbCommitTransactionRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit about to createChannelRequest() for: pdu.VerbCommitTransactionRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbCommitTransactionRequest)
 	if err != nil {
@@ -768,7 +769,7 @@ func (obj *AdminConnectionImpl) Commit() (types.TGResultSet, types.TGError) {
 	}
 	queryRequest := msgRequest.(*pdu.CommitTransactionRequest)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit about to GetAttributeDescriptors() for: pdu.VerbCommitTransactionRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit about to GetAttributeDescriptors() for: pdu.VerbCommitTransactionRequest"))
 	gof := obj.graphObjFactory
 	attrDescSet, aErr := gof.GetGraphMetaData().GetNewAttributeDescriptors()
 	if aErr != nil {
@@ -777,14 +778,14 @@ func (obj *AdminConnectionImpl) Commit() (types.TGResultSet, types.TGError) {
 	}
 	queryRequest.AddCommitLists(obj.addedList, obj.changedList, obj.removedList, attrDescSet)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit about to channelSendRequest() for: pdu.VerbCommitTransactionRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit about to channelSendRequest() for: pdu.VerbCommitTransactionRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:Commit - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::Commit received response for: pdu.VerbCommitTransactionRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::Commit received response for: pdu.VerbCommitTransactionRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.CommitTransactionResponse)
 
 	if response.HasException() {
@@ -793,9 +794,9 @@ func (obj *AdminConnectionImpl) Commit() (types.TGResultSet, types.TGError) {
 		return nil, nil
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit about to fixUpAttrDescriptors()"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit about to fixUpAttrDescriptors()"))
 	fixUpAttrDescriptors(response, attrDescSet)
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Commit about to obj.fixUpEntities()"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Commit about to obj.fixUpEntities()"))
 	fixUpEntities(obj, response)
 
 	for _, delEntity := range obj.GetRemovedList() {
@@ -827,7 +828,7 @@ func (obj *AdminConnectionImpl) Connect() types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl::Connect - error in obj.GetChannel().Connect() as '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Connect about to obj.GetChannel().Start()"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Connect about to obj.GetChannel().Start()"))
 	err = obj.GetChannel().Start()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl::Connect - error in obj.GetChannel().Start() as '%+v'", err.Error()))
@@ -843,7 +844,7 @@ func (obj *AdminConnectionImpl) CloseQuery(queryHashId int64) (types.TGQuery, ty
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::CloseQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::CloseQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if err != nil {
@@ -854,7 +855,7 @@ func (obj *AdminConnectionImpl) CloseQuery(queryHashId int64) (types.TGQuery, ty
 	queryRequest.SetCommand(CLOSE)
 	queryRequest.SetQueryHashId(queryHashId)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::CloseQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::CloseQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	_, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
@@ -876,7 +877,7 @@ func (obj *AdminConnectionImpl) CreateQuery(expr string) (types.TGQuery, types.T
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::CreateQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::CreateQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if err != nil {
@@ -887,14 +888,14 @@ func (obj *AdminConnectionImpl) CreateQuery(expr string) (types.TGQuery, types.T
 	queryRequest.SetCommand(CREATE)
 	queryRequest.SetQuery(expr)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::CreateQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::CreateQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:CreateQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::CreateQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::CreateQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 
 	response := msgResponse.(*pdu.QueryResponseMessage)
 	queryHashId := response.GetQueryHashId()
@@ -917,7 +918,7 @@ func (obj *AdminConnectionImpl) DecryptBuffer(is types.TGInputStream) ([]byte, t
 	//obj.connPoolImpl.AdminLock()
 	//defer obj.connPoolImpl.AdminUnlock()
 	//
-	//logger.Log(fmt.Sprint("Inside AdminConnectionImpl::DecryptBuffer about to createChannelRequest() for: pdu.VerbDecryptBufferRequest"))
+	//logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::DecryptBuffer about to createChannelRequest() for: pdu.VerbDecryptBufferRequest"))
 	//// Create a channel request
 	//msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbDecryptBufferRequest)
 	//if cErr != nil {
@@ -927,14 +928,14 @@ func (obj *AdminConnectionImpl) DecryptBuffer(is types.TGInputStream) ([]byte, t
 	//decryptRequest := msgRequest.(*pdu.DecryptBufferRequestMessage)
 	//decryptRequest.SetEncryptedBuffer(encryptedBuf)
 	//
-	//logger.Log(fmt.Sprint("Inside AdminConnectionImpl::DecryptBuffer about to obj.GetChannel().SendRequest() for: pdu.VerbDecryptBufferRequest"))
+	//logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::DecryptBuffer about to obj.GetChannel().SendRequest() for: pdu.VerbDecryptBufferRequest"))
 	//// Execute request on channel and get the response
 	//msgResponse, channelErr := obj.GetChannel().SendRequest(decryptRequest, channelResponse.(*channel.BlockingChannelResponse))
 	//if channelErr != nil {
 	//	logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:DecryptBuffer - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 	//	return nil, channelErr
 	//}
-	//logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::DecryptBuffer received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
+	//logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::DecryptBuffer received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
 	//response := msgResponse.(*pdu.DecryptBufferResponseMessage)
 	//
 	//if response == nil {
@@ -975,7 +976,7 @@ func (obj *AdminConnectionImpl) Disconnect() types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:Disconnect - unable to channel.Disconnect() w/ error: '%s'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::Disconnect about to obj.GetChannel().Stop()"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::Disconnect about to obj.GetChannel().Stop()"))
 	obj.GetChannel().Stop(false)
 	logger.Log(fmt.Sprint("Returning AdminConnectionImpl:Disconnect"))
 	return nil
@@ -997,7 +998,7 @@ func (obj *AdminConnectionImpl) ExecuteGremlinQuery(expr string, collection []in
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteGremlinQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteGremlinQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -1007,17 +1008,17 @@ func (obj *AdminConnectionImpl) ExecuteGremlinQuery(expr string, collection []in
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTE)
 	queryRequest.SetQuery("gbc : " + expr)
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteGremlinQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteGremlinQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteGremlinQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteGremlinQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:ExecuteGremlinQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteGremlinQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteGremlinQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1042,7 +1043,7 @@ func (obj *AdminConnectionImpl) ExecuteQuery(expr string, options types.TGQueryO
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -1052,17 +1053,17 @@ func (obj *AdminConnectionImpl) ExecuteQuery(expr string, options types.TGQueryO
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTE)
 	queryRequest.SetQuery(expr)
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:ExecuteQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1090,7 +1091,7 @@ func (obj *AdminConnectionImpl) ExecuteQueryWithFilter(expr, edgeFilter, travers
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithFilter about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithFilter about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -1103,17 +1104,17 @@ func (obj *AdminConnectionImpl) ExecuteQueryWithFilter(expr, edgeFilter, travers
 	queryRequest.SetEdgeFilter(edgeFilter)
 	queryRequest.SetTraversalCondition(traversalCondition)
 	queryRequest.SetEndCondition(endCondition)
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteQueryWithFilter about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteQueryWithFilter about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithFilter about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithFilter about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:ExecuteQueryWithFilter - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteQueryWithFilter received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::ExecuteQueryWithFilter received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1135,7 +1136,7 @@ func (obj *AdminConnectionImpl) ExecuteQueryWithId(queryHashId int64, options ty
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithId about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithId about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -1145,10 +1146,10 @@ func (obj *AdminConnectionImpl) ExecuteQueryWithId(queryHashId int64, options ty
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTED)
 	queryRequest.SetQueryHashId(queryHashId)
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithId about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithId about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithId about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::ExecuteQueryWithId about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	_, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
@@ -1199,7 +1200,7 @@ func (obj *AdminConnectionImpl) GetEntities(qryKey types.TGKey, props types.TGPr
 	if props == nil {
 		props = query.NewQueryOption()
 	}
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetEntities about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetEntities about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbGetEntityRequest)
 	if cErr != nil {
@@ -1211,14 +1212,14 @@ func (obj *AdminConnectionImpl) GetEntities(qryKey types.TGKey, props types.TGPr
 	queryRequest.SetKey(qryKey)
 	configureGetRequest(queryRequest, props)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetEntities about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetEntities about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:GetEntities - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::GetEntities received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::GetEntities received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.GetEntityResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1244,7 +1245,7 @@ func (obj *AdminConnectionImpl) GetEntity(qryKey types.TGKey, options types.TGQu
 	if options == nil {
 		options = query.NewQueryOption()
 	}
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetEntity about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetEntity about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbGetEntityRequest)
 	if cErr != nil {
@@ -1256,14 +1257,14 @@ func (obj *AdminConnectionImpl) GetEntity(qryKey types.TGKey, options types.TGQu
 	queryRequest.SetKey(qryKey)
 	configureGetRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetEntity about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetEntity about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:GetEntity - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::GetEntity received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::GetEntity received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.GetEntityResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1282,7 +1283,7 @@ func (obj *AdminConnectionImpl) GetGraphMetadata(refresh bool) (types.TGGraphMet
 		obj.connPoolImpl.AdminLock()
 		defer obj.connPoolImpl.AdminUnlock()
 
-		logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata about to createChannelRequest() for: pdu.VerbMetadataRequest"))
+		logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata about to createChannelRequest() for: pdu.VerbMetadataRequest"))
 		// Create a channel request
 		msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbMetadataRequest)
 		if err != nil {
@@ -1290,16 +1291,16 @@ func (obj *AdminConnectionImpl) GetGraphMetadata(refresh bool) (types.TGGraphMet
 			return nil, err
 		}
 		metaRequest := msgRequest.(*pdu.MetadataRequest)
-		logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::GetGraphMetadata createChannelRequest() returned MsgRequest: '%+v' ChannelResponse: '%+v'", msgRequest, channelResponse.(*channel.BlockingChannelResponse)))
+		logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::GetGraphMetadata createChannelRequest() returned MsgRequest: '%+v' ChannelResponse: '%+v'", msgRequest, channelResponse.(*channel.BlockingChannelResponse)))
 
-		logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata about to obj.GetChannel().SendRequest() for: pdu.VerbMetadataRequest"))
+		logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata about to obj.GetChannel().SendRequest() for: pdu.VerbMetadataRequest"))
 		// Execute request on channel and get the response
 		msgResponse, channelErr := obj.GetChannel().SendRequest(metaRequest, channelResponse.(*channel.BlockingChannelResponse))
 		if channelErr != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:GetGraphMetadata - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 			return nil, channelErr
 		}
-		//logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::GetGraphMetadata received response for: pdu.VerbMetadataRequest as '%+v'", msgResponse))
+		//logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::GetGraphMetadata received response for: pdu.VerbMetadataRequest as '%+v'", msgResponse))
 
 		response := msgResponse.(*pdu.MetadataResponse)
 		attrDescList := response.GetAttrDescList()
@@ -1307,13 +1308,13 @@ func (obj *AdminConnectionImpl) GetGraphMetadata(refresh bool) (types.TGGraphMet
 		nodeTypeList := response.GetNodeTypeList()
 
 		gmd := obj.graphObjFactory.GetGraphMetaData()
-		logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata about to update GraphMetadata"))
+		logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata about to update GraphMetadata"))
 		uErr := gmd.UpdateMetadata(attrDescList, nodeTypeList, edgeTypeList)
 		if uErr != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:GetGraphMetadata - unable to gmd.UpdateMetadata() w/ error: '%s'", uErr.Error()))
 			return nil, uErr
 		}
-		logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata successfully updated GraphMetadata"))
+		logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetGraphMetadata successfully updated GraphMetadata"))
 	}
 	logger.Log(fmt.Sprint("Returning AdminConnectionImpl:GetGraphMetadata"))
 	return obj.graphObjFactory.GetGraphMetaData(), nil
@@ -1342,7 +1343,7 @@ func (obj *AdminConnectionImpl) GetLargeObjectAsBytes(entityId int64, decryptFla
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetLargeObjectAsBytes about to createChannelRequest() for: pdu.VerbGetLargeObjectRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetLargeObjectAsBytes about to createChannelRequest() for: pdu.VerbGetLargeObjectRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbGetLargeObjectRequest)
 	if cErr != nil {
@@ -1353,14 +1354,14 @@ func (obj *AdminConnectionImpl) GetLargeObjectAsBytes(entityId int64, decryptFla
 	queryRequest.SetEntityId(entityId)
 	queryRequest.SetDecryption(decryptFlag)
 
-	logger.Log(fmt.Sprint("Inside AdminConnectionImpl::GetLargeObjectAsBytes about to obj.GetChannel().SendRequest() for: pdu.VerbGetLargeObjectRequest"))
+	logger.Debug(fmt.Sprint("Inside AdminConnectionImpl::GetLargeObjectAsBytes about to obj.GetChannel().SendRequest() for: pdu.VerbGetLargeObjectRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AdminConnectionImpl:GetLargeObjectAsBytes - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside AdminConnectionImpl::GetLargeObjectAsBytes received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside AdminConnectionImpl::GetLargeObjectAsBytes received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.GetLargeObjectResponseMessage)
 
 	if response == nil {

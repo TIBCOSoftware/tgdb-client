@@ -100,27 +100,27 @@ func (msg *GetLargeObjectResponseMessage) FromBytes(buffer []byte) (types.TGMess
 		logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside GetLargeObjectResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside GetLargeObjectResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside GetLargeObjectResponseMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside GetLargeObjectResponseMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside GetLargeObjectResponseMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside GetLargeObjectResponseMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("GetLargeObjectResponseMessage::FromBytes results in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning GetLargeObjectResponseMessage::FromBytes results in '%+v'", msg))
 	return msg, nil
 }
 
@@ -129,14 +129,14 @@ func (msg *GetLargeObjectResponseMessage) ToBytes() ([]byte, int, types.TGError)
 	logger.Log(fmt.Sprint("Entering GetLargeObjectResponseMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside GetLargeObjectResponseMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside GetLargeObjectResponseMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside GetLargeObjectResponseMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside GetLargeObjectResponseMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -148,7 +148,7 @@ func (msg *GetLargeObjectResponseMessage) ToBytes() ([]byte, int, types.TGError)
 		logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("GetLargeObjectResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning GetLargeObjectResponseMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -279,7 +279,7 @@ func (msg *GetLargeObjectResponseMessage) ReadPayload(is types.TGInputStream) ty
 		logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:ReadPayload w/ Error in reading status from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read status as '%+v'", status))
+	logger.Debug(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read status as '%+v'", status))
 	if status > 0 {
 		errMsg := fmt.Sprintf("Read Large Object failed with status: %d", status)
 		return exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -291,28 +291,28 @@ func (msg *GetLargeObjectResponseMessage) ReadPayload(is types.TGInputStream) ty
 		logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:ReadPayload w/ Error in reading entityId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read entityId as '%+v'", entityId))
+	logger.Debug(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read entityId as '%+v'", entityId))
 
 	bHasData, err := is.(*iostream.ProtocolDataInputStream).ReadBoolean()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:ReadPayload w/ Error in reading data availability flag from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read bHasData as '%+v'", bHasData))
+	logger.Debug(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read bHasData as '%+v'", bHasData))
 	if bHasData {
 		numChunks, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:ReadPayload w/ Error in reading chunk count from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read numChunks as '%+v'", numChunks))
+		logger.Debug(fmt.Sprintf("Inside GetLargeObjectResponseMessage:ReadPayload read numChunks as '%+v'", numChunks))
 		for i := 0; i < numChunks; i++ {
 			chunk, err := is.(*iostream.ProtocolDataInputStream).ReadBytes()
 			if err != nil {
 				logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:ReadPayload w/ Error in reading chunk bytes from message buffer"))
 				return err
 			}
-			logger.Log(fmt.Sprintf("GetLargeObjectResponseMessage:ReadPayload read chunk as '%+v'", chunk))
+			logger.Debug(fmt.Sprintf("GetLargeObjectResponseMessage:ReadPayload read chunk as '%+v'", chunk))
 			msg.boStream.Write(chunk)
 		}
 	}

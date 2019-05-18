@@ -205,27 +205,27 @@ func CreateMessageWithToken(verbId int, authToken, sessionId int64) (types.TGMes
 
 func CreateMessageFromBuffer(buffer []byte, offset int, length int) (types.TGMessage, types.TGError) {
 	buf := make([]byte, 0)
-	logger.Log(fmt.Sprintf("Entering MessageFactory::CreateMessageFromBuffer received buffer(BufLen: %d, Offset: %d, Len: %d)", len(buffer), offset, length))
+	logger.Debug(fmt.Sprintf("Entering MessageFactory::CreateMessageFromBuffer received buffer(BufLen: %d, Offset: %d, Len: %d)", len(buffer), offset, length))
 
 	if len(buffer) == length {
 		buf = buffer
 	} else {
 		buf = append(buffer[offset:length])
 	}
-	//logger.Log(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer buf is '%+v'", buf))
+	//logger.Debug(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer buf is '%+v'", buf))
 
 	commandVerb, err := VerbIdFromBytes(buf)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning MessageFactory::CreateMessageFromBuffer w/ error in extracting verbId from message buffer: %s", err.Error()))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer retrieved VerbId '%s'", commandVerb.name))
+	logger.Debug(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer retrieved VerbId '%s'", commandVerb.name))
 	msg, err := CreateMessageForVerb(commandVerb.id)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning MessageFactory::CreateMessageFromBuffer w/ error in creating message for verb('%s'): %s", commandVerb.name, err.Error()))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer created '%+v'", msg))
+	logger.Debug(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer created '%+v'", msg))
 	msg1, err := msg.FromBytes(buffer)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning MessageFactory::CreateMessageFromBuffer w/ error in updating message contents from buffer: %s", err.Error()))

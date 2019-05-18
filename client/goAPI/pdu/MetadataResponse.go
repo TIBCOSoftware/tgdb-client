@@ -102,27 +102,27 @@ func (msg *MetadataResponse) FromBytes(buffer []byte) (types.TGMessage, types.TG
 		logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside MetadataResponse:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside MetadataResponse:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside MetadataResponse:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside MetadataResponse:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside MetadataResponse:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside MetadataResponse:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("MetadataResponse::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning MetadataResponse::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -131,14 +131,14 @@ func (msg *MetadataResponse) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering MetadataResponse:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside MetadataResponse:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside MetadataResponse:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside MetadataResponse:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside MetadataResponse:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -150,7 +150,7 @@ func (msg *MetadataResponse) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("MetadataResponse::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning MetadataResponse::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -294,7 +294,7 @@ func (msg *MetadataResponse) ReadPayload(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading available bytes from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read avail as '%+v'", avail))
+	logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read avail as '%+v'", avail))
 	if avail == 0 {
 		logger.Log(fmt.Sprintf("Metadata response has no data"))
 		errMsg := fmt.Sprint("Metadata Response has no data")
@@ -306,7 +306,7 @@ func (msg *MetadataResponse) ReadPayload(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading count from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read count as '%+v'", count))
+	logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read count as '%+v'", count))
 	for {
 		if count <= 0 {
 			break
@@ -317,14 +317,14 @@ func (msg *MetadataResponse) ReadPayload(is types.TGInputStream) types.TGError {
 			logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading sysType from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read sysType as '%+v'", sysType))
+		logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read sysType as '%+v'", sysType))
 
 		typeCount, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading typeCount from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read typeCount as '%+v'", typeCount))
+		logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read typeCount as '%+v'", typeCount))
 
 		if types.TGSystemType(sysType) == types.SystemTypeAttributeDescriptor {
 			for i := 0; i < typeCount; i++ {
@@ -334,7 +334,7 @@ func (msg *MetadataResponse) ReadPayload(is types.TGInputStream) types.TGError {
 					logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading attrDesc from message buffer"))
 					return err
 				}
-				logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read attrDesc as '%+v'", attrDesc))
+				logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read attrDesc as '%+v'", attrDesc))
 				msg.attrDescList = append(msg.attrDescList, attrDesc)
 			}
 			logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read '%d' attrDesc and assigned as '%+v'", typeCount, msg.attrDescList))
@@ -350,7 +350,7 @@ func (msg *MetadataResponse) ReadPayload(is types.TGInputStream) types.TGError {
 				if strings.HasPrefix(name, "@") || strings.HasPrefix(name, "$") {
 					continue
 				}
-				logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read nodeType as '%+v'", nodeType))
+				logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read nodeType as '%+v'", nodeType))
 				msg.nodeTypeList = append(msg.nodeTypeList, nodeType)
 			}
 			logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read '%d' nodes and assigned as '%+v'", typeCount, msg.nodeTypeList))
@@ -362,10 +362,10 @@ func (msg *MetadataResponse) ReadPayload(is types.TGInputStream) types.TGError {
 					logger.Error(fmt.Sprint("ERROR: Returning MetadataResponse:ReadPayload w/ Error in reading edge from message buffer"))
 					return err
 				}
-				logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read edgeType as '%+v'", edgeType))
+				logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read edgeType as '%+v'", edgeType))
 				msg.edgeTypeList = append(msg.edgeTypeList, edgeType)
 			}
-			logger.Log(fmt.Sprintf("Inside MetadataResponse:ReadPayload read '%d' edges and assigned as '%+v'", typeCount, msg.edgeTypeList))
+			logger.Debug(fmt.Sprintf("Inside MetadataResponse:ReadPayload read '%d' edges and assigned as '%+v'", typeCount, msg.edgeTypeList))
 		} else {
 			logger.Warning(fmt.Sprintf("WARNING: MetadataResponse:ReadPayload - Invalid metadata desc '%d' received", sysType))
 			//TODO: Revisit later - Do we need to throw exception?

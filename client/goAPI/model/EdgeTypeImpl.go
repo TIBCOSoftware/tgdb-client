@@ -95,7 +95,7 @@ func (obj *EdgeType) UpdateMetadata(gmd *GraphMetadata) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside EdgeType:UpdateMetadata, updated base entity type's attributes"))
+	logger.Debug(fmt.Sprint("Inside EdgeType:UpdateMetadata, updated base entity type's attributes"))
 	nType, nErr := gmd.GetNodeTypeById(obj.fromTypeId)
 	if nErr == nil {
 		obj.fromNodeType = nType.(*NodeType)
@@ -248,25 +248,28 @@ func (obj *EdgeType) ReadExternal(is types.TGInputStream) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside EdgeType:ReadExternal, read base entity type's attributes"))
+	logger.Debug(fmt.Sprint("Inside EdgeType:ReadExternal, read base entity type's attributes"))
 
 	fromTypeId, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EdgeType:ReadExternal - unable to read fromTypeId w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside EdgeType:ReadExternal read fromTypeId as '%d'", fromTypeId))
 
 	toTypeId, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EdgeType:ReadExternal - unable to read toTypeId w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside EdgeType:ReadExternal read toTypeId as '%d'", toTypeId))
 
 	direction, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EdgeType:ReadExternal - unable to read direction w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside EdgeType:ReadExternal read direction as '%+v'", direction))
 	if direction == 0 {
 		obj.SetDirectionType(types.DirectionTypeUnDirected)
 	} else if direction == 1 {
@@ -280,6 +283,7 @@ func (obj *EdgeType) ReadExternal(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning EdgeType:ReadExternal - unable to read numEntries w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside EdgeType:ReadExternal read numEntries as '%d'", numEntries))
 
 	obj.SetFromTypeId(fromTypeId)
 	obj.SetToTypeId(toTypeId)

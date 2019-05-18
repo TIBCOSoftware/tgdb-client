@@ -129,20 +129,20 @@ func (msg *AdminResponseMessage) FromBytes(buffer []byte) (types.TGMessage, type
 		logger.Error(fmt.Sprint("ERROR: Returning AdminResponse:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AdminResponse:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside AdminResponse:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminResponse:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside AdminResponse:FromBytes - about to APMReadHeader"))
 	err = pdu.APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminResponse:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside AdminResponse:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
@@ -158,14 +158,14 @@ func (msg *AdminResponseMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering AdminResponse:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside AdminResponse:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside AdminResponse:ToBytes - about to APMWriteHeader"))
 	err := pdu.APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AdminResponse:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside AdminResponse:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -310,28 +310,28 @@ func (msg *AdminResponseMessage) ReadPayload(is types.TGInputStream) types.TGErr
 	//	logger.Error(fmt.Sprint("ERROR: Returning AdminResponseMessage:ReadPayload w/ Error in reading bLen from message buffer"))
 	//	return err
 	//}
-	//logger.Log(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read buf length as '%+v'", bLen))
+	//logger.Debug(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read buf length as '%+v'", bLen))
 	//
 	//checkSum, err := is.(*iostream.ProtocolDataInputStream).ReadInt() // checksum
 	//if err != nil {
 	//	logger.Error(fmt.Sprint("ERROR: Returning AdminResponseMessage:ReadPayload w/ Error in reading checkSum from message buffer"))
 	//	return err
 	//}
-	//logger.Log(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read checkSum as '%+v'", checkSum))
+	//logger.Debug(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read checkSum as '%+v'", checkSum))
 
 	resultId, err := is.(*iostream.ProtocolDataInputStream).ReadInt() // result Id
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AdminResponseMessage:ReadPayload w/ Error in reading resultId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read resultId as '%+v'", resultId))
+	logger.Debug(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read resultId as '%+v'", resultId))
 
 	command, err := is.(*iostream.ProtocolDataInputStream).ReadInt() // command
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AdminResponseMessage:ReadPayload w/ Error in reading command from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read command as '%+v'", command))
+	logger.Debug(fmt.Sprintf("Inside AdminResponseMessage:ReadPayload read command as '%+v'", command))
 
 	switch AdminCommand(command) {
 	case AdminCommandCreateUser:

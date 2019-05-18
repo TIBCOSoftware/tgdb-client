@@ -98,12 +98,14 @@ func EntityTypeReadExternal(obj types.TGEntityType, is types.TGInputStream) type
 		logger.Error(fmt.Sprintf("ERROR: Returning EntityType:EntityTypeReadExternal - unable to read eId w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside EntityType:EntityTypeReadExternal read eId as '%d'", eId))
 
 	eName, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning EntityType:EntityTypeReadExternal - unable to read eName w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside EntityType:EntityTypeReadExternal read eName as '%s'", eName))
 
 	_, err = is.(*iostream.ProtocolDataInputStream).ReadInt() // pagesize
 	if err != nil {
@@ -118,6 +120,7 @@ func EntityTypeReadExternal(obj types.TGEntityType, is types.TGInputStream) type
 		logger.Error(fmt.Sprintf("ERROR: Returning EntityType:EntityTypeReadExternal - unable to read attrCount w/ Error: '%+v'", err.Error()))
 		return err
 	}
+	logger.Debug(fmt.Sprintf("Inside EntityType:EntityTypeReadExternal read attrCount as '%d'", attrCount))
 
 	for i := 0; i < int(attrCount); i++ {
 		attrName, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
@@ -125,6 +128,7 @@ func EntityTypeReadExternal(obj types.TGEntityType, is types.TGInputStream) type
 			logger.Error(fmt.Sprintf("ERROR: Returning EntityType:EntityTypeReadExternal - unable to read aName w/ Error: '%+v'", err.Error()))
 			return err
 		}
+		logger.Debug(fmt.Sprintf("Inside EntityType:EntityTypeReadExternal read attrName as '%s'", attrName))
 		// TODO: The stream only contains name of the descriptor. Do we need to lookup the descriptor from GraphMetaData?
 		attrDesc := NewAttributeDescriptorWithType(attrName, types.AttributeTypeString)
 		obj.AddAttributeDescriptor(attrName, attrDesc)
@@ -147,7 +151,6 @@ func EntityTypeUpdateMetadata(obj types.TGEntityType, gmd *GraphMetadata) types.
 		// TODO: Revisit later - Something not correct - should we continue or throw an error
 		if attrDesc == nil {
 			logger.Warning(fmt.Sprintf("WARNING: Continuing loop EntityType:EntityTypeUpdateMetadata - cannot find '%s' attribute descriptor", attrName))
-			//gLogger.log(TGLevel.Warning, "Cannot find '%s' attribute descriptor", attrName)
 			continue
 		}
 		if attrDesc.GetAttrType() == types.AttributeTypeInvalid {

@@ -100,7 +100,7 @@ func initTLSConfig(props *utils.SortedProperties) (*tls.Config, types.TGError) {
 	}
 
 	//sysTrustFile := fmt.Sprintf("%s%slib%ssecurity%scacerts", os.Getenv("JRE_HOME"), string(os.PathSeparator), string(os.PathSeparator), string(os.PathSeparator))
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:initTLSConfig about to ReadFile '%+v'", sysTrustFile))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:initTLSConfig about to ReadFile '%+v'", sysTrustFile))
 	//pem, err := ioutil.ReadFile(sysTrustFile)
 	//if err != nil {
 	//	errMsg := fmt.Sprintf("ERROR: Returning SSLChannel::initTLSConfig Failed to read client certificate authority: %s", sysTrustFile)
@@ -111,7 +111,7 @@ func initTLSConfig(props *utils.SortedProperties) (*tls.Config, types.TGError) {
 	certPool := x509.NewCertPool()
 	clientCertificates := make([]tls.Certificate, 0)
 
-	//logger.Log(fmt.Sprint("======> Inside SSLChannel:initTLSConfig about to add system certificate to certificate pool"))
+	//logger.Debug(fmt.Sprint("======> Inside SSLChannel:initTLSConfig about to add system certificate to certificate pool"))
 	//if !certPool.AppendCertsFromPEM(pem) {
 	//	errMsg := fmt.Sprintf("ERROR: Returning SSLChannel::initTLSConfig Can't parse client certificate data from '%s", sysTrustFile)
 	//	logger.Error(errMsg)
@@ -199,7 +199,7 @@ func initTLSConfig(props *utils.SortedProperties) (*tls.Config, types.TGError) {
 //		return nil
 //	}
 //	if isChannelClosed(obj) || obj.GetLinkState() == types.LinkNotConnected {
-//		logger.Log(fmt.Sprintf("======> Inside SSLChannel:channelConnect about to channelTryRepeatConnect for object '%+v'", obj.String()))
+//		logger.Debug(fmt.Sprintf("======> Inside SSLChannel:channelConnect about to channelTryRepeatConnect for object '%+v'", obj.String()))
 //		err := channelTryRepeatConnect(obj, false)
 //		if err != nil {
 //			logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::channelConnect channelTryRepeatConnect failed"))
@@ -231,13 +231,13 @@ func (obj *SSLChannel) doAuthenticate() types.TGError {
 	msgRequest.(*pdu.AuthenticateRequestMessage).SetUserName(obj.getChannelUserName())
 	msgRequest.(*pdu.AuthenticateRequestMessage).SetPassword(obj.getChannelPassword())
 
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:doAuthenticate about to request reply for request '%+v'", msgRequest.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:doAuthenticate about to request reply for request '%+v'", msgRequest.String()))
 	msgResponse, err := channelRequestReply(obj, msgRequest)
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::doAuthenticate channelRequestReply failed"))
 		return err
 	}
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:doAuthenticate received reply as '%+v'", msgResponse.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:doAuthenticate received reply as '%+v'", msgResponse.String()))
 	if !msgResponse.(*pdu.AuthenticateResponseMessage).IsSuccess() {
 		logger.Error(fmt.Sprintf("ERROR: Returning SSLChannel::doAuthenticate msgResponse.(*pdu.AuthenticateResponseMessage).IsSuccess() failed"))
 		return exception.NewTGBadAuthenticationWithRealm(types.INTERNAL_SERVER_ERROR, types.TGErrorBadAuthentication, "Bad username/password combination", "", "tgdb")
@@ -267,13 +267,13 @@ func (obj *SSLChannel) performHandshake(sslMode bool) types.TGError {
 
 	msgRequest.(*pdu.HandShakeRequestMessage).SetRequestType(pdu.InitiateRequest)
 
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:performHandshake about to request reply for InitiateRequest '%+v'", msgRequest.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:performHandshake about to request reply for InitiateRequest '%+v'", msgRequest.String()))
 	msgResponse, err := channelRequestReply(obj, msgRequest)
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::doAuthenticate channelRequestReply failed"))
 		return err
 	}
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:performHandshake received reply as '%+v'", msgResponse.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:performHandshake received reply as '%+v'", msgResponse.String()))
 	if msgResponse.GetVerbId() != pdu.VerbHandShakeResponse {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::performHandshake HandshakeResponse message response NOT received"))
 		if msgResponse.GetVerbId() == pdu.VerbSessionForcefullyTerminated {
@@ -308,13 +308,13 @@ func (obj *SSLChannel) performHandshake(sslMode bool) types.TGError {
 	msgRequest.(*pdu.HandShakeRequestMessage).SetSslMode(sslMode)
 	msgRequest.(*pdu.HandShakeRequestMessage).SetChallenge(challenge)
 
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:performHandshake about to request reply for ChallengeAccepted '%+v'", msgRequest.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:performHandshake about to request reply for ChallengeAccepted '%+v'", msgRequest.String()))
 	msgResponse, err = channelRequestReply(obj, msgRequest)
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::performHandshake channelRequestReply failed"))
 		return err
 	}
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:performHandshake received reply (2) as '%+v'", msgResponse.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:performHandshake received reply (2) as '%+v'", msgResponse.String()))
 	if msgResponse.GetVerbId() != pdu.VerbHandShakeResponse {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::performHandshake HandshakeResponse message response NOT received"))
 		if msgResponse.GetVerbId() == pdu.VerbSessionForcefullyTerminated {
@@ -413,14 +413,14 @@ func (obj *SSLChannel) validateHandshakeResponseVersion(sVersion int64, cVersion
 	}
 
 	errMsg := fmt.Sprintf("======> Inside SSLChannel:validateHandshakeResponseVersion - Version mismatch between client(%s) & server(%s)", cStrVer, sStrVer)
-	logger.Log(errMsg)
+	logger.Debug(errMsg)
 	return exception.GetErrorByType(types.TGErrorVersionMismatchException, "", errMsg, "")
 }
 
 func (obj *SSLChannel) writeLoop(done chan bool) {
 	logger.Log(fmt.Sprint("======> Entering SSLChannel:writeLoop"))
 	for {
-		logger.Log(fmt.Sprintf("======> Inside SSLChannel:writeLoop entering infinite loop"))
+		logger.Debug(fmt.Sprintf("======> Inside SSLChannel:writeLoop entering infinite loop"))
 		select { // Non-blocking channel operation
 		case msg, ok := <-obj.msgCh: // Retrieve the message from the channel
 			if !ok {
@@ -430,7 +430,7 @@ func (obj *SSLChannel) writeLoop(done chan bool) {
 				logger.Error(fmt.Sprint("ERROR: Returning SSLChannel:writeLoop unable to retrieve message from obj.msgCh"))
 				return
 			}
-			logger.Log(fmt.Sprintf("======> Inside SSLChannel:writeLoop retrieved message from obj.msgCh as '%+v'", msg.String()))
+			logger.Debug(fmt.Sprintf("======> Inside SSLChannel:writeLoop retrieved message from obj.msgCh as '%+v'", msg.String()))
 
 			err := obj.writeToWire(msg)
 			if err != nil {
@@ -439,7 +439,7 @@ func (obj *SSLChannel) writeLoop(done chan bool) {
 				return
 			}
 
-			logger.Log(fmt.Sprintf("======> Inside SSLChannel:writeLoop successfully wrote message '%+v' on the socket", msg.String()))
+			logger.Debug(fmt.Sprintf("======> Inside SSLChannel:writeLoop successfully wrote message '%+v' on the socket", msg.String()))
 			break
 		default:
 			// TODO: Revisit later - Do something
@@ -477,7 +477,7 @@ func (obj *SSLChannel) writeToWire(msg types.TGMessage) types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, sErr.Error())
 	}
 
-	logger.Log(fmt.Sprintf("======> Inside SSLChannel:writeToWire about to write message bytes on the socket as '%+v'", msgBytes[0:bufLen]))
+	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:writeToWire about to write message bytes on the socket as '%+v'", msgBytes[0:bufLen]))
 	// Put the data packet on the socket for network transmission
 	_, sErr = obj.socket.Write(msgBytes[0:bufLen])
 	if sErr != nil {
@@ -689,7 +689,7 @@ func (obj *SSLChannel) CreateSocket() types.TGError {
 	host := obj.channelUrl.urlHost
 	port := obj.channelUrl.urlPort
 	serverAddr := fmt.Sprintf("%s:%d", host, port)
-	logger.Log(fmt.Sprintf("======> Inside SSLChannel:CreateSocket attempting to resolve address for '%s'", serverAddr))
+	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:CreateSocket attempting to resolve address for '%s'", serverAddr))
 
 	//tcpAddr, tErr := net.ResolveSSLAddr(types.ProtocolSSL.String(), serverAddr)
 	//if tErr != nil {
@@ -697,7 +697,7 @@ func (obj *SSLChannel) CreateSocket() types.TGError {
 	//	errMsg := fmt.Sprintf("SSLChannel:CreateSocket unable to resolve channel address '%s'", serverAddr)
 	//	return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, tErr.Error())
 	//}
-	////logger.Log(fmt.Sprintf("======> Inside SSLChannel:CreateSocket resolved SSL address for '%s' as '%+v'", serverAddr, tcpAddr))
+	////logger.Debug(fmt.Sprintf("======> Inside SSLChannel:CreateSocket resolved SSL address for '%s' as '%+v'", serverAddr, tcpAddr))
 	//
 	sslConn, cErr := tls.Dial(types.ProtocolSSL.String(), serverAddr, obj.tlsConfig)
 	if cErr != nil {
@@ -705,7 +705,7 @@ func (obj *SSLChannel) CreateSocket() types.TGError {
 		failureMessage := fmt.Sprintf("Failed to connect to the server at '%s'", serverAddr)
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", failureMessage, cErr.Error())
 	}
-	logger.Log(fmt.Sprintf("======> Inside SSLChannel:CreateSocket created SSL connection for '%s' as '%+v'", serverAddr, sslConn))
+	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:CreateSocket created SSL connection for '%s' as '%+v'", serverAddr, sslConn))
 
 	timeout := utils.NewTGEnvironment().GetChannelConnectTimeout()
 	dErr := sslConn.SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
@@ -768,7 +768,7 @@ func (obj *SSLChannel) OnConnect() types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
 	if msg != nil {
-		logger.Log(fmt.Sprintf("======> Inside SSLChannel:OnConnect tryRead() read Message as '%+v'", msg.String()))
+		logger.Debug(fmt.Sprintf("======> Inside SSLChannel:OnConnect tryRead() read Message as '%+v'", msg.String()))
 	}
 
 	if msg != nil && msg.GetVerbId() == pdu.VerbSessionForcefullyTerminated {
@@ -784,7 +784,7 @@ func (obj *SSLChannel) OnConnect() types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err1.Error())
 	}
 
-	logger.Log(fmt.Sprintf("======> Inside SSLChannel:OnConnect about to performHandshake"))
+	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:OnConnect about to performHandshake"))
 	err = obj.performHandshake(true)
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::OnConnect obj.performHandshake() failed"))
@@ -792,7 +792,7 @@ func (obj *SSLChannel) OnConnect() types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("======> Inside SSLChannel:OnConnect about to doAuthenticate"))
+	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:OnConnect about to doAuthenticate"))
 	err = obj.doAuthenticate()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::OnConnect obj.doAuthenticate() failed"))
@@ -831,20 +831,20 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 		errMsg := "SSLChannel::ReadWireMsg obj.socket.Read failed"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, sErr.Error())
 	}
-	logger.Log(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Read '%d' bytes from the wire in buff '%+v'", n, buff[:(2*n)]))
+	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Read '%d' bytes from the wire in buff '%+v'", n, buff[:(2*n)]))
 	copy(in.Buf, buff[:n])
 	in.BufLen = n
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Input Stream Buffer('%d') is '%+v'", in.BufLen, in.Buf[:(2*n)]))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Input Stream Buffer('%d') is '%+v'", in.BufLen, in.Buf[:(2*n)]))
 
 	// Needed to avoid dirty data in the buffer when we handle the message
 	buffer := make([]byte, n)
-	//logger.Log(fmt.Sprint("======> Inside SSLChannel:ReadWireMsg in.ReadFullyAtPos read msgBytes as '%+v'", msgBytes))
+	//logger.Debug(fmt.Sprint("======> Inside SSLChannel:ReadWireMsg in.ReadFullyAtPos read msgBytes as '%+v'", msgBytes))
 	copy(buffer, buff[:n])
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg copied into buffer as '%+v'", buffer))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg copied into buffer as '%+v'", buffer))
 
 	//intToBytes(size, msgBytes, 0)
 	//bytesRead, _ := utils.FormatHex(msgBytes)
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg bytes read: '%s'", bytesRead))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg bytes read: '%s'", bytesRead))
 
 	msg, err := pdu.CreateMessageFromBuffer(buffer, 0, n)
 	if err != nil {
@@ -852,7 +852,7 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 		errMsg := "SSLChannel::ReadWireMsg unable to create a message from the input stream bytes"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
 	}
-	//logger.Log(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Created Message from buffer as '%+v'", msg.String()))
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Created Message from buffer as '%+v'", msg.String()))
 
 	if msg.GetVerbId() == pdu.VerbExceptionMessage {
 		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::ReadWireMsg msg.GetVerbId() == pdu.VerbExceptionMessage"))

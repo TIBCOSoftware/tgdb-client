@@ -68,7 +68,7 @@ func (logLevel LogLevel) String() string {
 
 const (
 	DefaultLogPrefix = "TGDB-GOAPI-Logger: "
-	DefaultLogLevel = DebugLog
+	DefaultLogLevel = WarningLog
 	//DefaultLogFlags = log.Ldate|log.Lmicroseconds|log.Lshortfile|log.LUTC
 	DefaultLogFlags  = log.Ldate | log.Lmicroseconds | log.LUTC
 	DefaultCallDepth = 2

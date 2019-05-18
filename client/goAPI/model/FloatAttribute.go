@@ -171,7 +171,7 @@ func (obj *FloatAttribute) ReadValue(is types.TGInputStream) types.TGError {
 			logger.Error(fmt.Sprint("ERROR: Returning FloatAttribute:ReadValue w/ Error in reading value from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("FloatAttribute::ReadValue - read value: '%+v'", value))
+		logger.Log(fmt.Sprintf("Returning FloatAttribute::ReadValue - read value: '%+v'", value))
 		obj.attrValue = value
 	}
 	return nil

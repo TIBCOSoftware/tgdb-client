@@ -172,7 +172,7 @@ func (obj *LongAttribute) ReadValue(is types.TGInputStream) types.TGError {
 			logger.Error(fmt.Sprint("ERROR: Returning LongAttribute:ReadValue w/ Error in reading value from message buffer"))
 			return err
 		}
-		logger.Log(fmt.Sprintf("LongAttribute::ReadValue - read value: '%+v'", value))
+		logger.Log(fmt.Sprintf("Returning LongAttribute::ReadValue - read value: '%+v'", value))
 		obj.attrValue = value
 	}
 	return nil

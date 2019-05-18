@@ -198,11 +198,11 @@ func fixUpEntities(obj types.TGConnection, response *pdu.CommitTransactionRespon
 func createChannelRequest(obj types.TGConnection, verb int) (types.TGMessage, types.TGChannelResponse, types.TGError) {
 	logger.Log(fmt.Sprintf("Entering TGDBConnection:createChannelRequest for Verb: '%s'", pdu.GetVerb(verb).GetName()))
 	cn := utils.GetConfigFromKey(utils.ConnectionOperationTimeoutSeconds)
-	//logger.Log(fmt.Sprintf("Inside AbstractChannel::channelTryRepeatConnect config for ConnectionOperationTimeoutSeconds is '%+v", cn))
+	//logger.Debug(fmt.Sprintf("Inside AbstractChannel::channelTryRepeatConnect config for ConnectionOperationTimeoutSeconds is '%+v", cn))
 	timeout := obj.GetConnectionProperties().GetPropertyAsInt(cn)
 	requestId := atomic.AddInt64(&requestIds, 1)
 
-	//logger.Log(fmt.Sprint("Inside TGDBConnection::createChannelRequest about to create channel.NewBlockingChannelResponse()"))
+	//logger.Debug(fmt.Sprint("Inside TGDBConnection::createChannelRequest about to create channel.NewBlockingChannelResponse()"))
 	// Create a non-blocking channel response
 	channelResponse := channel.NewBlockingChannelResponse(requestId, int64(timeout))
 
@@ -264,14 +264,14 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 
 	currResultCount := 0
 	resultCount := msgResponse.GetResultCount()
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read resultCount: '%d' FetchedEntityCount: '%d'", resultCount, len(fetchedEntities)))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read resultCount: '%d' FetchedEntityCount: '%d'", resultCount, len(fetchedEntities)))
 	if resultCount > 0 {
 		respStream.SetReferenceMap(fetchedEntities)
 		rSet = query.NewResultSet(obj, resultId)
 	}
 
 	totalCount := msgResponse.GetTotalCount()
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read totalCount: '%d'", totalCount))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read totalCount: '%d'", totalCount))
 	for i := 0; i < totalCount; i++ {
 		entityType, err := respStream.(*iostream.ProtocolDataInputStream).ReadByte()
 		if err != nil {
@@ -280,7 +280,7 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
 		kindId := types.TGEntityKind(entityType)
-		logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read #'%d'-entityType: '%+v', kindId: '%s'", i, entityType, kindId.String()))
+		logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read #'%d'-entityType: '%+v', kindId: '%s'", i, entityType, kindId.String()))
 		if kindId != types.EntityKindInvalid {
 			entityId, err := respStream.(*iostream.ProtocolDataInputStream).ReadLong()
 			if err != nil {
@@ -289,7 +289,7 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 				return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 			}
 			entity := fetchedEntities[entityId]
-			logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read entityId: '%d', kindId: '%s', entity: '%+v'", entityId, kindId.String(), entity))
+			logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse read entityId: '%d', kindId: '%s', entity: '%+v'", entityId, kindId.String(), entity))
 			switch kindId {
 			case types.EntityKindNode:
 				var node *model.Node
@@ -304,7 +304,7 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 					}
 					entity = node
 					fetchedEntities[entityId] = node
-					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse created new node: '%+v' FetchedEntityCount: '%d'", node, len(fetchedEntities)))
+					logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse created new node: '%+v' FetchedEntityCount: '%d'", node, len(fetchedEntities)))
 				}
 				node = entity.(*model.Node)
 				err := node.ReadExternal(respStream)
@@ -316,8 +316,8 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 				if currResultCount < resultCount {
 					rSet.AddEntityToResultSet(node)
 				}
-				//logger.Log(fmt.Sprintf("======> ======> After node.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
-				logger.Log(fmt.Sprintf("======> ======> Node w/ Edges: '%+v'\n", node.GetEdges()))
+				//logger.Debug(fmt.Sprintf("======> ======> After node.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
+				logger.Debug(fmt.Sprintf("======> ======> Node w/ Edges: '%+v'\n", node.GetEdges()))
 			case types.EntityKindEdge:
 				var edge *model.Edge
 				if entity == nil {
@@ -332,7 +332,7 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 					}
 					entity = edge
 					fetchedEntities[entityId] = edge
-					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse created new edge: '%+v' FetchedEntityCount: '%d'", edge, len(fetchedEntities)))
+					logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromQueryResponse created new edge: '%+v' FetchedEntityCount: '%d'", edge, len(fetchedEntities)))
 				}
 				edge = entity.(*model.Edge)
 				err := edge.ReadExternal(respStream)
@@ -344,24 +344,24 @@ func (obj *TGDBConnection) populateResultSetFromQueryResponse(resultId int, msgR
 				if currResultCount < resultCount {
 					rSet.AddEntityToResultSet(edge)
 				}
-				//logger.Log(fmt.Sprintf("======> ======> After edge.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
-				logger.Log(fmt.Sprintf("======> ======> Edge w/ Vertices: '%+v'\n", edge.GetVertices()))
+				//logger.Debug(fmt.Sprintf("======> ======> After edge.ReadExternal() FetchedEntityCount: '%d'", len(fetchedEntities)))
+				logger.Debug(fmt.Sprintf("======> ======> Edge w/ Vertices: '%+v'\n", edge.GetVertices()))
 			case types.EntityKindGraph:
 				// TODO: Revisit later - Should we break after throwing/logging an error
 				continue
 			}
 			//if entity != nil {
-			//	logger.Log(fmt.Sprintf("======> TGDBConnection::populateResultSetFromQueryResponse entityId: '%d', kindId: '%d', entityType: '%+v'\n", entityId, kindId, kindId.String()))
+			//	logger.Debug(fmt.Sprintf("======> TGDBConnection::populateResultSetFromQueryResponse entityId: '%d', kindId: '%d', entityType: '%+v'\n", entityId, kindId, kindId.String()))
 			//	attrList, _ := entity.GetAttributes()
 			//	for _, attrib := range attrList {
-			//		logger.Log(fmt.Sprintf("======> Attribute Value: '%+v'\n", attrib.GetValue()))
+			//		logger.Debug(fmt.Sprintf("======> Attribute Value: '%+v'\n", attrib.GetValue()))
 			//	}
 			//	if kindId == types.EntityKindNode {
 			//		edges := (entity.(*model.Node)).GetEdges()
-			//		logger.Log(fmt.Sprintf("======> Node w/ Edges: '%+v'\n", edges))
+			//		logger.Debug(fmt.Sprintf("======> Node w/ Edges: '%+v'\n", edges))
 			//	} else if kindId == types.EntityKindEdge {
 			//		vertices := (entity.(*model.Edge)).GetVertices()
-			//		logger.Log(fmt.Sprintf("======> Edge w/ Vertices: '%+v'\n", vertices))
+			//		logger.Debug(fmt.Sprintf("======> Edge w/ Vertices: '%+v'\n", vertices))
 			//	}
 			//}
 		} else {
@@ -389,7 +389,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 		errMsg := "TGDBConnection::populateResultSetFromGetEntitiesResponse unable to read total count of entities in the response stream"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse extracted totalCount: '%d'", totalCount))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse extracted totalCount: '%d'", totalCount))
 	if totalCount > 0 {
 		respStream.SetReferenceMap(fetchedEntities)
 	}
@@ -411,7 +411,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 			errMsg := "TGDBConnection::populateResultSetFromGetEntitiesResponse unable to read count of result entities in the response stream"
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
-		logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse read isResult: '%+v'", isResult))
+		logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse read isResult: '%+v'", isResult))
 		entityType, err := respStream.(*iostream.ProtocolDataInputStream).ReadByte()
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:populateResultSetFromGetEntitiesResponse - unable to read entityType in the response stream w/ error: '%s'", err.Error()))
@@ -419,7 +419,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 			return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 		}
 		kindId := types.TGEntityKind(entityType)
-		logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
+		logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
 		if kindId != types.EntityKindInvalid {
 			entityId, err := respStream.(*iostream.ProtocolDataInputStream).ReadLong()
 			if err != nil {
@@ -428,7 +428,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 				return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 			}
 			entity := fetchedEntities[entityId]
-			logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
+			logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
 			switch kindId {
 			case types.EntityKindNode:
 				var node *model.Node
@@ -443,7 +443,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 					}
 					entity = node
 					fetchedEntities[entityId] = node
-					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse created new node: '%+v'", node))
+					logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse created new node: '%+v'", node))
 				}
 				node = entity.(*model.Node)
 				err := node.ReadExternal(respStream)
@@ -469,7 +469,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntitiesResponse(msgResponse 
 					}
 					entity = edge
 					fetchedEntities[entityId] = edge
-					logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse created new edge: '%+v'", edge))
+					logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntitiesResponse created new edge: '%+v'", edge))
 				}
 				edge = entity.(*model.Edge)
 				err := edge.ReadExternal(respStream)
@@ -514,7 +514,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 		errMsg := "TGDBConnection::populateResultSetFromGetEntityResponse unable to read count of entities in the response stream"
 		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse extracted Count: '%d'", count))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse extracted Count: '%d'", count))
 	if count > 0 {
 		respStream.SetReferenceMap(fetchedEntities)
 		for i := 0; i < count; i++ {
@@ -525,7 +525,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 				return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 			}
 			kindId := types.TGEntityKind(entityType)
-			logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
+			logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse extracted entityType: '%+v', kindId: '%d'", entityType, kindId))
 			if kindId != types.EntityKindInvalid {
 				entityId, err := respStream.(*iostream.ProtocolDataInputStream).ReadLong()
 				if err != nil {
@@ -534,7 +534,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 					return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 				}
 				entity := fetchedEntities[entityId]
-				logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
+				logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse extracted entityId: '%d', entity: '%+v'", entityId, entity))
 				switch kindId {
 				case types.EntityKindNode:
 					// Need to put shell object into map to be deserialized later
@@ -553,7 +553,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 						if entityFound == nil {
 							entityFound = node
 						}
-						logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse created new node: '%+v'", entity))
+						logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse created new node: '%+v'", entity))
 					}
 					node = entity.(*model.Node)
 					err := node.ReadExternal(respStream)
@@ -578,7 +578,7 @@ func (obj *TGDBConnection) populateResultSetFromGetEntityResponse(msgResponse *p
 						if entityFound == nil {
 							entityFound = edge
 						}
-						logger.Log(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse created new edge: '%+v'", edge))
+						logger.Debug(fmt.Sprintf("Inside TGDBConnection::populateResultSetFromGetEntityResponse created new edge: '%+v'", edge))
 					}
 					edge = entity.(*model.Edge)
 					err := edge.ReadExternal(respStream)
@@ -610,7 +610,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit - about to loop through addedList to include existing nodes to the changed list if it's part of a new edge"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit - about to loop through addedList to include existing nodes to the changed list if it's part of a new edge"))
 	// Include existing nodes to the changed list if it's part of a new edge
 	for _, addEntity := range obj.GetAddedList() {
 		if addEntity.GetEntityKind() == types.EntityKindEdge {
@@ -627,7 +627,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 		}
 	}
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit - about to loop through changedList to include existing nodes to the changed list even for edge update"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit - about to loop through changedList to include existing nodes to the changed list even for edge update"))
 	// Need to include existing node to the changed list even for edge update
 	for _, modEntity := range obj.GetChangedList() {
 		if modEntity.GetEntityKind() == types.EntityKindEdge {
@@ -644,7 +644,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 		}
 	}
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit - about to loop through removedList to include existing nodes to the changed list even for edge update"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit - about to loop through removedList to include existing nodes to the changed list even for edge update"))
 	// Need to include existing node to the changed list even for edge update
 	for _, delEntity := range obj.GetRemovedList() {
 		if delEntity.GetEntityKind() == types.EntityKindEdge {
@@ -664,7 +664,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 	}
 	//For deleted edge and node, we don't immediately change the effected nodes or edges.
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit about to createChannelRequest() for: pdu.VerbCommitTransactionRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit about to createChannelRequest() for: pdu.VerbCommitTransactionRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbCommitTransactionRequest)
 	if err != nil {
@@ -673,7 +673,7 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 	}
 	queryRequest := msgRequest.(*pdu.CommitTransactionRequest)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit about to GetAttributeDescriptors() for: pdu.VerbCommitTransactionRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit about to GetAttributeDescriptors() for: pdu.VerbCommitTransactionRequest"))
 	gof := obj.graphObjFactory
 	attrDescSet, aErr := gof.GetGraphMetaData().GetNewAttributeDescriptors()
 	if aErr != nil {
@@ -682,14 +682,14 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 	}
 	queryRequest.AddCommitLists(obj.addedList, obj.changedList, obj.removedList, attrDescSet)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit about to channelSendRequest() for: pdu.VerbCommitTransactionRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit about to channelSendRequest() for: pdu.VerbCommitTransactionRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:Commit - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::Commit received response for: pdu.VerbCommitTransactionRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::Commit received response for: pdu.VerbCommitTransactionRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.CommitTransactionResponse)
 
 	if response.HasException() {
@@ -698,9 +698,9 @@ func (obj *TGDBConnection) Commit() (types.TGResultSet, types.TGError) {
 		return nil, nil
 	}
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit about to fixUpAttrDescriptors()"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit about to fixUpAttrDescriptors()"))
 	fixUpAttrDescriptors(response, attrDescSet)
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Commit about to obj.fixUpEntities()"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Commit about to obj.fixUpEntities()"))
 	fixUpEntities(obj, response)
 
 	for _, delEntity := range obj.GetRemovedList() {
@@ -732,7 +732,7 @@ func (obj *TGDBConnection) Connect() types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection::Connect - error in obj.GetChannel().Connect() as '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Connect about to obj.GetChannel().Start()"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Connect about to obj.GetChannel().Start()"))
 	err = obj.GetChannel().Start()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection::Connect - error in obj.GetChannel().Start() as '%+v'", err.Error()))
@@ -748,7 +748,7 @@ func (obj *TGDBConnection) CloseQuery(queryHashId int64) (types.TGQuery, types.T
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::CloseQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::CloseQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if err != nil {
@@ -759,7 +759,7 @@ func (obj *TGDBConnection) CloseQuery(queryHashId int64) (types.TGQuery, types.T
 	queryRequest.SetCommand(CLOSE)
 	queryRequest.SetQueryHashId(queryHashId)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::CloseQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::CloseQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	_, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
@@ -781,7 +781,7 @@ func (obj *TGDBConnection) CreateQuery(expr string) (types.TGQuery, types.TGErro
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::CreateQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::CreateQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if err != nil {
@@ -792,14 +792,14 @@ func (obj *TGDBConnection) CreateQuery(expr string) (types.TGQuery, types.TGErro
 	queryRequest.SetCommand(CREATE)
 	queryRequest.SetQuery(expr)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::CreateQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::CreateQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:CreateQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::CreateQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::CreateQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 
 	response := msgResponse.(*pdu.QueryResponseMessage)
 	queryHashId := response.GetQueryHashId()
@@ -822,7 +822,7 @@ func (obj *TGDBConnection) DecryptBuffer(is types.TGInputStream) ([]byte, types.
 	//obj.connPoolImpl.AdminLock()
 	//defer obj.connPoolImpl.AdminUnlock()
 	//
-	//logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to createChannelRequest() for: pdu.VerbDecryptBufferRequest"))
+	//logger.Debug(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to createChannelRequest() for: pdu.VerbDecryptBufferRequest"))
 	//// Create a channel request
 	//msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbDecryptBufferRequest)
 	//if cErr != nil {
@@ -832,14 +832,14 @@ func (obj *TGDBConnection) DecryptBuffer(is types.TGInputStream) ([]byte, types.
 	//decryptRequest := msgRequest.(*pdu.DecryptBufferRequestMessage)
 	//decryptRequest.SetEncryptedBuffer(encryptedBuf)
 	//
-	//logger.Log(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to obj.GetChannel().SendRequest() for: pdu.VerbDecryptBufferRequest"))
+	//logger.Debug(fmt.Sprint("Inside TGDBConnection::DecryptBuffer about to obj.GetChannel().SendRequest() for: pdu.VerbDecryptBufferRequest"))
 	//// Execute request on channel and get the response
 	//msgResponse, channelErr := obj.GetChannel().SendRequest(decryptRequest, channelResponse.(*channel.BlockingChannelResponse))
 	//if channelErr != nil {
 	//	logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:DecryptBuffer - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 	//	return nil, channelErr
 	//}
-	//logger.Log(fmt.Sprintf("Inside TGDBConnection::DecryptBuffer received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
+	//logger.Debug(fmt.Sprintf("Inside TGDBConnection::DecryptBuffer received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
 	//response := msgResponse.(*pdu.DecryptBufferResponseMessage)
 	//
 	//if response == nil {
@@ -880,7 +880,7 @@ func (obj *TGDBConnection) Disconnect() types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:Disconnect - unable to channel.Disconnect() w/ error: '%s'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside TGDBConnection::Disconnect about to obj.GetChannel().Stop()"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::Disconnect about to obj.GetChannel().Stop()"))
 	obj.GetChannel().Stop(false)
 	logger.Log(fmt.Sprint("Returning TGDBConnection:Disconnect"))
 	return nil
@@ -902,7 +902,7 @@ func (obj *TGDBConnection) ExecuteGremlinQuery(expr string, collection []interfa
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -912,17 +912,17 @@ func (obj *TGDBConnection) ExecuteGremlinQuery(expr string, collection []interfa
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTEGREMLIN)
 	queryRequest.SetQuery(expr)
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteGremlinQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::ExecuteGremlinQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
@@ -931,7 +931,7 @@ func (obj *TGDBConnection) ExecuteGremlinQuery(expr string, collection []interfa
 	}
 
 	respStream := response.GetEntityStream()
-	logger.Log(fmt.Sprintf("Returning TGDBConnection:ExecuteGremlinQuery w/ '%+v'", response))
+	logger.Debug(fmt.Sprintf("Returning TGDBConnection:ExecuteGremlinQuery w/ '%+v'", response))
 	err = query.FillCollection(respStream, obj.graphObjFactory, collection)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinQuery - unable to query.FillCollection w/ error: '%s'", err.Error()))
@@ -951,7 +951,7 @@ func (obj *TGDBConnection) ExecuteGremlinStrQuery(strQuery string, options types
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -961,17 +961,17 @@ func (obj *TGDBConnection) ExecuteGremlinStrQuery(strQuery string, options types
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTEGREMLINSTR)
 	queryRequest.SetQuery(strQuery)
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteGremlinStrQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinStrQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteGremlinStrQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::ExecuteGremlinStrQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1035,7 +1035,7 @@ func (obj *TGDBConnection) ExecuteTGDBQuery(expr string, options types.TGQueryOp
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -1045,17 +1045,17 @@ func (obj *TGDBConnection) ExecuteTGDBQuery(expr string, options types.TGQueryOp
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTE)
 	queryRequest.SetQuery(expr)
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteTGDBQuery about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteTGDBQuery - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteTGDBQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::ExecuteTGDBQuery received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1083,7 +1083,7 @@ func (obj *TGDBConnection) ExecuteQueryWithFilter(expr, edgeFilter, traversalCon
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithFilter about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithFilter about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -1096,17 +1096,17 @@ func (obj *TGDBConnection) ExecuteQueryWithFilter(expr, edgeFilter, traversalCon
 	queryRequest.SetEdgeFilter(edgeFilter)
 	queryRequest.SetTraversalCondition(traversalCondition)
 	queryRequest.SetEndCondition(endCondition)
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteQueryWithFilter about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::ExecuteQueryWithFilter about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithFilter about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithFilter about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteQueryWithFilter - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::ExecuteQueryWithFilter received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::ExecuteQueryWithFilter received response for: pdu.VerbQueryRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.QueryResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1128,7 +1128,7 @@ func (obj *TGDBConnection) ExecuteQueryWithId(queryHashId int64, options types.T
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithId about to createChannelRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithId about to createChannelRequest() for: pdu.VerbQueryRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbQueryRequest)
 	if cErr != nil {
@@ -1138,10 +1138,10 @@ func (obj *TGDBConnection) ExecuteQueryWithId(queryHashId int64, options types.T
 	queryRequest := msgRequest.(*pdu.QueryRequestMessage)
 	queryRequest.SetCommand(EXECUTED)
 	queryRequest.SetQueryHashId(queryHashId)
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithId about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithId about to obj.configureQueryRequest() for: pdu.VerbQueryRequest"))
 	configureQueryRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithId about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::ExecuteQueryWithId about to obj.GetChannel().SendRequest() for: pdu.VerbQueryRequest"))
 	// Execute request on channel and get the response
 	_, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
@@ -1192,7 +1192,7 @@ func (obj *TGDBConnection) GetEntities(qryKey types.TGKey, props types.TGPropert
 	if props == nil {
 		props = query.NewQueryOption()
 	}
-	logger.Log(fmt.Sprint("Inside TGDBConnection::GetEntities about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::GetEntities about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbGetEntityRequest)
 	if cErr != nil {
@@ -1204,14 +1204,14 @@ func (obj *TGDBConnection) GetEntities(qryKey types.TGKey, props types.TGPropert
 	queryRequest.SetKey(qryKey)
 	configureGetRequest(queryRequest, props)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::GetEntities about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::GetEntities about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:GetEntities - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::GetEntities received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::GetEntities received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.GetEntityResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1237,7 +1237,7 @@ func (obj *TGDBConnection) GetEntity(qryKey types.TGKey, options types.TGQueryOp
 	if options == nil {
 		options = query.NewQueryOption()
 	}
-	logger.Log(fmt.Sprint("Inside TGDBConnection::GetEntity about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::GetEntity about to createChannelRequest() for: pdu.VerbGetEntityRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbGetEntityRequest)
 	if cErr != nil {
@@ -1249,14 +1249,14 @@ func (obj *TGDBConnection) GetEntity(qryKey types.TGKey, options types.TGQueryOp
 	queryRequest.SetKey(qryKey)
 	configureGetRequest(queryRequest, options)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::GetEntity about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::GetEntity about to obj.GetChannel().SendRequest() for: pdu.VerbGetEntityRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:GetEntity - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::GetEntity received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::GetEntity received response for: pdu.VerbGetEntityRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.GetEntityResponseMessage)
 
 	if !response.GetHasResult() {
@@ -1275,7 +1275,7 @@ func (obj *TGDBConnection) GetGraphMetadata(refresh bool) (types.TGGraphMetadata
 		obj.connPoolImpl.AdminLock()
 		defer obj.connPoolImpl.AdminUnlock()
 
-		logger.Log(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata about to createChannelRequest() for: pdu.VerbMetadataRequest"))
+		logger.Debug(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata about to createChannelRequest() for: pdu.VerbMetadataRequest"))
 		// Create a channel request
 		msgRequest, channelResponse, err := createChannelRequest(obj, pdu.VerbMetadataRequest)
 		if err != nil {
@@ -1283,16 +1283,16 @@ func (obj *TGDBConnection) GetGraphMetadata(refresh bool) (types.TGGraphMetadata
 			return nil, err
 		}
 		metaRequest := msgRequest.(*pdu.MetadataRequest)
-		logger.Log(fmt.Sprintf("Inside TGDBConnection::GetGraphMetadata createChannelRequest() returned MsgRequest: '%+v' ChannelResponse: '%+v'", msgRequest, channelResponse.(*channel.BlockingChannelResponse)))
+		logger.Debug(fmt.Sprintf("Inside TGDBConnection::GetGraphMetadata createChannelRequest() returned MsgRequest: '%+v' ChannelResponse: '%+v'", msgRequest, channelResponse.(*channel.BlockingChannelResponse)))
 
-		logger.Log(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata about to obj.GetChannel().SendRequest() for: pdu.VerbMetadataRequest"))
+		logger.Debug(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata about to obj.GetChannel().SendRequest() for: pdu.VerbMetadataRequest"))
 		// Execute request on channel and get the response
 		msgResponse, channelErr := obj.GetChannel().SendRequest(metaRequest, channelResponse.(*channel.BlockingChannelResponse))
 		if channelErr != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:GetGraphMetadata - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 			return nil, channelErr
 		}
-		//logger.Log(fmt.Sprintf("Inside TGDBConnection::GetGraphMetadata received response for: pdu.VerbMetadataRequest as '%+v'", msgResponse))
+		//logger.Debug(fmt.Sprintf("Inside TGDBConnection::GetGraphMetadata received response for: pdu.VerbMetadataRequest as '%+v'", msgResponse))
 
 		response := msgResponse.(*pdu.MetadataResponse)
 		attrDescList := response.GetAttrDescList()
@@ -1300,13 +1300,13 @@ func (obj *TGDBConnection) GetGraphMetadata(refresh bool) (types.TGGraphMetadata
 		nodeTypeList := response.GetNodeTypeList()
 
 		gmd := obj.graphObjFactory.GetGraphMetaData()
-		logger.Log(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata about to update GraphMetadata"))
+		logger.Debug(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata about to update GraphMetadata"))
 		uErr := gmd.UpdateMetadata(attrDescList, nodeTypeList, edgeTypeList)
 		if uErr != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:GetGraphMetadata - unable to gmd.UpdateMetadata() w/ error: '%s'", uErr.Error()))
 			return nil, uErr
 		}
-		logger.Log(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata successfully updated GraphMetadata"))
+		logger.Debug(fmt.Sprint("Inside TGDBConnection::GetGraphMetadata successfully updated GraphMetadata"))
 	}
 	logger.Log(fmt.Sprint("Returning TGDBConnection:GetGraphMetadata"))
 	return obj.graphObjFactory.GetGraphMetaData(), nil
@@ -1335,7 +1335,7 @@ func (obj *TGDBConnection) GetLargeObjectAsBytes(entityId int64, decryptFlag boo
 	obj.connPoolImpl.AdminLock()
 	defer obj.connPoolImpl.AdminUnlock()
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::GetLargeObjectAsBytes about to createChannelRequest() for: pdu.VerbGetLargeObjectRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::GetLargeObjectAsBytes about to createChannelRequest() for: pdu.VerbGetLargeObjectRequest"))
 	// Create a channel request
 	msgRequest, channelResponse, cErr := createChannelRequest(obj, pdu.VerbGetLargeObjectRequest)
 	if cErr != nil {
@@ -1346,14 +1346,14 @@ func (obj *TGDBConnection) GetLargeObjectAsBytes(entityId int64, decryptFlag boo
 	queryRequest.SetEntityId(entityId)
 	queryRequest.SetDecryption(decryptFlag)
 
-	logger.Log(fmt.Sprint("Inside TGDBConnection::GetLargeObjectAsBytes about to obj.GetChannel().SendRequest() for: pdu.VerbGetLargeObjectRequest"))
+	logger.Debug(fmt.Sprint("Inside TGDBConnection::GetLargeObjectAsBytes about to obj.GetChannel().SendRequest() for: pdu.VerbGetLargeObjectRequest"))
 	// Execute request on channel and get the response
 	msgResponse, channelErr := obj.GetChannel().SendRequest(queryRequest, channelResponse.(*channel.BlockingChannelResponse))
 	if channelErr != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:GetLargeObjectAsBytes - unable to channel.SendRequest() w/ error: '%s'", channelErr.Error()))
 		return nil, channelErr
 	}
-	logger.Log(fmt.Sprintf("Inside TGDBConnection::GetLargeObjectAsBytes received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
+	logger.Debug(fmt.Sprintf("Inside TGDBConnection::GetLargeObjectAsBytes received response for: pdu.VerbGetLargeObjectRequest as '%+v'", msgResponse))
 	response := msgResponse.(*pdu.GetLargeObjectResponseMessage)
 
 	if response == nil {

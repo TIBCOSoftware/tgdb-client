@@ -102,27 +102,27 @@ func (msg *AuthenticatedMessage) FromBytes(buffer []byte) (types.TGMessage, type
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticatedMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside AuthenticatedMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside AuthenticatedMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AuthenticatedMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside AuthenticatedMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AuthenticatedMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside AuthenticatedMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("AuthenticatedMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning AuthenticatedMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -131,14 +131,14 @@ func (msg *AuthenticatedMessage) ToBytes() ([]byte, int, types.TGError) {
 	logger.Log(fmt.Sprint("Entering AuthenticatedMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside AuthenticatedMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside AuthenticatedMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AuthenticatedMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside AuthenticatedMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -150,7 +150,7 @@ func (msg *AuthenticatedMessage) ToBytes() ([]byte, int, types.TGError) {
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticatedMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("AuthenticatedMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning AuthenticatedMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -282,17 +282,18 @@ func (msg *AuthenticatedMessage) ReadPayload(is types.TGInputStream) types.TGErr
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticatedMessage:ReadPayload w/ Error in reading authToken from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AuthenticatedMessage:ReadPayload read authToken as '%+v'", authToken))
+	logger.Debug(fmt.Sprintf("Inside AuthenticatedMessage:ReadPayload read authToken as '%+v'", authToken))
 
 	sessionId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning AuthenticatedMessage:ReadPayload w/ Error in reading sessionId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read sessionId as '%+v'", sessionId))
+	logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read sessionId as '%+v'", sessionId))
 
 	msg.SetAuthToken(authToken)
 	msg.SetSessionId(sessionId)
+	logger.Log(fmt.Sprint("Returning AuthenticatedMessage:ReadPayload"))
 	return nil
 }
 

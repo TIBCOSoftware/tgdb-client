@@ -79,27 +79,27 @@ func (msg *DisconnectChannelRequestMessage) FromBytes(buffer []byte) (types.TGMe
 		logger.Error(fmt.Sprint("ERROR: Returning DisconnectChannelRequestMessage:FromBytes w/ Error in reading buffer length from message buffer"))
 		return nil, err
 	}
-	logger.Log(fmt.Sprintf("Inside DisconnectChannelRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
+	logger.Debug(fmt.Sprintf("Inside DisconnectChannelRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
 	if bufLen != len(buffer) {
 		errMsg := fmt.Sprint("Buffer length mismatch")
 		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside DisconnectChannelRequestMessage:FromBytes - about to APMReadHeader"))
+	logger.Debug(fmt.Sprint("Inside DisconnectChannelRequestMessage:FromBytes - about to APMReadHeader"))
 	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside DisconnectChannelRequestMessage:FromBytes - about to ReadPayload"))
+	logger.Debug(fmt.Sprint("Inside DisconnectChannelRequestMessage:FromBytes - about to ReadPayload"))
 	err = msg.ReadPayload(is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprintf("DisconnectChannelRequestMessage::FromBytes resulted in '%+v'", msg))
+	logger.Log(fmt.Sprintf("Returning DisconnectChannelRequestMessage::FromBytes resulted in '%+v'", msg))
 	return msg, nil
 }
 
@@ -108,14 +108,14 @@ func (msg *DisconnectChannelRequestMessage) ToBytes() ([]byte, int, types.TGErro
 	logger.Log(fmt.Sprint("Entering DisconnectChannelRequestMessage:ToBytes"))
 	os := iostream.DefaultProtocolDataOutputStream()
 
-	logger.Log(fmt.Sprint("Inside DisconnectChannelRequestMessage:ToBytes - about to APMWriteHeader"))
+	logger.Debug(fmt.Sprint("Inside DisconnectChannelRequestMessage:ToBytes - about to APMWriteHeader"))
 	err := APMWriteHeader(msg, os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
 		return nil, -1, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside DisconnectChannelRequestMessage:ToBytes - about to WritePayload"))
+	logger.Debug(fmt.Sprint("Inside DisconnectChannelRequestMessage:ToBytes - about to WritePayload"))
 	err = msg.WritePayload(os)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to export message '%+v' in byte format", msg)
@@ -127,7 +127,7 @@ func (msg *DisconnectChannelRequestMessage) ToBytes() ([]byte, int, types.TGErro
 		logger.Error(fmt.Sprint("ERROR: Returning DisconnectChannelRequestMessage:ToBytes w/ Error in writing buffer length"))
 		return nil, -1, err
 	}
-	logger.Log(fmt.Sprintf("DisconnectChannelRequestMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
+	logger.Log(fmt.Sprintf("Returning DisconnectChannelRequestMessage::ToBytes results bytes-on-the-wire in '%+v'", os.GetBuffer()))
 	return os.GetBuffer(), os.GetLength(), nil
 }
 
@@ -256,14 +256,14 @@ func (msg *DisconnectChannelRequestMessage) ReadPayload(is types.TGInputStream) 
 		logger.Error(fmt.Sprint("ERROR: Returning DisconnectChannelRequestMessage:ReadPayload w/ Error in reading authToken from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("DisconnectChannelRequestMessage:ReadPayload read authToken as '%+v'", authToken))
+	logger.Debug(fmt.Sprintf("DisconnectChannelRequestMessage:ReadPayload read authToken as '%+v'", authToken))
 
 	sessionId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning DisconnectChannelRequestMessage:ReadPayload w/ Error in reading sessionId from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("DisconnectChannelRequestMessage:ReadPayload read sessionId as '%+v'", sessionId))
+	logger.Debug(fmt.Sprintf("DisconnectChannelRequestMessage:ReadPayload read sessionId as '%+v'", sessionId))
 	msg.SetAuthToken(authToken)
 	msg.SetSessionId(sessionId)
 	logger.Log(fmt.Sprint("Returning DisconnectChannelRequestMessage:ReadPayload"))

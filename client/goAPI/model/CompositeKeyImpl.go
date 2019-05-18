@@ -86,16 +86,16 @@ func (obj *CompositeKey) SetOrCreateAttribute(name string, value interface{}) ty
 	// If attribute is not present in the set, create a new one
 	attr := obj.attributes[name]
 	if attr == nil {
-		logger.Log(fmt.Sprintf("CompositeKey:SetOrCreateAttribute attribute '%+v' not found - trying to get descriptor from GraphMetadata", name))
+		logger.Debug(fmt.Sprintf("Inside CompositeKey:SetOrCreateAttribute attribute '%+v' not found - trying to get descriptor from GraphMetadata", name))
 		attrDesc, err := obj.graphMetadata.GetAttributeDescriptor(name)
 		if err != nil {
 			logger.Log(fmt.Sprintf("ERROR: Returning CompositeKey:SetOrCreateAttribute unable to get descriptor for attribute '%s' w/ error '%+v'", name, err.Error()))
 			return err
 		}
-		logger.Log(fmt.Sprintf("CompositeKey:SetOrCreateAttribute attribute descriptor for '%+v' found in GraphMetadata", name))
+		logger.Debug(fmt.Sprintf("Inside CompositeKey:SetOrCreateAttribute attribute descriptor for '%+v' found in GraphMetadata", name))
 		if attrDesc == nil {
 			aType := reflect.TypeOf(value).String()
-			logger.Log(fmt.Sprintf("=======> CompositeKey SetOrCreateAttribute creating new attribute descriptor '%+v':'%+v'(%+v) <=======", name, value, aType))
+			logger.Debug(fmt.Sprintf("=======> Inside CompositeKey SetOrCreateAttribute creating new attribute descriptor '%+v':'%+v'(%+v) <=======", name, value, aType))
 			attrDesc = obj.graphMetadata.CreateAttributeDescriptorForDataType(name, aType)
 		}
 		newAttr, aErr := CreateAttributeWithDesc(nil, attrDesc.(*AttributeDescriptor), value)
@@ -106,7 +106,7 @@ func (obj *CompositeKey) SetOrCreateAttribute(name string, value interface{}) ty
 		//newAttr.SetOwner(obj)
 		attr = newAttr
 	}
-	logger.Log(fmt.Sprintf("CompositeKey:SetOrCreateAttribute trying to set attribute '%+v' value as '%+v'", attr, value))
+	logger.Debug(fmt.Sprintf("Inside CompositeKey:SetOrCreateAttribute trying to set attribute '%+v' value as '%+v'", attr, value))
 	// Set the attribute value
 	err := attr.SetValue(value)
 	if err != nil {

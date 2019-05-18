@@ -301,7 +301,7 @@ func (obj *AbstractEntity) setOrCreateAttribute(name string, value interface{}) 
 	}
 	// If attribute is not present in the set, create a new one
 	attr := obj.GetAttribute(name)
-	//logger.Log(fmt.Sprintf("Inside AbstractEntity:SetOrCreateAttribute Abstract Entity has attribute '%+v' <=======", obj.attributes))
+	//logger.Debug(fmt.Sprintf("Inside AbstractEntity:SetOrCreateAttribute Abstract Entity has attribute '%+v' <=======", obj.attributes))
 	if attr == nil {
 		gmd := obj.GetGraphMetadata()
 		attrDesc, err := gmd.GetAttributeDescriptor(name)
@@ -315,7 +315,7 @@ func (obj *AbstractEntity) setOrCreateAttribute(name string, value interface{}) 
 				return exception.GetErrorByType(types.TGErrorGeneralException, types.INTERNAL_SERVER_ERROR, errMsg, "")
 			}
 			aType := reflect.TypeOf(value).String()
-			logger.Log(fmt.Sprintf("Inside AbstractEntity:SetOrCreateAttribute Abstract Entity creating new attribute '%+v':'%+v'(%+v) <=======", name, value, aType))
+			logger.Debug(fmt.Sprintf("Inside AbstractEntity:SetOrCreateAttribute Abstract Entity creating new attribute '%+v':'%+v'(%+v) <=======", name, value, aType))
 			// TODO: Do we need to validate if this descriptor exists as part of Graph Meta Data???
 			attrDesc = gmd.CreateAttributeDescriptorForDataType(name, aType)
 		}
@@ -394,7 +394,7 @@ func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) ty
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read newEntityFlag w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read newEntityFlag as '%+v'", newEntityFlag))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read newEntityFlag as '%+v'", newEntityFlag))
 	if newEntityFlag {
 		//TGDB-504
 		logger.Warning(fmt.Sprint("WARNING: AbstractEntity:AbstractEntityReadExternal - de-serializing a new entity is NOT expected"))
@@ -406,8 +406,8 @@ func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) ty
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read eKind w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read eKind as '%+v'", eKind))
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal - Object Kind is '%+v'", obj.EntityKind))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read eKind as '%+v'", eKind))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal - Object Kind is '%+v'", obj.EntityKind))
 	if obj.GetEntityKind() != types.TGEntityKind(eKind) {
 		logger.Error(fmt.Sprint("ERROR: Returning AbstractEntity:AbstractEntityReadExternal as obj.GetEntityKind() != types.TGEntityKind(eKind)"))
 		errMsg := "Invalid object for deserialization. Expecting..." // TODO: SS
@@ -420,14 +420,14 @@ func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) ty
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read entityId w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read entityId as '%d'", entityId))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read entityId as '%d'", entityId))
 
 	version, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read version w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read version as '%d'", version))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read version as '%d'", version))
 
 	var eType types.TGEntityType
 	entityTypeId, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
@@ -435,21 +435,21 @@ func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) ty
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read entityTypeId w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read entityTypeId as '%d'", entityTypeId))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read entityTypeId as '%d'", entityTypeId))
 	if entityTypeId != 0 {
 		eType1, err := obj.graphMetadata.GetNodeTypeById(entityTypeId)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read nodeType w/ Error: '%+v'", err.Error()))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal verified eType1 (nodeTypeById) as '%+v'", eType1))
+		logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal verified eType1 (nodeTypeById) as '%+v'", eType1))
 		if eType1 == nil {
 			eType, err = obj.graphMetadata.GetEdgeTypeById(entityTypeId)
 			if err != nil {
 				logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read edgeType w/ Error: '%+v'", err.Error()))
 				return err
 			}
-			logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal verified eType (edgeTypeById) as '%+v'", eType))
+			logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal verified eType (edgeTypeById) as '%+v'", eType))
 			if eType == nil {
 				// TODO: Revisit later - Should we retrieve entity desc together with the entity?
 				logger.Warning(fmt.Sprintf("WARNING: Cannot lookup entity desc '%d' from graph meta data cache", entityTypeId))
@@ -458,21 +458,21 @@ func (obj *AbstractEntity) AbstractEntityReadExternal(is types.TGInputStream) ty
 			eType = eType1
 		}
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal inferred from metadata, eType as '%+v'", eType))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal inferred from metadata, eType as '%+v'", eType))
 
 	count, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read count w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read attribute count as '%d'", count))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read attribute count as '%d'", count))
 	for i := 0; i < count; i++ {
 		attr, err := ReadExternalForEntity(obj, is)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to read attr w/ Error: '%+v'", err.Error()))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read attr as '%+v'", attr))
+		logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityReadExternal read attr as '%+v'", attr))
 		err = obj.SetAttribute(attr)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning AbstractEntity:AbstractEntityReadExternal - unable to set attr w/ Error: '%+v'", err.Error()))
@@ -494,7 +494,7 @@ func (obj *AbstractEntity) AbstractEntityWriteExternal(os types.TGOutputStream) 
 	//virtual id can be local or actual id
 	os.(*iostream.ProtocolDataOutputStream).WriteLong(obj.GetVirtualId())
 	os.(*iostream.ProtocolDataOutputStream).WriteInt(obj.GetVersion())
-	logger.Log(fmt.Sprintf("Inside AbstractEntity:AbstractEntityWriteExternal - obj.EntityType is '%+v'", obj.GetEntityType()))
+	logger.Debug(fmt.Sprintf("Inside AbstractEntity:AbstractEntityWriteExternal - obj.EntityType is '%+v'", obj.GetEntityType()))
 	if obj.GetEntityType() == nil {
 		os.(*iostream.ProtocolDataOutputStream).WriteInt(0)
 	} else {

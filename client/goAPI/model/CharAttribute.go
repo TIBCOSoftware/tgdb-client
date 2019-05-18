@@ -127,7 +127,7 @@ func (obj *CharAttribute) SetOwner(ownerEntity types.TGEntity) {
 // SetValue sets the value for this attribute. Appropriate data conversion to its attribute desc will be performed
 // If the object is Null, then the object is explicitly set, but no value is provided.
 func (obj *CharAttribute) SetValue(value interface{}) types.TGError {
-	logger.Log(fmt.Sprintf("CharAttribute::SetValue trying to set attribute value '%+v' of type '%+v'", value, reflect.TypeOf(value).Kind()))
+	logger.Log(fmt.Sprintf("Entering CharAttribute::SetValue trying to set attribute value '%+v' of type '%+v'", value, reflect.TypeOf(value).Kind()))
 	if value == nil {
 		//errMsg := fmt.Sprintf("Attribute value is required")
 		//return exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
@@ -157,10 +157,10 @@ func (obj *CharAttribute) SetValue(value interface{}) types.TGError {
 		obj.SetChar(int32(v))
 	} else if reflect.TypeOf(value).Kind() == reflect.Int32 {
 		v := reflect.ValueOf(value).Int()
-		//logger.Log(fmt.Sprintf("CharAttribute::SetValue trying to set attribute value '%+v' of type '%+v'", v, reflect.TypeOf(v).Kind()))
+		//logger.Log(fmt.Sprintf("Returning CharAttribute::SetValue trying to set attribute value '%+v' of type '%+v'", v, reflect.TypeOf(v).Kind()))
 		obj.SetChar(int32(v))
 	} else {
-		//logger.Log(fmt.Sprintf("CharAttribute::SetValue finally trying to set attribute value '%+v' of type '%+v'", value, reflect.TypeOf(value).Kind()))
+		//logger.Log(fmt.Sprintf("Returning CharAttribute::SetValue finally trying to set attribute value '%+v' of type '%+v'", value, reflect.TypeOf(value).Kind()))
 		obj.SetChar(value.(int32))
 	}
 	return nil
@@ -173,14 +173,14 @@ func (obj *CharAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprint("ERROR: Returning CharAttribute:ReadValue w/ Error in reading value from message buffer"))
 		return err
 	}
-	logger.Log(fmt.Sprintf("CharAttribute::ReadValue - read value: '%+v'", value))
+	logger.Log(fmt.Sprintf("Returning CharAttribute::ReadValue - read value: '%+v'", value))
 	obj.attrValue = value
 	return nil
 }
 
 // WriteValue writes the value to output stream
 func (obj *CharAttribute) WriteValue(os types.TGOutputStream) types.TGError {
-	logger.Log(fmt.Sprintf("CharAttribute::WriteValue trying to write attribute value '%+v'", obj.attrValue))
+	logger.Log(fmt.Sprintf("Entering CharAttribute::WriteValue trying to write attribute value '%+v'", obj.attrValue))
 	iValue := reflect.ValueOf(obj.attrValue).Int()
 	os.(*iostream.ProtocolDataOutputStream).WriteChar(int(iValue))
 	return nil

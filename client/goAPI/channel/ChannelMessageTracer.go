@@ -186,7 +186,7 @@ func (obj *ChannelMessageTracer) extractAndTraceMessage() {
 				continue
 			}
 		} else {
-			logger.Log(fmt.Sprint("Inside ChannelMessageTracer:extractAndTraceMessage - No pending messages in the queue"))
+			logger.Debug(fmt.Sprint("Inside ChannelMessageTracer:extractAndTraceMessage - No pending messages in the queue"))
 			time.Sleep(1000 * time.Millisecond)
 			continue
 		}

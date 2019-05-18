@@ -309,27 +309,27 @@ func (obj *Graph) ReadExternal(is types.TGInputStream) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Graph:ReadExternal read nodeBufLen as '%+v'", nodeBufLen))
+	logger.Debug(fmt.Sprintf("Inside Graph:ReadExternal read nodeBufLen as '%+v'", nodeBufLen))
 
 	err = obj.AbstractEntityReadExternal(is)
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside Graph:ReadExternal read abstractEntity"))
+	logger.Debug(fmt.Sprint("Inside Graph:ReadExternal read abstractEntity"))
 
 	edgeCount, err := is.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Graph:ReadExternal - unable to read edgeCount w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Graph:ReadExternal read edgeCount as '%d'", edgeCount))
+	logger.Debug(fmt.Sprintf("Inside Graph:ReadExternal read edgeCount as '%d'", edgeCount))
 	for i := 0; i < edgeCount; i++ {
 		edgeId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Returning Graph:ReadExternal - unable to read entId w/ Error: '%+v'", err.Error()))
 			return err
 		}
-		logger.Log(fmt.Sprintf("Inside Graph:ReadExternal read edgeId as '%d'", edgeId))
+		logger.Debug(fmt.Sprintf("Inside Graph:ReadExternal read edgeId as '%d'", edgeId))
 		var edge *Edge
 		var entity types.TGEntity
 		refMap := is.(*iostream.ProtocolDataInputStream).GetReferenceMap()
@@ -344,7 +344,7 @@ func (obj *Graph) ReadExternal(is types.TGInputStream) types.TGError {
 				refMap[edgeId] = edge1
 			}
 			edge = edge1
-			logger.Log(fmt.Sprintf("Inside Graph:ReadExternal created new edge: '%+v'", edge))
+			logger.Debug(fmt.Sprintf("Inside Graph:ReadExternal created new edge: '%+v'", edge))
 		} else {
 			edge = entity.(*Edge)
 		}
@@ -366,7 +366,7 @@ func (obj *Graph) WriteExternal(os types.TGOutputStream) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside Graph:WriteExternal - exported base entity attributes"))
+	logger.Debug(fmt.Sprint("Inside Graph:WriteExternal - exported base entity attributes"))
 	newCount := 0
 	for _, edge := range obj.edges {
 		if edge.GetIsNew() {
@@ -380,7 +380,7 @@ func (obj *Graph) WriteExternal(os types.TGOutputStream) types.TGError {
 			continue
 		}
 		os.(*iostream.ProtocolDataOutputStream).WriteLong(obj.GetVirtualId())
-		logger.Log(fmt.Sprintf("Inside Graph:WriteExternal - exported a new edge: '%+v'", edge))
+		logger.Debug(fmt.Sprintf("Inside Graph:WriteExternal - exported a new edge: '%+v'", edge))
 	}
 	currPos := os.(*iostream.ProtocolDataOutputStream).GetPosition()
 	length := currPos - startPos

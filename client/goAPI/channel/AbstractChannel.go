@@ -254,7 +254,7 @@ func channelConnect(obj types.TGChannel) types.TGError {
 		return nil
 	}
 	if isChannelClosed(obj) || obj.GetLinkState() == types.LinkNotConnected {
-		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelConnect about to channelTryRepeatConnect for object '%+v'", obj.String()))
+		logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelConnect about to channelTryRepeatConnect for object '%+v'", obj.String()))
 		err := channelTryRepeatConnect(obj, false)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: AbstractChannel:channelConnect channelTryRepeatConnect failed w/ '%+v'", err.Error()))
@@ -301,31 +301,31 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 	//defer obj.ExceptionUnlock()
 
 	for {
-		logger.Log(fmt.Sprint("Entering AbstractChannel:channelHandleException Infinite Loop"))
+		logger.Debug(fmt.Sprint("Entering AbstractChannel:channelHandleException Infinite Loop"))
 		if bReconnect {
-			logger.Log(fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop"))
+			logger.Debug(fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop"))
 			break
 		}
 		connectionOpTimeout := obj.GetProperties().GetPropertyAsInt(utils.GetConfigFromKey(utils.ConnectionOperationTimeoutSeconds))
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to obj.exceptionCond.Wait()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to obj.exceptionCond.Wait()"))
 		//obj.GetExceptionCondition().Wait()
 		time.Sleep(time.Duration(connectionOpTimeout) * time.Second)
 		//obj.GetExceptionCondition().Broadcast()
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to check isChannelConnected()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to check isChannelConnected()"))
 		// TODO: Revisit later - for more testing and optimization/streamlining
 		if isChannelConnected(obj) {
 			if bReconnect {
-				logger.Log(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
+				logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
 				obj.GetExceptionCondition().Broadcast()
 			}
 			obj.ExceptionUnlock()
 			logger.Log(fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop to retry as channel is connected"))
 			return RetryOperation.ChannelException()
 		}
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to check IsClosed()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to check IsClosed()"))
 		if obj.IsClosed() {
 			if bReconnect {
-				logger.Log(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
+				logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
 				obj.GetExceptionCondition().Broadcast()
 			}
 			obj.ExceptionUnlock()
@@ -334,10 +334,10 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 		}
 	} // End of Infinite Loop
 
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelHandleException about to obj.channelReconnect()"))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelHandleException about to obj.channelReconnect()"))
 	if channelReconnect(obj) {
 		if bReconnect {
-			logger.Log(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
+			logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
 			obj.GetExceptionCondition().Broadcast()
 		}
 		obj.ExceptionUnlock()
@@ -345,7 +345,7 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 		return RetryOperation.ChannelException()
 	}
 	if bReconnect {
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException about to obj.exceptionCond.Broadcast()"))
 		obj.GetExceptionCondition().Broadcast()
 	}
 	obj.ExceptionUnlock()
@@ -356,7 +356,6 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 // channelProcessMessage processes a message received on the channel. This is called from the ChannelReader.
 func channelProcessMessage(obj types.TGChannel, msg types.TGMessage) types.TGError {
 	logger.Log(fmt.Sprint("Entering AbstractChannel:channelProcessMessage"))
-	//logger.Log(fmt.Sprintf("Entering AbstractChannel:channelProcessMessage w/ Message: '%+v'", msg.String()))
 	reqId := msg.GetRequestId()
 	channelResponseMap := obj.GetResponses()
 	channelResponse := channelResponseMap[reqId]
@@ -367,8 +366,7 @@ func channelProcessMessage(obj types.TGChannel, msg types.TGMessage) types.TGErr
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 	}
 
-	logger.Log(fmt.Sprint("Inside AbstractChannel:channelTryRepeatConnect about to channelResponse.SetReply() w/ MSG"))
-	//logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to channelResponse.SetReply() w/ MSG: '%s'", msg.String()))
+	logger.Debug(fmt.Sprint("Inside AbstractChannel:channelTryRepeatConnect about to channelResponse.SetReply() w/ MSG"))
 	channelResponse.SetReply(msg)
 
 	logger.Log(fmt.Sprintf("Returning AbstractChannel:channelProcessMessage"))
@@ -390,16 +388,16 @@ func channelReconnect(obj types.TGChannel) bool {
 
 	oldUrl := obj.GetChannelURL()
 	cn := utils.GetConfigFromKey(utils.ChannelFTRetryIntervalSeconds)
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelReconnect config for ChannelFTRetryIntervalSeconds is '%+v", cn))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelReconnect config for ChannelFTRetryIntervalSeconds is '%+v", cn))
 	connectInterval := obj.GetProperties().GetPropertyAsInt(cn)
 	cn = utils.GetConfigFromKey(utils.ChannelFTRetryCount)
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelReconnect config for ChannelFTRetryCount is '%+v", cn))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelReconnect config for ChannelFTRetryCount is '%+v", cn))
 	retryCount := obj.GetProperties().GetPropertyAsInt(cn)
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelReconnect Retrying to reconnnect %d times at interval of %d seconds to FTUrls.", retryCount, connectInterval))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelReconnect Retrying to reconnnect %d times at interval of %d seconds to FTUrls.", retryCount, connectInterval))
 
 	obj.SetChannelLinkState(types.LinkReconnecting)
 
-	logger.Log(fmt.Sprint("Inside AbstractChannel:channelReconnect about to obj.channelTryRepeatConnect()"))
+	logger.Debug(fmt.Sprint("Inside AbstractChannel:channelReconnect about to obj.channelTryRepeatConnect()"))
 	err := channelTryRepeatConnect(obj, true)
 	if err != nil {
 		obj.SetChannelURL(oldUrl.(*LinkUrl))
@@ -419,10 +417,10 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 	defer obj.ChannelUnlock()
 
 	for {
-		logger.Log(fmt.Sprint("Entering AbstractChannel:channelRequestReply Infinite Loop"))
+		logger.Debug(fmt.Sprint("Entering AbstractChannel:channelRequestReply Infinite Loop"))
 		//obj.ChannelLock()
 
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelRequestReply Infinite Loop about to obj.Send()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelRequestReply Infinite Loop about to obj.Send()"))
 		// Execute Derived channel's method
 		err := obj.Send(request)
 		if err != nil {
@@ -435,13 +433,12 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 			} else if exceptionResult.ExceptionType == Disconnected {
 				return nil, exception.GetErrorByType(types.TGErrorChannelDisconnected, types.INTERNAL_SERVER_ERROR, exceptionResult.ExceptionMessage, err.Error())
 			} else {
-				//gLogger.log(TGLogger.TGLevel.Info, "Retrying to send message on urlstr:%s", this.linkURL);
 				logger.Warning(fmt.Sprintf("WARNING: Inside AbstractChannel:channelRequestReply in channel.Send - Retrying to send message on urlstr: '%s'", obj.GetChannelURL().GetUrlAsString()))
 				continue
 			}
 		}
 
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelRequestReply Infinite Loop about to obj.ReadWireMsg()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelRequestReply Infinite Loop about to obj.ReadWireMsg()"))
 		// Execute Derived channel's method
 		msg, err := obj.ReadWireMsg()
 		if err != nil {
@@ -454,7 +451,6 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 			} else if exceptionResult.ExceptionType == Disconnected {
 				return nil, exception.GetErrorByType(types.TGErrorChannelDisconnected, types.INTERNAL_SERVER_ERROR, exceptionResult.ExceptionMessage, err.Error())
 			} else {
-				//gLogger.log(TGLogger.TGLevel.Info, "Retrying to send message on urlStr:%s", this.linkURL);
 				logger.Warning(fmt.Sprintf("WARNING: Inside AbstractChannel:channelRequestReply in ReadWireMsg() - Retrying to send message on urlstr: '%s'", obj.GetChannelURL().GetUrlAsString()))
 				continue
 			}
@@ -471,20 +467,19 @@ func channelRequestReply(obj types.TGChannel, request types.TGMessage) (types.TG
 
 func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag bool) types.TGError {
 	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendMessage w/ Message type: '%+v'", msg.GetVerbId()))
-	//logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendMessage w/ Message: '%+v'", msg.String()))
 	var resendMode types.ResendMode
 	if resendFlag {
 		resendMode = types.ModeReconnectAndResend
 	} else {
 		resendMode = types.ModeReconnectAndRaiseException
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendMessage using '%s'", resendMode.String()))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelSendMessage using '%s'", resendMode.String()))
 
 	//obj.ChannelLock()
 	//defer obj.ChannelUnlock()
 
 	for {
-		logger.Log(fmt.Sprint("Entering AbstractChannel:channelSendMessage Infinite Loop"))
+		logger.Debug(fmt.Sprint("Entering AbstractChannel:channelSendMessage Infinite Loop"))
 		if !isChannelConnected(obj) {
 			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendMessage - channel is closed"))
 			errMsg := fmt.Sprint("AbstractChannel:channelSendMessage - channel is closed")
@@ -492,7 +487,7 @@ func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag boo
 		}
 		obj.ChannelLock()
 
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelSendMessage Infinite Loop about to obj.Send()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelSendMessage Infinite Loop about to obj.Send()"))
 		// Execute Derived channel's message communication mechanism
 		err := obj.Send(msg)
 		if err != nil {
@@ -525,7 +520,6 @@ func channelSendMessage(obj types.TGChannel, msg types.TGMessage, resendFlag boo
 
 func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelResponse types.TGChannelResponse, resendFlag bool) (types.TGMessage, types.TGError) {
 	logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendRequest w/ Message type: '%+v' ChannelResponse: '%+v'", msg.GetVerbId(), channelResponse))
-	//logger.Log(fmt.Sprintf("Entering AbstractChannel:channelSendRequest w/ Message: '%+v' ChannelResponse: '%+v'", msg.String(), channelResponse))
 	reqId := channelResponse.GetRequestId()
 	msg.SetRequestId(reqId)
 
@@ -535,13 +529,13 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 	} else {
 		resendMode = types.ModeReconnectAndRaiseException
 	}
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest using '%s'", resendMode.String()))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelSendRequest using '%s'", resendMode.String()))
 
 	//obj.ChannelLock()
 	//defer obj.ChannelUnlock()
 
 	for {
-		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest Infinite Loop"))
+		logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelSendRequest Infinite Loop"))
 		if !isChannelConnected(obj) {
 			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendRequest - channel is closed"))
 			errMsg := fmt.Sprintf("AbstractChannel:channelSendRequest - channel is closed")
@@ -552,13 +546,13 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 		//	obj.GetTracer().Trace(msg)
 		//}
 		obj.ChannelLock()
-		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest about to set channel response '%+v' in map '%+v'", channelResponse, obj.GetResponses()))
+		logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelSendRequest about to set channel response '%+v' in map '%+v'", channelResponse, obj.GetResponses()))
 		obj.SetResponse(reqId, channelResponse)
 
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelSendRequest Infinite Loop about to obj.Send()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelSendRequest Infinite Loop about to obj.Send()"))
 		// Execute Derived channel's message communication mechanism
 		err := obj.Send(msg)
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelSendRequest after obj.Send()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelSendRequest after obj.Send()"))
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: AbstractChannel:channelSendRequest obj.Send failed w/ '%+v'", err.Error()))
 			obj.ChannelUnlock()
@@ -584,11 +578,11 @@ func channelSendRequest(obj types.TGChannel, msg types.TGMessage, channelRespons
 			logger.Error(fmt.Sprint("ERROR: Returning AbstractChannel:channelSendRequest as channel response is NOT blocking"))
 			return nil, nil
 		}
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelSendRequest Infinite Loop about to channelResponse.Await()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelSendRequest Infinite Loop about to channelResponse.Await()"))
 		//channelResponse.Reset()	// Set channelResponse status to types.Waiting
 		channelResponse.Await(channelResponse.(*BlockingChannelResponse))
 		delete(obj.GetResponses(), reqId)
-		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelSendRequest Infinite Loop about to channelResponse.GetReply()"))
+		logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelSendRequest Infinite Loop about to channelResponse.GetReply()"))
 		msgResponse := channelResponse.GetReply()
 
 		if msgResponse != nil && msgResponse.GetVerbId() == pdu.VerbExceptionMessage {
@@ -616,10 +610,10 @@ func channelStart(obj types.TGChannel) types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, types.TGDB_CHANNEL_ERROR, errMsg, "")
 	}
 	obj.EnablePing()
-	logger.Log(fmt.Sprint("Inside AbstractChannel:channelStart about to start channel Reader"))
+	logger.Debug(fmt.Sprint("Inside AbstractChannel:channelStart about to start channel Reader"))
 	go obj.GetReader().Start()
 	// TODO: Uncomment once Trace functionality is implemented and tested
-	//logger.Log(fmt.Sprint("Inside AbstractChannel:channelStart about to start channel Tracer"))
+	//logger.Debug(fmt.Sprint("Inside AbstractChannel:channelStart about to start channel Tracer"))
 	//go obj.GetTracer().Start()
 	logger.Log(fmt.Sprint("Returning AbstractChannel:channelStart"))
 	return nil
@@ -636,15 +630,15 @@ func channelStop(obj types.TGChannel, bForcefully bool) {
 	}
 
 	if bForcefully || obj.GetNoOfConnections() == 0 {
-		logger.Log(fmt.Sprint("AbstractChannel:channelStop stopping channel"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelStop stopping channel"))
 		obj.DisablePing()
-		logger.Log(fmt.Sprint("AbstractChannel:channelStop about to stop channel Reader"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelStop about to stop channel Reader"))
 		obj.GetReader().Stop()
 		// TODO: Uncomment once Trace functionality is implemented and tested
-		//logger.Log(fmt.Sprint("AbstractChannel:channelStop about to stop channel Tracer"))
+		//logger.Debug(fmt.Sprint("Inside AbstractChannel:channelStop about to stop channel Tracer"))
 		//obj.GetTracer().Stop()
 
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelStop about to CreateMessageForVerb()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelStop about to CreateMessageForVerb()"))
 		// Send the disconnect request. sendRequest will not receive a channel response since the channel will be disconnected.
 		msgRequest, err := pdu.CreateMessageForVerb(pdu.VerbDisconnectChannelRequest)
 		if err != nil {
@@ -660,7 +654,7 @@ func channelStop(obj types.TGChannel, bForcefully bool) {
 		err = obj.Send(msgRequest)
 		if err != nil {
 			logger.Error(fmt.Sprintf("ERROR: Inside AbstractChannel:channelStop VerbDisconnectChannelRequest send failed with '%s'", err.Error()))
-			//logger.Log(fmt.Sprintf("Inside AbstractChannel:channelStop about to CloseSocket() due to error in send(msgRequest)"))
+			//logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelStop about to CloseSocket() due to error in send(msgRequest)"))
 			// Execute Derived channel's method - Ignore Error Handling
 			_ = obj.CloseSocket()
 			if isChannelClosing(obj) {
@@ -670,7 +664,7 @@ func channelStop(obj types.TGChannel, bForcefully bool) {
 		}
 		obj.SetChannelLinkState(types.LinkClosing)
 
-		logger.Log(fmt.Sprint("Inside AbstractChannel:channelStop about to CloseSocket()"))
+		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelStop about to CloseSocket()"))
 		// Execute Derived channel's method - Ignore Error Handling
 		_ = obj.CloseSocket()
 	}
@@ -684,10 +678,10 @@ func channelTerminated(obj types.TGChannel, killMsg string) {
 	obj.ExceptionLock()
 	defer obj.ExceptionUnlock()
 
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTerminated about to terminate session/channel with '%s'", killMsg))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTerminated about to terminate session/channel with '%s'", killMsg))
 	obj.SetChannelLinkState(types.LinkTerminated)
 
-	logger.Log(fmt.Sprint("Inside AbstractChannel:channelTerminated about to CloseSocket()"))
+	logger.Debug(fmt.Sprint("Inside AbstractChannel:channelTerminated about to CloseSocket()"))
 	// Execute Derived channel's method - Ignore Error Handling
 	_ = obj.CloseSocket()
 	logger.Log(fmt.Sprintf("Returning AbstractChannel:channelTerminated w/ '%s'", killMsg))
@@ -697,18 +691,18 @@ func channelTerminated(obj types.TGChannel, killMsg string) {
 func channelTryRepeatConnect(obj types.TGChannel, sleepOnFirstInvocation bool) types.TGError {
 	logger.Log(fmt.Sprint("Entering AbstractChannel:channelTryRepeatConnect"))
 	cn := utils.GetConfigFromKey(utils.ChannelFTRetryIntervalSeconds)
-	//logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect config for ChannelFTRetryIntervalSeconds is '%+v", cn))
+	//logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect config for ChannelFTRetryIntervalSeconds is '%+v", cn))
 	connectInterval := obj.GetProperties().GetPropertyAsInt(cn)
 	cn = utils.GetConfigFromKey(utils.ChannelFTRetryCount)
-	//logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect config for ChannelFTRetryCount is '%+v", cn))
+	//logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect config for ChannelFTRetryCount is '%+v", cn))
 	retryCount := obj.GetProperties().GetPropertyAsInt(cn)
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect Trying to connnect %d times at interval of %d seconds to FTUrls", retryCount, connectInterval))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect Trying to connnect %d times at interval of %d seconds to FTUrls", retryCount, connectInterval))
 
 	reconnected := false
 	ftUrls := obj.GetPrimaryURL().GetFTUrls()
 	urlCount := len(ftUrls)
 	index := obj.GetConnectionIndex()
-	logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect current object's primary url '%s' has FTUrls as '%+v'", obj.GetPrimaryURL().GetUrlAsString(), ftUrls))
+	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect current object's primary url '%s' has FTUrls as '%+v'", obj.GetPrimaryURL().GetUrlAsString(), ftUrls))
 
 	for {
 		if urlCount > 0 {
@@ -717,16 +711,16 @@ func channelTryRepeatConnect(obj types.TGChannel, sleepOnFirstInvocation bool) t
 		}
 		// From here onwards, object's primary attributes will be used such as PrimaryUrl, LinkUrl etc.
 		urlStr := obj.GetPrimaryURL().GetUrlAsString()
-		logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect Infinite Loop to create a socket for URL: '%s'", urlStr))
+		logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect Infinite Loop to create a socket for URL: '%s'", urlStr))
 
 		for i := 0; i < retryCount; i++ {
-			logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect Attempt:%d to connect to URL:%s", i, urlStr))
+			logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect Attempt:%d to connect to URL:%s", i, urlStr))
 			if sleepOnFirstInvocation {
 				time.Sleep(time.Duration(connectInterval) * time.Second)
 				sleepOnFirstInvocation = false
 			}
 
-			logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to CreateSocket() on attempt:%d to URL:%s", i, urlStr))
+			logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to CreateSocket() on attempt:%d to URL:%s", i, urlStr))
 			// Execute Derived channel's method
 			err := obj.CreateSocket()
 			if err != nil {
@@ -736,7 +730,7 @@ func channelTryRepeatConnect(obj types.TGChannel, sleepOnFirstInvocation bool) t
 				continue
 			}
 
-			logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to OnConnect() on attempt:%d to URL:%s", i, urlStr))
+			logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect about to OnConnect() on attempt:%d to URL:%s", i, urlStr))
 			// Execute Derived channel's method
 			err = obj.OnConnect()
 			if err != nil {
@@ -746,7 +740,7 @@ func channelTryRepeatConnect(obj types.TGChannel, sleepOnFirstInvocation bool) t
 				continue
 			}
 			obj.SetConnectionIndex(index)
-			logger.Log(fmt.Sprintf("Returning AbstractChannel:channelTryRepeatConnect successfully created socket and executed OnConnect() on attempt:%d to URL:%s", i, urlStr))
+			logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect successfully created socket and executed OnConnect() on attempt:%d to URL:%s", i, urlStr))
 			reconnected = true
 			break
 		} // End of for loop for Retry Attempts
@@ -758,7 +752,7 @@ func channelTryRepeatConnect(obj types.TGChannel, sleepOnFirstInvocation bool) t
 		}
 
 		if index != obj.GetConnectionIndex() || reconnected {
-			logger.Log(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect breaking from Infinite Loop"))
+			logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelTryRepeatConnect breaking from Infinite Loop"))
 			break
 		}
 	} // End of Outer Infinite For loop

@@ -248,20 +248,20 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal read edgeBufLen as '%+v'", edgeBufLen))
+	logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal read edgeBufLen as '%+v'", edgeBufLen))
 
 	err = obj.AbstractEntityReadExternal(is)
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside Edge:ReadExternal read abstractEntity"))
+	logger.Debug(fmt.Sprint("Inside Edge:ReadExternal read abstractEntity"))
 
 	direction, err := is.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Edge:ReadExternal - unable to read direction w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal read direction as '%+v'", direction))
+	logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal read direction as '%+v'", direction))
 	if direction == 0 {
 		obj.SetDirectionType(types.DirectionTypeUnDirected)
 	} else if direction == 1 {
@@ -278,7 +278,7 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 		logger.Error(fmt.Sprintf("ERROR: Returning Edge:ReadExternal - unable to read fromNodeId w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal read fromNodeId as '%d'", fromNodeId))
+	logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal read fromNodeId as '%d'", fromNodeId))
 	refMap := is.(*iostream.ProtocolDataInputStream).GetReferenceMap()
 	if refMap != nil {
 		fromEntity = refMap[fromNodeId]
@@ -291,19 +291,19 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 			refMap[fromNodeId] = fNode
 		}
 		fromNode = fNode
-		logger.Log(fmt.Sprintf("Inside Edge:ReadExternal created new fromNode: '%+v'", fromNode))
+		logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal created new fromNode: '%+v'", fromNode))
 	} else {
 		fromNode = fromEntity.(*Node)
 	}
 	obj.SetFromNode(fromNode)
-	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal Edge has fromNode & StreamEntityCount is '%d'", len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
+	logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal Edge has fromNode & StreamEntityCount is '%d'", len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
 
 	toNodeId, err := is.(*iostream.ProtocolDataInputStream).ReadLong()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning Edge:ReadExternal - unable to read toNodeId w/ Error: '%+v'", err.Error()))
 		return err
 	}
-	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal read toNodeId as '%d'", toNodeId))
+	logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal read toNodeId as '%d'", toNodeId))
 	if refMap != nil {
 		toEntity = refMap[toNodeId]
 	}
@@ -315,12 +315,12 @@ func (obj *Edge) ReadExternal(is types.TGInputStream) types.TGError {
 			refMap[toNodeId] = tNode
 		}
 		toNode = tNode
-		logger.Log(fmt.Sprintf("Inside Edge:ReadExternal created new toNode: '%+v'", toNode))
+		logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal created new toNode: '%+v'", toNode))
 	} else {
 		toNode = toEntity.(*Node)
 	}
 	obj.SetToNode(toNode)
-	logger.Log(fmt.Sprintf("Inside Edge:ReadExternal Edge has toNode & StreamEntityCount is '%d'", len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
+	logger.Debug(fmt.Sprintf("Inside Edge:ReadExternal Edge has toNode & StreamEntityCount is '%d'", len(is.(*iostream.ProtocolDataInputStream).GetReferenceMap())))
 
 	obj.SetIsInitialized(true)
 	logger.Log(fmt.Sprintf("Returning Edge:ReadExternal w/ NO error, for edge: '%+v'", obj))
@@ -337,7 +337,7 @@ func (obj *Edge) WriteExternal(os types.TGOutputStream) types.TGError {
 	if err != nil {
 		return err
 	}
-	logger.Log(fmt.Sprint("Inside Edge:WriteExternal - exported base entity attributes"))
+	logger.Debug(fmt.Sprint("Inside Edge:WriteExternal - exported base entity attributes"))
 	// TODO: Revisit later - Check w/ TGDB Engineering team as what the difference should be for if-n-else conditions
 	// Write the edges ids
 	if obj.GetIsNew() {
