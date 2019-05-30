@@ -52,7 +52,6 @@ import com.tibco.tgdb.model.TGNodeType;
 /**
  * CRUD tests for timestamp data type index
  */
-@Ignore
 public class TimestampIndexTests extends LifecycleServer {
 
 	Object[][] data;
@@ -72,7 +71,7 @@ public class TimestampIndexTests extends LifecycleServer {
 	 * @throws Exception
 	 */
 	@Test(description = "Insert nodes with timestamp index")
-	public void testCreateTimestampData() throws Exception {
+	public void testCreateTimestampIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();
@@ -107,8 +106,8 @@ public class TimestampIndexTests extends LifecycleServer {
 	 */
 	
 	@Test(description = "Retrieve nodes and edge with timestamp index",
-		  dependsOnMethods = { "testCreateTimestampData" })
-	public void testReadTimestampData() throws Exception {
+		  dependsOnMethods = { "testCreateTimestampIndex" })
+	public void testReadTimestampIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();

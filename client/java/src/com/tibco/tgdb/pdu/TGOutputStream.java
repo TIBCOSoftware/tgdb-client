@@ -1,13 +1,6 @@
-package com.tibco.tgdb.pdu;
-
-import com.tibco.tgdb.exception.TGException;
-
-import java.io.DataOutput;
-import java.io.IOException;
-import java.io.UTFDataFormatException;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -24,8 +17,17 @@ import java.io.UTFDataFormatException;
  * Created on: 12/17/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGOutputStream.java 2343 2018-06-08 18:33:46Z ssubrama $
+ * SVN Id: $Id: TGOutputStream.java 3131 2019-04-25 23:21:34Z nimish $
  */
+
+package com.tibco.tgdb.pdu;
+
+import com.tibco.tgdb.exception.TGException;
+
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.UTFDataFormatException;
+
 
 public interface TGOutputStream extends  DataOutput {
 
@@ -165,5 +167,11 @@ public interface TGOutputStream extends  DataOutput {
      */
     public int writeCharsAt(int pos, String s) throws TGException;
 
+    /**
+     * Return a new constructed byte array of the data that is being streamed.
+     * @return
+     */
+    byte[] toByteArray();
 
+    void writeLongAsBytes(long value);
 }

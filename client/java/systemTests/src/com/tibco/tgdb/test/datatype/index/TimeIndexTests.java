@@ -43,7 +43,6 @@ import com.tibco.tgdb.model.TGNodeType;
 /**
  * CRUD tests for time data type index
  */
-@Ignore
 public class TimeIndexTests extends LifecycleServer {
 	
 	Object[][] data;
@@ -63,7 +62,7 @@ public class TimeIndexTests extends LifecycleServer {
 	 * @throws Exception
 	 */
 	@Test(description = "Insert nodes with time index")
-	public void testCreateTimeData() throws Exception {
+	public void testCreateTimeIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();
@@ -98,8 +97,8 @@ public class TimeIndexTests extends LifecycleServer {
 	 */
 	
 	@Test(description = "Retrieve nodes with time index",
-		  dependsOnMethods = { "testCreateTimeData" })
-	public void testReadTimeData() throws Exception {
+		  dependsOnMethods = { "testCreateTimeIndex" })
+	public void testReadTimeIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();

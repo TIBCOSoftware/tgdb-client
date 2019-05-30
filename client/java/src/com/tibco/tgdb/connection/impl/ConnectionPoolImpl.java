@@ -1,5 +1,6 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc.
+ * All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -11,12 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  * <p/>
- * File name : ConnectionPoolImpl.${EXT}
+ * File name: ConnectionPoolImpl.java
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionPoolImpl.java 2179 2018-03-29 21:49:54Z ssubrama $
+ * SVN Id: $Id: ConnectionPoolImpl.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
 
 
@@ -27,12 +29,14 @@ import com.tibco.tgdb.channel.TGChannelUrl;
 import com.tibco.tgdb.channel.impl.ChannelFactoryImpl;
 import com.tibco.tgdb.connection.TGConnection;
 import com.tibco.tgdb.connection.TGConnectionExceptionListener;
+import com.tibco.tgdb.connection.TGConnectionFactory.CONNECTION_TYPE;
 import com.tibco.tgdb.connection.TGConnectionPool;
 import com.tibco.tgdb.exception.TGConnectionTimeoutException;
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.utils.ConfigName;
 import com.tibco.tgdb.utils.TGProperties;
 
+import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -62,14 +66,19 @@ public class ConnectionPoolImpl implements TGConnectionPool{
     Map<Thread, TGConnection> consumers;
     ConnectionPoolState state;
     private ReadWriteLock adminLock = new ReentrantReadWriteLock();
+    
+    protected CONNECTION_TYPE type;
 
-    public ConnectionPoolImpl(TGChannelUrl url, int poolSize, TGProperties<String, String> properties) throws TGException
+    public ConnectionPoolImpl(TGChannelUrl url, int poolSize, TGProperties<String, String> properties, CONNECTION_TYPE _type) throws TGException
     {
         this.connPool   = new ArrayBlockingQueue<TGConnection>(poolSize, true);
         this.connlist   = new ArrayList<>();
         this.poolSize   = poolSize;
         this.properties = properties;
         this.consumers  = new HashMap<>();
+        
+        this.type = _type;
+        
         this.connectReserveTimeOut = Integer.parseInt(properties.getProperty(ConfigName.ConnectionReserveTimeoutSeconds));
         bUseDedicateChannel = Boolean.parseBoolean(properties.getProperty(ConfigName.ConnectionPoolUseDedicatedChannelPerConnection, "false"));
         TGChannel channel = null;
@@ -79,7 +88,35 @@ public class ConnectionPoolImpl implements TGConnectionPool{
             if ((channel == null) || (bUseDedicateChannel)) {
                 channel = channelFactory.createChannel(url, properties);
             }
-            TGConnection connection = new ConnectionImpl(this, channel, properties);
+            
+            TGConnection connection = null;
+            switch (type)
+            {
+            	case CONVENTIONAL: {
+            		connection = new ConnectionImpl(this, channel, properties);
+            		break;
+            	}
+            	case ADMIN: {
+            		try {
+                        String clsName = "com.tibco.tgdb.admin.impl.AdminConnectionImpl";
+                        Class klazz = Class.forName(clsName);
+                        Constructor  c = klazz.getConstructor(ConnectionPoolImpl.class, TGChannel.class, TGProperties.class);
+                        connection = (TGConnection) c.newInstance(this, channel, properties);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                        throw new TGException(e);
+                    }
+            		
+            		break;
+            	}
+            	default: {
+            		connection = new ConnectionImpl(this, channel, properties);
+            		break;
+            	}
+            		
+            }
+            
             connPool.add(connection);
             connlist.add(connection);
         }
@@ -215,11 +252,11 @@ public class ConnectionPoolImpl implements TGConnectionPool{
     }
 
 
-    void adminlock() {
+    public void adminlock() {
         adminLock.readLock().lock();
     }
 
-    void adminUnlock() {
+    public void adminUnlock() {
         adminLock.readLock().unlock();
     }
 }

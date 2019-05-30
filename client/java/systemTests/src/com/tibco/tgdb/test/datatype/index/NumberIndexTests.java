@@ -43,7 +43,6 @@ import com.tibco.tgdb.model.TGNodeType;
 /**
  * CRUD tests for number data type index
  */
-@Ignore
 public class NumberIndexTests extends LifecycleServer {
 
 	Object[][] data;
@@ -63,7 +62,7 @@ public class NumberIndexTests extends LifecycleServer {
 	 * @throws Exception
 	 */
 	@Test(description = "Insert nodes with number index")
-	public void testCreateNumberData() throws Exception {
+	public void testCreateNumberIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();
@@ -96,8 +95,8 @@ public class NumberIndexTests extends LifecycleServer {
 	 */
 	
 	@Test(description = "Retrieve nodes with number index",
-		  dependsOnMethods = { "testCreateNumberData" })
-	public void testReadNumberData() throws Exception {
+		  dependsOnMethods = { "testCreateNumberIndex" })
+	public void testReadNumberIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();

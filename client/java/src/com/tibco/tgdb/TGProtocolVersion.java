@@ -1,7 +1,5 @@
-package com.tibco.tgdb;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -18,8 +16,11 @@ package com.tibco.tgdb;
  * Created on: 12/24/14
  * Created by: suresh
  * </p>
- * SVN Id: $Id: TGProtocolVersion.java 622 2016-03-19 20:51:12Z ssubrama $
+ * SVN Id: $Id: TGProtocolVersion.java 3123 2019-04-25 21:48:54Z nimish $
  */
+
+package com.tibco.tgdb;
+
 public class TGProtocolVersion {
 
     final static byte MAJOR_VERSION = 1;

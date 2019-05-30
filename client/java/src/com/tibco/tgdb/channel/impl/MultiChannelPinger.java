@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -11,12 +11,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  * <p/>
- * File name : ChannelPinger.${EXT}
+ * File name: MultiChannelPinger.java
  * Created on: 1/6/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: MultiChannelPinger.java 2155 2018-03-19 04:31:41Z ssubrama $
+ * SVN Id: $Id: MultiChannelPinger.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
 
 

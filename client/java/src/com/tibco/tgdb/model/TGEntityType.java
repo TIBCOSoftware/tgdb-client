@@ -1,11 +1,6 @@
-package com.tibco.tgdb.model;
-
-import java.util.Collection;
-
-import com.tibco.tgdb.pdu.TGSerializable;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -20,8 +15,16 @@ import com.tibco.tgdb.pdu.TGSerializable;
  *
  * File name : TGEntityType.java
  * Created by: suresh
- * SVN Id: $Id: TGEntityType.java 2344 2018-06-11 23:21:45Z ssubrama $
+ * Created on: 01/24/2015 
+ * SVN Id: $Id: TGEntityType.java 3142 2019-04-26 00:15:06Z nimish $
  */
+
+package com.tibco.tgdb.model;
+
+import java.util.Collection;
+
+import com.tibco.tgdb.pdu.TGSerializable;
+
 
 public interface TGEntityType extends TGSystemObject {
 

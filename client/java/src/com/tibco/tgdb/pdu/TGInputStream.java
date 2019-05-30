@@ -1,12 +1,6 @@
-package com.tibco.tgdb.pdu;
-
-import java.io.DataInput;
-import java.io.EOFException;
-import java.io.IOException;
-import java.util.Map;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -23,8 +17,17 @@ import java.util.Map;
  * Created on: 12/21/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGInputStream.java 771 2016-05-05 11:40:52Z vchung $
+ * SVN Id: $Id: TGInputStream.java 3131 2019-04-25 23:21:34Z nimish $
  */
+
+package com.tibco.tgdb.pdu;
+
+import java.io.DataInput;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.Map;
+
+
 public interface TGInputStream extends DataInput
 {
 

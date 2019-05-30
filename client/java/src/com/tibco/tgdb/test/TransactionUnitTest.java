@@ -1,14 +1,22 @@
 /**
- * Copyright (c) 2016 TIBCO Software Inc.
- * All rights reserved.
- * <p/>
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
+ * in compliance with the License.
+ * A copy of the License is included in the distribution package with this file.
+ * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  * File name : TransactionUnitTest.${EXT}
- * Created on: 10/2/16
+ * Created on: 10/02/2016
  * Created by: suresh
- * <p/>
- * SVN Id: $Id$
+ * SVN Id: $Id: TransactionUnitTest.java 3148 2019-04-26 00:35:38Z sbangar $
  */
-
 
 package com.tibco.tgdb.test;
 
@@ -29,7 +37,7 @@ import java.util.TimeZone;
 
 public class TransactionUnitTest {
 
-    public String url = "tcp://scott@localhost:8223";
+    public String url = "tcp://scott@localhost:8222";
     //public String url = "tcp://scott@10.98.201.111:8228/{connectTimeout=30}";
     //public String url = "tcp://scott@[fe80::1c15:49f2:b621:7ced%en0:8222]";
     //public String url = "tcp://scott@localhost6:8228";
@@ -80,7 +88,7 @@ public class TransactionUnitTest {
         //testCase1_1();
 
         testCase1();
-
+        testCase1_1();
 
         testCase1_2();
         testCase2();
@@ -275,8 +283,8 @@ public class TransactionUnitTest {
 
             TGNode node = createNode(basicNodeType);
 
-            node.setAttribute("name", keyName1); //name is the primary key
-            node.setAttribute("age", 30);
+            node.setAttribute("name", "john"); //name is the primary key
+            node.setAttribute("age", 40);
             node.setAttribute("nickname", "美麗");
             node.setAttribute("createtm", new Calendar
                     .Builder()
@@ -286,6 +294,7 @@ public class TransactionUnitTest {
 
             node.setAttribute("networth", new BigDecimal("2378989.567"));
             node.setAttribute("flag", 'D');
+            node.setAttribute("ssn", "123-456-7890");
 
             conn.insertEntity(node);
             conn.commit();
@@ -301,7 +310,7 @@ public class TransactionUnitTest {
     {
         System.out.println("Test Case 1_0: Get the Entity that we inserted");
         TGKey key = gof.createCompositeKey("basicnode");
-        key.setAttribute("name", "john2");
+        key.setAttribute("name", "john");
         TGQueryOption option = TGQueryOption.createQueryOption();
         //option.setPrefetchSize(0); //Test for Server Crash
         /*
@@ -315,6 +324,7 @@ public class TransactionUnitTest {
             System.out.println("John's age is :" + entity.getAttribute("age").getAsInt());
             System.out.println("John's createtm:" + entity.getAttribute("createtm").getValue().toString());
             System.out.println("John's networth:" + entity.getAttribute("networth").getValue().toString());
+            System.out.println("John's ssn:" + entity.getAttribute("ssn").getValue().toString());
         }
         john = TGNode.class.cast(entity);
 

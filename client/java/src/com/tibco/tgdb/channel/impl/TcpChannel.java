@@ -1,42 +1,61 @@
-package com.tibco.tgdb.channel.impl;
-
-import com.tibco.tgdb.channel.TGChannelUrl;
-import com.tibco.tgdb.exception.TGAuthenticationException;
-import com.tibco.tgdb.exception.TGChannelDisconnectedException;
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.log.TGLogger;
-import com.tibco.tgdb.pdu.TGMessage;
-import com.tibco.tgdb.pdu.TGMessageFactory;
-import com.tibco.tgdb.pdu.VerbId;
-import com.tibco.tgdb.pdu.impl.*;
-import com.tibco.tgdb.utils.*;
-
-import java.io.*;
-import java.net.Socket;
-import java.net.SocketException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
+ * Copyright 2019 TIBCO Software Inc.
+ * All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
  * A copy of the License is included in the distribution package with this file.
  * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  * <p/>
- * File name :TcpChannel
+ * File name: DefaultSocketImpl.java
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TcpChannel.java 2316 2018-04-26 23:49:37Z ssubrama $
+ * SVN Id: $Id: TcpChannel.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
+
+package com.tibco.tgdb.channel.impl;
+
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.net.Socket;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import com.tibco.tgdb.TGVersion;
+import com.tibco.tgdb.channel.TGChannelUrl;
+import com.tibco.tgdb.exception.TGAuthenticationException;
+import com.tibco.tgdb.exception.TGChannelDisconnectedException;
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.exception.TGVersionMismatchException;
+import com.tibco.tgdb.log.TGLogger;
+import com.tibco.tgdb.pdu.TGMessage;
+import com.tibco.tgdb.pdu.TGMessageFactory;
+import com.tibco.tgdb.pdu.VerbId;
+import com.tibco.tgdb.pdu.impl.AuthenticateRequest;
+import com.tibco.tgdb.pdu.impl.AuthenticateResponse;
+import com.tibco.tgdb.pdu.impl.ExceptionMessage;
+import com.tibco.tgdb.pdu.impl.HandshakeRequest;
+import com.tibco.tgdb.pdu.impl.HandshakeResponse;
+import com.tibco.tgdb.pdu.impl.HandshakeResponse.ResponseStatus;
+import com.tibco.tgdb.pdu.impl.SessionForcefullyTerminated;
+import com.tibco.tgdb.utils.ConfigName;
+import com.tibco.tgdb.utils.HexUtils;
+import com.tibco.tgdb.utils.TGConstants;
+import com.tibco.tgdb.utils.TGEnvironment;
+import com.tibco.tgdb.utils.TGProperties;
+
+
 public class TcpChannel extends AbstractChannel {
 
     final  Lock shutdownLock = new ReentrantLock();
@@ -171,6 +190,15 @@ public class TcpChannel extends AbstractChannel {
         if (msg.getVerbId() == VerbId.ExceptionMessage) {
             throw TGException.buildException((ExceptionMessage) msg);
         }
+        
+        if (msg instanceof HandshakeResponse)
+        {
+        	if (((HandshakeResponse)(msg)).getResponseStatus() == ResponseStatus.ChallengeFailed)
+        	{
+        		String errorMessage = ((HandshakeResponse)(msg)).getErrorMessage();
+        		throw new TGVersionMismatchException(errorMessage);
+        	}
+        }
         return msg;
     }
 
@@ -236,14 +264,24 @@ public class TcpChannel extends AbstractChannel {
         if (response.getResponseStatus() != HandshakeResponse.ResponseStatus.AcceptChallenge) {
             throw new TGException(String.format("%s:Handshake Failed. Cannot connect to the server at:%s","TGDB-HANDSHAKE-ERR", linkURL.getUrlAsString()));
         }
-        int challenge = response.getChallenge();
+        
+        //
+        // Validate the version specific information on the response object
+        //
+        validateHandshakeResponseVersion (response);
+        
+        
+        long challenge = response.getChallenge();
 
-        challenge = challenge * 2 / 3;
+        long jcVersion = TGVersion.getInstance().getAsLong();
+        challenge = jcVersion;
+        
 
         request.updateSequenceAndTimeStamp(-1);
         request.setRequestType(HandshakeRequest.RequestType.ChallengeAccepted);
         request.setSslMode(sslMode);
         request.setChallenge(challenge);
+        
         msg = this.requestReply(request);
         if (!(msg instanceof HandshakeResponse)) {
             if (msg instanceof SessionForcefullyTerminated) {
@@ -265,7 +303,43 @@ public class TcpChannel extends AbstractChannel {
 
     }
 
-    protected void doAuthenticate() throws TGException
+    private void validateHandshakeResponseVersion(HandshakeResponse response) throws TGVersionMismatchException {
+    	long serverVersion = response.getChallenge();
+		//ServerVersionInfo serverVersionInfo = new ServerVersionInfo(serverVersion);
+    	TGVersion serverVersionInfo = TGVersion.getInstanceFromLong(serverVersion);
+		
+		//System.out.println ("Server Version Info: " + serverVersionInfo.toString());
+		
+		TGVersion javaClientVersion = TGVersion.getInstance();
+		
+		byte jcMajor = javaClientVersion.getMajor();
+		byte jcMinor = javaClientVersion.getMinor();
+		byte jcUpdate = javaClientVersion.getUpdate();
+		
+		byte sMajor = serverVersionInfo.getMajor();
+		byte sMinor = serverVersionInfo.getMinor();
+		byte sUpdate = serverVersionInfo.getUpdate();
+		
+		
+		//
+		// Currently, the check is for the exact version match between the server, and Java-Client;
+		// in future, the validation will be enhanced to support the range of versions.
+		//
+		//if ((jcMajor == sMajor) && (jcMinor == sMinor) && (jcUpdate == sUpdate))
+		
+		if (javaClientVersion.equals(serverVersionInfo))
+		{}
+		else {
+			String jcVersionString = "Major: " + jcMajor + " Minor: " + jcMinor + " Update: " + jcUpdate;
+			String serverVersionString = "Major: " + sMajor + " Minor: " + sMinor + " Update: " + sUpdate;
+			String strExceptionMessage = "Java-Client-Version and Server-Version are not the exact match. Java-Client-Version-Detail: " + jcVersionString + " and Server-Version-Detail: " + serverVersionString; 
+			throw new TGVersionMismatchException(strExceptionMessage);
+		}
+		
+		
+	}
+
+	protected void doAuthenticate() throws TGException
     {
         AuthenticateRequest request = (AuthenticateRequest) TGMessageFactory.getInstance().createMessage(VerbId.AuthenticateRequest);
         AuthenticateResponse response = null;
@@ -277,6 +351,8 @@ public class TcpChannel extends AbstractChannel {
         if (response.isSuccess()) {
             this.authToken = response.getAuthToken();
             this.sessionId = response.getSessionId();
+            this.dataCryptographer = new DataCryptoGrapher(sessionId, response.getServerCertificateBuffer());
+
             gLogger.log(TGLogger.TGLevel.Info, "Connected successfully using user:" + this.getUserName());
             return;
         }

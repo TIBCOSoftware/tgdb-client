@@ -1,9 +1,6 @@
-package com.tibco.tgdb.model;
-
-import com.tibco.tgdb.pdu.TGSerializable;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -18,8 +15,14 @@ import com.tibco.tgdb.pdu.TGSerializable;
  *
  * File name : TGSystemObject.java
  * Created by: suresh
- * SVN Id: $Id: TGSystemObject.java 622 2016-03-19 20:51:12Z ssubrama $
+ * Created on: 04/16/2016
+ * SVN Id: $Id: TGSystemObject.java 3143 2019-04-26 00:16:32Z nimish $
  */
+
+package com.tibco.tgdb.model;
+
+import com.tibco.tgdb.pdu.TGSerializable;
+
 
 public interface TGSystemObject extends TGSerializable{
 
@@ -29,7 +32,7 @@ public interface TGSystemObject extends TGSerializable{
     	NodeType(1),
         EdgeType(2),
         Index(3),
-        Prinicapl(4),
+        Principle(4),
         Role(5),
         Sequence(6),
         MaxSysObjectTypes(7);

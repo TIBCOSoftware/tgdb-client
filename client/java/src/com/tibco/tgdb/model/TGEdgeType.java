@@ -1,7 +1,7 @@
 package com.tibco.tgdb.model;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -15,8 +15,9 @@ package com.tibco.tgdb.model;
  * limitations under the License.
 
  * File name : TGEdgeType.java
+ * Created on: 01/22/2015
  * Created by: suresh
- * SVN Id: $Id: TGEdgeType.java 1583 2017-08-10 04:16:44Z vchung $
+ * SVN Id: $Id: TGEdgeType.java 3142 2019-04-26 00:15:06Z nimish $
  */
 
 public interface TGEdgeType extends TGEntityType {

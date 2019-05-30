@@ -1,7 +1,7 @@
-package com.tibco.tgdb.pdu;
+
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -18,8 +18,10 @@ package com.tibco.tgdb.pdu;
  * Created on: 2/5/15
  * Created by: suresh
  * <p>
- * SVN Id: $Id: TGAuthenticatedMessage.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: TGAuthenticatedMessage.java 3131 2019-04-25 23:21:34Z nimish $
  */
+
+package com.tibco.tgdb.pdu;
 
 public interface TGAuthenticatedMessage extends TGMessage {
 }

@@ -1,20 +1,6 @@
-package com.tibco.tgdb.pdu.impl;
-
-import com.tibco.tgdb.TGProtocolVersion;
-import com.tibco.tgdb.exception.TGBadMagic;
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.exception.TGInvalidMessageLength;
-import com.tibco.tgdb.exception.TGProtocolNotSupported;
-import com.tibco.tgdb.pdu.TGInputStream;
-import com.tibco.tgdb.pdu.TGMessage;
-import com.tibco.tgdb.pdu.TGOutputStream;
-import com.tibco.tgdb.pdu.VerbId;
-
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -31,8 +17,25 @@ import java.util.concurrent.atomic.AtomicLong;
  * Created on: 1/31/15
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AbstractProtocolMessage.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: AbstractProtocolMessage.java 3132 2019-04-25 23:28:52Z nimish $
  */
+
+package com.tibco.tgdb.pdu.impl;
+
+import com.tibco.tgdb.TGProtocolVersion;
+import com.tibco.tgdb.exception.TGBadMagic;
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.exception.TGInvalidMessageLength;
+import com.tibco.tgdb.exception.TGProtocolNotSupported;
+import com.tibco.tgdb.pdu.TGInputStream;
+import com.tibco.tgdb.pdu.TGMessage;
+import com.tibco.tgdb.pdu.TGOutputStream;
+import com.tibco.tgdb.pdu.VerbId;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
+
 public abstract class AbstractProtocolMessage implements TGMessage {
 
     static AtomicLong gAtomicSequenceNumber = new AtomicLong();
@@ -46,6 +49,11 @@ public abstract class AbstractProtocolMessage implements TGMessage {
 
     int bufLength = -1;
     short dataOffset = -1;
+
+    byte[] bytesBuffer;
+    TGOutputStream os;
+    
+    final ReentrantLock lock = new ReentrantLock();
 
 
     protected AbstractProtocolMessage() {
@@ -130,6 +138,7 @@ public abstract class AbstractProtocolMessage implements TGMessage {
             this.sequenceNo = gAtomicSequenceNumber.getAndIncrement();
             this.timestamp = timestamp;
             bufLength = -1;
+            bytesBuffer = null;
             return;
         }
         throw new TGException("Mutating a readonly message");
@@ -138,18 +147,30 @@ public abstract class AbstractProtocolMessage implements TGMessage {
 
     public final byte[] toBytes() throws TGException, IOException
     {
-        TGOutputStream os = new ProtocolDataOutputStream();
-
-        writeHeader(os);
-        writePayload(os);
-
-        bufLength = os.getLength();
-
-        os.writeIntAt(0, bufLength);
-
-
-
-        return os.getBuffer();
+    	lock.lock();
+    	
+    	try 
+    	{
+			if (bytesBuffer == null)
+	    	{
+		    	os = new ProtocolDataOutputStream();
+		
+		        writeHeader(os);
+		        writePayload(os);
+		
+		        bufLength = os.getLength();
+		
+		        os.writeIntAt(0, bufLength);
+		
+		        bytesBuffer = os.getBuffer();
+	    	}
+	
+	        return bytesBuffer;
+    	}
+    	finally
+    	{
+    		lock.unlock();
+    	}
     }
 
     public final int getMessageByteBufLength() {

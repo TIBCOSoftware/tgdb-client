@@ -16,10 +16,14 @@ import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
@@ -559,28 +563,36 @@ public class ConnectionTests {
 	/**
 	 * Get all IPv6 addresses available on the current machine
 	 * @throws UnknownHostException 
+	 * @throws SocketException 
 	 */
 	@DataProvider(name = "ipv6Data")
-	public Object[][] getIPv6() throws UnknownHostException {
-		String[] host = new String[2];
-		host[0] = InetAddress.getLocalHost().getHostName();
-		host[1] = "localhost"; // get ipv6 loopback address as well
-		int port = 8223;
+	public Object[][] getIPv6() throws UnknownHostException, SocketException {
+		int port = 8223; // get port of ipv6 listener
 		
 		List<Object[]> urlParams = new ArrayList<Object[]>();
 		System.setProperty("java.net.preferIPv6Addresses", "true");
 		
-		// Get all the IPv6 addresses on the local machine
-		for (int i=0; i<host.length; i++) {
-			urlParams.add(new Object[] {host[i],port});
-			InetAddress[] addr = InetAddress.getAllByName(host[i]);
-	    	for (InetAddress address : addr) {
-	    		if (address instanceof Inet6Address) {
-	    			String tmpAddr = address.getHostAddress().substring(0, (address.getHostAddress().contains("%")?address.getHostAddress().indexOf('%'):address.getHostAddress().length()));
-	    			urlParams.add(new Object[] {tmpAddr,port});
-	    		}
-	    	}
+		Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+		
+		for (NetworkInterface nif : Collections.list(nets)) {
+			if (nif == null) continue;
+			if (!nif.isUp()) continue;
+			if (nif.isPointToPoint()) continue;
+			if (nif.getName().startsWith("awdl")) continue;
+			
+			Enumeration<InetAddress> addrs = nif.getInetAddresses();
+			
+			while (addrs.hasMoreElements()) {
+				InetAddress address = addrs.nextElement(); 
+				if (address instanceof Inet6Address) {
+					//Sneha: Keeping the portion of IPV6 address after % sign as well,as testIPv6Connet test fails on MACOSX without it.
+					//This change needs to be tested on other Platforms.
+					String tmpAddr = address.getHostAddress();
+					urlParams.add(new Object[] {tmpAddr,port});
+				}
+			}
 		}
+		
 		return (Object[][])urlParams.toArray(new Object[urlParams.size()][2]);
 	}
 	

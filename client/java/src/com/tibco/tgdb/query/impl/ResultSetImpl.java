@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -11,33 +11,32 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * <p/>
+ *
  * File name : ResultSetImpl.${EXT}
- * Created on: 5/1/16
- * Created by: chung 
- * <p/>
- * SVN Id: $Id: ConnectionImpl.java 748 2016-04-25 17:10:38Z vchung $
+ * Created on: 05/01/2016
+ * Created by: chung
+ * SVN Id: $Id: ResultSetImpl.java 3149 2019-04-26 00:45:37Z sbangar $
  */
 
 package com.tibco.tgdb.query.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import com.tibco.tgdb.connection.TGConnection;
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
-import com.tibco.tgdb.model.TGEntity;
 import com.tibco.tgdb.query.TGResultSet;
 
-
-public class ResultSetImpl implements TGResultSet {
+public class ResultSetImpl<T> implements TGResultSet<T> {
     static TGLogger gLogger        = TGLogManager.getInstance().getLogger();
 
     private TGConnection conn;
     private int resultId;
-    private List<TGEntity> resultList = new ArrayList<TGEntity>();
+    private List<T> resultList = new ArrayList<T>();
     private boolean isOpen = false;
     private int currPos = 0;
 
@@ -53,7 +52,7 @@ public class ResultSetImpl implements TGResultSet {
         return isOpen;
     }
 
-    public void addEntityToResultSet(TGEntity entity) {
+    public void addEntityToResultSet(T entity) {
         resultList.add(entity);
     }
 
@@ -100,7 +99,7 @@ public class ResultSetImpl implements TGResultSet {
 	}
 
 	@Override
-	public TGEntity first() {
+	public T first() {
 		if (isOpen == false) {
 			return null;
 		}
@@ -111,7 +110,7 @@ public class ResultSetImpl implements TGResultSet {
 	}
 
 	@Override
-	public TGEntity last() {
+	public T last() {
 		if (isOpen == false) {
 			return null;
 		}
@@ -122,7 +121,7 @@ public class ResultSetImpl implements TGResultSet {
 	}
 
 	@Override
-	public TGEntity prev() {
+	public T prev() {
 		if (isOpen == false) {
 			return null;
 		}
@@ -134,7 +133,7 @@ public class ResultSetImpl implements TGResultSet {
 	}
 
 	@Override
-	public TGEntity next() {
+	public T next() {
 		if (isOpen == false) {
 			return null;
 		}
@@ -156,7 +155,7 @@ public class ResultSetImpl implements TGResultSet {
 	}
 
 	@Override
-	public TGEntity getAt(int position) {
+	public T getAt(int position) {
 		if (isOpen == false) {
 			return null;
 		}
@@ -175,5 +174,14 @@ public class ResultSetImpl implements TGResultSet {
 		if (newPos >=0 && newPos < resultList.size()) {
 			currPos = newPos;
 		}
+	}
+	
+	Collection<T> getResultCollection() {
+		return resultList;
+	}
+	
+	public Collection<T> toCollection() {
+		return Collections.unmodifiableCollection(resultList);
+		
 	}
 }

@@ -1,7 +1,6 @@
-package com.tibco.tgdb.pdu;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -18,8 +17,11 @@ package com.tibco.tgdb.pdu;
  * Created on: 12/26/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: VerbId.java 2576 2018-10-17 02:36:19Z ssubrama $
+ * SVN Id: $Id: VerbId.java 3131 2019-04-25 23:21:34Z nimish $
  */
+
+package com.tibco.tgdb.pdu;
+
 public enum VerbId {
 
     /**
@@ -60,6 +62,14 @@ public enum VerbId {
      */
     TraverseRequest(13, com.tibco.tgdb.pdu.impl.TraverseRequest.class),
     TraverseResponse(14, com.tibco.tgdb.pdu.impl.TraverseResponse.class),
+    
+    /**
+     * Admin Request/Response verbs
+     */
+    AdminRequest(15, com.tibco.tgdb.admin.impl.AdminRequest.class),
+    AdminResponse(16, com.tibco.tgdb.admin.impl.AdminResponse.class),
+
+    
 
     /**
      * Retrieve meta data
@@ -98,6 +108,8 @@ public enum VerbId {
 
     DumpStacktraceRequest = 39,
      */
+    DumpStacktraceRequest(39, com.tibco.tgdb.admin.impl.DumpStacktraceRequest.class),
+
 
     /**
      * Disconnect Request verbs
@@ -106,6 +118,8 @@ public enum VerbId {
 
     SessionForcefullyTerminated(41, com.tibco.tgdb.pdu.impl.SessionForcefullyTerminated.class),
 
+    DecryptBufferRequest(44, com.tibco.tgdb.pdu.impl.DecryptBufferRequest.class),
+    DecryptBufferResponse(45, com.tibco.tgdb.pdu.impl.DecryptBufferResponse.class),
     
     /**
      * Unknown Exception Message on the server.

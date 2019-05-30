@@ -1,15 +1,5 @@
-package com.tibco.tgdb.pdu.impl;
-
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.pdu.TGOutputStream;
-import com.tibco.tgdb.utils.TGConstants;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UTFDataFormatException;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -26,8 +16,19 @@ import java.io.UTFDataFormatException;
  * Created on: 1/31/15
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: ProtocolDataOutputStream.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: ProtocolDataOutputStream.java 3140 2019-04-25 23:59:24Z nimish $
  */
+
+package com.tibco.tgdb.pdu.impl;
+
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.pdu.TGOutputStream;
+import com.tibco.tgdb.utils.TGConstants;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UTFDataFormatException;
+
 
 public class ProtocolDataOutputStream extends OutputStream implements TGOutputStream {
 
@@ -288,6 +289,22 @@ public class ProtocolDataOutputStream extends OutputStream implements TGOutputSt
             buffer[count - i] = (byte) value;
     }
 
+    public final void writeLongAsBytes(long value)
+    {
+        if (count + 8 > buflen) ensure(8);
+
+
+        buffer[count] = (byte) (value);
+        buffer[count + 1] = (byte) (value >> 8);
+        buffer[count + 2] = (byte) (value >> 16);
+        buffer[count + 3] = (byte) (value >> 24);
+        buffer[count + 4] = (byte) (value >> 32);
+        buffer[count + 5] = (byte) (value >> 40);
+        buffer[count + 6] = (byte) (value >> 48);
+        buffer[count + 7] = (byte) (value >> 56);
+        count += 8;
+    }
+
     /*
      *
      */
@@ -441,6 +458,13 @@ public class ProtocolDataOutputStream extends OutputStream implements TGOutputSt
             pos = writeCharAt(pos, v);
         }
         return pos;
+    }
+
+    public byte[] toByteArray()
+    {
+        byte[] outbuf = new byte[this.count];
+        System.arraycopy(this.buffer, 0, outbuf, 0, count);;
+        return outbuf;
     }
 
 }

@@ -133,14 +133,15 @@ public class StringPKeyTests {
 		
 		Assert.assertEquals(nodeAllAttrsType.getPKeyAttributeDescriptors()[0].getName(), "stringAttr");
 		Object[][] data = this.getStringData();
-		List<TGNode> nodes = new ArrayList<TGNode>();
+		//List<TGNode> nodes = new ArrayList<TGNode>();
 		for (int i=0; i<data.length; i++) {
 			
 			TGNode node = gof.createNode(nodeAllAttrsType);
 			node.setAttribute("stringAttr", data[i][0]);
-			//System.out.println("CREATE ATTR:" + data[i][0]);
-			nodes.add(node);
+			System.out.printf("CREATE ATTR[%d]: %s\n", i, data[i][0]);
+			//nodes.add(node);
 			conn.insertEntity(node);
+
 		}
 		conn.commit();
 		conn.disconnect();

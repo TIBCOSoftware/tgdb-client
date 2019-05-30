@@ -79,7 +79,8 @@ public class QueryGraph {
 			
 			System.out.printf("Querying for member born between %d and %d\n", startYear, endYear);
             String queryString = "@nodetype = 'houseMemberType' and yearBorn > " + startYear + " and yearBorn < " + endYear + ";";
-            TGResultSet resultSet = conn.executeQuery(queryString, null);
+            //TODO : SSB : changed as per latest 2.0.1
+            TGResultSet<TGEntity> resultSet = conn.executeQuery(queryString, null);
 
       		if (resultSet != null) {
                 while (resultSet.hasNext()) {

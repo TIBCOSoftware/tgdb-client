@@ -1,14 +1,6 @@
-package com.tibco.tgdb.pdu.impl;
-
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.pdu.TGInputStream;
-import com.tibco.tgdb.pdu.TGOutputStream;
-import com.tibco.tgdb.pdu.VerbId;
-
-import java.io.IOException;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -25,23 +17,47 @@ import java.io.IOException;
  * Created on: 12/24/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: HandshakeResponse.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: HandshakeResponse.java 3138 2019-04-25 23:53:21Z nimish $
  */
+
+package com.tibco.tgdb.pdu.impl;
+
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.pdu.TGInputStream;
+import com.tibco.tgdb.pdu.TGOutputStream;
+import com.tibco.tgdb.pdu.VerbId;
+
+import java.io.IOException;
+
 public class HandshakeResponse extends AbstractProtocolMessage {
 
-    int challenge;
+    long challenge;
     ResponseStatus responseStatus;
+    long version;
+    String errorMessage;
 
-    @Override
+    public String getErrorMessage() {
+		return errorMessage;
+	}
+    
+	public long getVersion() {
+		return version;
+	}
+
+	public void setVersion(long version) {
+		this.version = version;
+	}
+
+	@Override
     public VerbId getVerbId() {
         return VerbId.HandShakeResponse;
     }
 
-    public int getChallenge() {
+    public long getChallenge() {
         return challenge;
     }
 
-    public void setChallenge(int c) {
+    public void setChallenge(long c) {
         challenge = c;
     } //For testing purpose
 
@@ -62,18 +78,26 @@ public class HandshakeResponse extends AbstractProtocolMessage {
     protected void writePayload(TGOutputStream os) throws TGException, IOException {
         //This is purely for testing. Client never writes out the response.
         os.writeByte(responseStatus.ordinal());
-        os.writeInt(challenge);
+        os.writeLong(challenge);
     }
 
     @Override
     protected void readPayload(TGInputStream is) throws TGException, IOException {
-        this.responseStatus = ResponseStatus.values()[(int) is.readByte()];
-        this.challenge = is.readInt();
+    	byte byteRead = is.readByte();
+        this.responseStatus = ResponseStatus.values()[(int) byteRead];
+        this.challenge = is.readLong();
+    	if (this.responseStatus == ResponseStatus.ChallengeFailed) 
+        {
+    		byte[] readBytes = is.readBytes();
+    		errorMessage = new String (readBytes);
+    		return;
+        }
     }
 
     public enum ResponseStatus {
         Invalid,
         AcceptChallenge,
-        ProceedWithAuthentication
+        ProceedWithAuthentication,
+        ChallengeFailed
     }
 }

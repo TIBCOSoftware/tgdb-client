@@ -23,12 +23,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -140,7 +143,8 @@ public class ConnectionTests {
 				tgWorkingDir + "/Connection.cmd");
 
 		// Start admin console and connect via IPv6
-		String console = TGAdmin.invoke(tgServer, tgServer.getNetListeners()[1].getName(), tgWorkingDir + "/admin.ipv6.log", null, cmdFile.getAbsolutePath(), -1, 10000);
+		//Sneha: Earlier call for invoke was incorrect as we need to use host and port passed to the method in order to connect
+		String console = TGAdmin.invoke(tgServer.getHome().toString(), "tcp://[" + host +":"+port +"]", tgServer.getSystemUser(), tgServer.getSystemPwd(), tgWorkingDir + "/admin.ipv6.log", null, cmdFile.getAbsolutePath(), -1, 10000); 
 		//System.out.println(console);
 
 		Assert.assertTrue(console.contains(adminConnectSuccessMsg), "Admin did not connect to server");
@@ -301,10 +305,6 @@ public class ConnectionTests {
 	@DataProvider(name = "ipv6Data")
 	public Object[][] getIPv6() throws TGGeneralException, IOException {
 		
-		String[] host = new String[2];
-		host[0] = InetAddress.getLocalHost().getHostName();
-		host[1] = "localhost"; // get ipv6 loopback address as well
-		
 		// We need to get a new server here to get the port
 		// since @DataProvider might run before @BeforeSuite tgServer might not exist yet
 		TGServer tgTempServer = new TGServer(tgHome);
@@ -314,17 +314,27 @@ public class ConnectionTests {
 		List<Object[]> urlParams = new ArrayList<Object[]>();
 		System.setProperty("java.net.preferIPv6Addresses", "true");
 		
-		// Get all the IPv6 addresses on the local machine
-		for (int i=0; i<host.length; i++) {
-			urlParams.add(new Object[] {host[i],port});
-			InetAddress[] addr = InetAddress.getAllByName(host[i]);
-	    	for (InetAddress address : addr) {
-	    		if (address instanceof Inet6Address) {
-	    			String tmpAddr = address.getHostAddress().substring(0, (address.getHostAddress().contains("%")?address.getHostAddress().indexOf('%'):address.getHostAddress().length()));
-	    			urlParams.add(new Object[] {tmpAddr,port});
-	    		}
-	    	}
+		Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+		
+		for (NetworkInterface nif : Collections.list(nets)) {
+			if (nif == null) continue;
+			if (!nif.isUp()) continue;
+			if (nif.isPointToPoint()) continue;
+			if (nif.getName().startsWith("awdl")) continue;
+
+			Enumeration<InetAddress> addrs = nif.getInetAddresses();
+			
+			while (addrs.hasMoreElements()) {
+				InetAddress address = addrs.nextElement();
+				if (address instanceof Inet6Address) {
+					//Sneha: Keeping the portion of IPV6 address after % sign as well,as testIPv6Connet test fails on MACOSX without it.
+					//This change needs to be tested on other Platforms.
+					String tmpAddr = address.getHostAddress();
+					urlParams.add(new Object[] {tmpAddr,port});
+				}
+			}
 		}
+	
 		return (Object[][])urlParams.toArray(new Object[urlParams.size()][2]);
 	}
 	

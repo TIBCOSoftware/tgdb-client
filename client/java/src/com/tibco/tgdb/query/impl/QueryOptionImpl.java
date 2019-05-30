@@ -1,6 +1,5 @@
-package com.tibco.tgdb.query.impl;
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
@@ -13,9 +12,13 @@ package com.tibco.tgdb.query.impl;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name : TGQueryOption.java
- * SVN Id: $Id$
+ * File name : QueryOptionImpl.${EXT}
+ * Created on: 03/09/2016
+ * Created by: suresh
+ * SVN Id: $Id: QueryOptionImpl.java 3149 2019-04-26 00:45:37Z sbangar $
  */
+
+package com.tibco.tgdb.query.impl;
 
 import com.tibco.tgdb.query.TGQueryOption;
 import com.tibco.tgdb.utils.SortedProperties;

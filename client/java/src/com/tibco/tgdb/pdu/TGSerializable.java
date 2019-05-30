@@ -1,12 +1,7 @@
-package com.tibco.tgdb.pdu;
-
-import com.tibco.tgdb.exception.TGException;
-
-import java.io.IOException;
 
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -23,8 +18,15 @@ import java.io.IOException;
  * Created on: 1/31/15
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGSerializable.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: TGSerializable.java 3131 2019-04-25 23:21:34Z nimish $
  */
+
+package com.tibco.tgdb.pdu;
+
+import com.tibco.tgdb.exception.TGException;
+
+import java.io.IOException;
+
 public interface TGSerializable {
 
     void writeExternal(TGOutputStream os) throws TGException, IOException;

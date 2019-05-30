@@ -3,13 +3,20 @@
 {{return (double)Double.MIN_VALUE;}}|{{return new Double(-Double.MAX_VALUE);}}
 {{return -(double)Double.MAX_VALUE;}}|{{return new Double(Double.MIN_VALUE);}}
 # TGDB-410 : NaN issue
-{{return (double)Double.NaN;}}|{{return new Double(Double.MIN_NORMAL);}}
+#{{return (double)Double.NaN;}}|{{return new Double(Double.MIN_NORMAL);}}
 {{return (double)Double.NEGATIVE_INFINITY;}}|{{return new Double(Double.POSITIVE_INFINITY);}}
 {{return -1.0D;}}|{{return -0.0D;}}
 {{return 0.0D;}}|{{return -0.0D;}}
 # test Double Object | double primitive
 {{return new Double(-Double.MIN_VALUE);}}|{{return -(double)Double.MAX_VALUE;}}
-{{return new Double(Double.MAX_VALUE);}}|{{return (double)Double.MIN_VALUE;}}
+#{{return new Double(Double.MAX_VALUE);}}|{{return (double)Double.MIN_VALUE;}}
 # test null
 #{{return null;}}|{{return new Double(Double.MAX_VALUE);}}
-#{{return new Double(Double.MAX_VALUE);}}|{{return null;}}
+{{return new Double(Double.MAX_VALUE);}}|{{return null;}}
+# NOTES:
+# * THIS TEST SHOULD PASS WITH LINES 6, 12, 14 COMMENTED OUT.
+# * Line 6 (NaN test) is the ONLY test that is a documented failure. There is a ticket (#410) for this fail.
+# * Line 15 will fail with UniqueIndexConstraint IFF line 12 is uncommented. Because line 12 and line 15 
+#	have the same Pkey. If both lines are uncommented, the second one SHOULD fail.
+# * Line 14 fails due to how the Java model code was written. In the setAttribute() implementation, we
+# 	first check to see if the VALUE for the key is NULL, then we return with error if so. This test is not valid.

@@ -1,33 +1,41 @@
-package com.tibco.tgdb.connection;
-
-import com.tibco.tgdb.exception.TGException;
-
-import java.util.Map;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
  * A copy of the License is included in the distribution package with this file.
  * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name :TGConnectionFactory
+ * <p/>
+ * File name: TGConnectionFactory.java
+ * Created on: 2014-06-16
  * Created by: suresh
- *
- * SVN Id: $Id: TGConnectionFactory.java 2692 2018-11-11 18:32:34Z ssubrama $
+ * <p/>
+ * SVN Id: $Id: TGConnectionFactory.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
+
+package com.tibco.tgdb.connection;
+
+import com.tibco.tgdb.exception.TGException;
+
+import java.util.Map;
+
+
 
 public abstract class TGConnectionFactory {
     private static final TGConnectionFactory gInstance = createConnectionFactory();
     private static final String TG_CONNECTIONFACTORY_PROVIDER = "com.tibco.tgdb.connection.TGConnectionFactory.Provider";
 
+    public enum CONNECTION_TYPE {
+    	CONVENTIONAL,
+    	ADMIN
+    }
 
     /**
      * @return A global instance of Connection Factory
@@ -261,6 +269,8 @@ public abstract class TGConnectionFactory {
      * @throws com.tibco.tgdb.exception.TGException - If it cannot create a connection to the server successfully
      */
     public abstract TGConnection createConnection(String url, String userName, String password, Map<String, String> env) throws TGException;
+    
+    public abstract TGAdminConnection createAdminConnection(String url, String userName, String password, Map<String, String> env) throws TGException;    
 
     /**
      * Create a Connection Pool of pool size on the the url using the name and password. Each connection in the pool will default
@@ -274,7 +284,9 @@ public abstract class TGConnectionFactory {
      * @throws com.tibco.tgdb.exception.TGException - If it cannot create a connectionpool to the server successfully
      * @see TGConnectionFactory#createConnection(java.lang.String, java.lang.String, java.lang.String, java.util.Map)
      */
-    public abstract TGConnectionPool createConnectionPool(String url, String userName, String password, int poolSize, Map<String, String> env) throws TGException;;
+    public abstract TGConnectionPool createConnectionPool(String url, String userName, String password, int poolSize, Map<String, String> env) throws TGException;
+    
+    public abstract TGConnectionPool createConnectionPool(String url, String userName, String password, int poolSize, Map<String, String> env, CONNECTION_TYPE type) throws TGException;    
 
 
 }

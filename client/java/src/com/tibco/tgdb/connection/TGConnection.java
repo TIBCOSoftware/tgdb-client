@@ -1,3 +1,25 @@
+/**
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
+ * in compliance with the License.
+ * A copy of the License is included in the distribution package with this file.
+ * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * <p/>
+ * File name: TGConnection.java
+ * Created on: 3/18/14
+ * Created by: suresh
+ * <p/>
+ * SVN Id: $Id: TGConnection.java 3158 2019-04-26 20:49:24Z kattaylo $
+ */
+
 package com.tibco.tgdb.connection;
 
 import java.util.Collection;
@@ -12,29 +34,6 @@ import com.tibco.tgdb.query.TGQueryOption;
 import com.tibco.tgdb.query.TGResultSet;
 import com.tibco.tgdb.utils.TGProperties;
 
-
-
-/**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
- * in compliance with the License.
- * A copy of the License is included in the distribution package with this file.
- * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- *  File name :TGConnection.java
- *  Created on: 3/18/14
- *  Created by: suresh
- *
- *		SVN Id: $Id: TGConnection.java 2639 2018-11-04 11:22:40Z vchung $
- *
- */
 public interface TGConnection {
 
 
@@ -120,19 +119,23 @@ public interface TGConnection {
     void deleteEntity(TGEntity entity) throws TGException;
 
     /**
-     * Execute an immediate Query with  query options
+     * Execute a query in either tqql or gremlin format.  
+     * Format is determined by either 'tgql://' or 'gremlin://' prefixes in the 'expr' argument. 
+     * The format can also be specified by using 'tgdb.connection.defaultQueryLanguage' 
+     * connection property with value 'tgql' or 'gremlin'. Prefix in the query expression is no needed
+     * if connection property is used.
      *
-     * @param expr A subset of SQL-92 where clause. @see com.tibco.tgdb.query.TGQuery
+     * @param expr query in tgql format or gremlin format
      * @param option Query options for executing. Can be null, then it will use the default option
      *
      * @return A navigatable ResultSet if successful in executing the query. The result set will indicate errors if
      * the query had any exceptions
-     * @throws com.tibco.tgdb.exception.TGException Throws an exception if there was any error while updating the object
+     * @throws com.tibco.tgdb.exception.TGException Throws an exception if there was any error while querying the object
      */
 	TGResultSet executeQuery(String expr, TGQueryOption option) throws TGException;
 	
     /**
-     * Execute an immediate Query with  query options
+     * Execute an immediate Query with query options
      * The query option is place holder at this time
      *
      * @param expr A subset of SQL-92 where clause. @see com.tibco.tgdb.query.TGQuery
@@ -143,7 +146,7 @@ public interface TGConnection {
      *
      * @return A navigatable ResultSet if successful in executing the query. The result set will indicate errors if
      * the query had any exceptions
-     * @throws com.tibco.tgdb.exception.TGException Throws an exception if there was any error while updating the object
+     * @throws com.tibco.tgdb.exception.TGException Throws an exception if there was any error while querying the object
      */
 	TGResultSet executeQuery(String expr, String edgeFilter, String traversalCondition, String endCondition, TGQueryOption option) throws TGException;
 

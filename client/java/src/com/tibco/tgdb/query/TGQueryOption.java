@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
@@ -13,7 +13,10 @@
  * limitations under the License.
  *
  * File name : TGQueryOption.java
- * SVN Id: $Id$
+ * Created on: 03/19/2016
+ * Created by: suresh 
+ * SVN Id: $Id: TGQueryOption.java 3130 2019-04-25 23:08:31Z nimish $
+ * 
  */
 
 

@@ -1,7 +1,7 @@
-package com.tibco.tgdb.model;
+
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -18,9 +18,11 @@ package com.tibco.tgdb.model;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGAttribute.java 2348 2018-06-22 16:34:26Z ssubrama $
+ *		SVN Id: $Id: TGAttribute.java 3142 2019-04-26 00:15:06Z nimish $
  *
  */
+
+package com.tibco.tgdb.model;
 
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.exception.TGTypeCoercionNotSupported;
@@ -225,5 +227,10 @@ public interface TGAttribute extends TGSerializable {
     default CharBuffer getAsCharBuffer(String encoding) throws TGException
     {
         throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "CharBuffer.class");
+    }
+
+    default Object decrypt() throws TGException
+    {
+        throw new TGTypeCoercionNotSupported(getAttributeDescriptor().getType(), "AEADAttribute.class");
     }
 }

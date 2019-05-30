@@ -1,14 +1,6 @@
-package com.tibco.tgdb.pdu.impl;
-
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.pdu.TGInputStream;
-import com.tibco.tgdb.pdu.TGOutputStream;
-import com.tibco.tgdb.pdu.VerbId;
-
-import java.io.IOException;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -25,13 +17,33 @@ import java.io.IOException;
  * Created on: 12/24/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: HandshakeRequest.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: HandshakeRequest.java 3138 2019-04-25 23:53:21Z nimish $
  */
+
+package com.tibco.tgdb.pdu.impl;
+
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.pdu.TGInputStream;
+import com.tibco.tgdb.pdu.TGOutputStream;
+import com.tibco.tgdb.pdu.VerbId;
+
+import java.io.IOException;
+
 public class HandshakeRequest extends AbstractProtocolMessage {
 
     private boolean sslMode = false;
-    private int challenge = 0;
-    private RequestType requestType = RequestType.Invalid;
+    private long challenge = 0;
+    private long version;
+    
+    public long getVersion() {
+		return version;
+	}
+
+	public void setVersion(long version) {
+		this.version = version;
+	}
+
+	private RequestType requestType = RequestType.Invalid;
 
     @Override
     public VerbId getVerbId() {
@@ -52,11 +64,11 @@ public class HandshakeRequest extends AbstractProtocolMessage {
         this.sslMode = sslMode;
     }
 
-    public int getChallenge() {
+    public long getChallenge() {
         return challenge;
     }
 
-    public void setChallenge(int challenge) {
+    public void setChallenge(long challenge) {
         this.challenge = challenge;
     }
 
@@ -74,8 +86,7 @@ public class HandshakeRequest extends AbstractProtocolMessage {
     	//FIXME: Need to change the enum definition not to use ordinal
         os.writeByte((byte) this.requestType.ordinal());
         os.writeBoolean(sslMode);
-        os.writeInt(challenge);
-
+        os.writeLong(challenge);
     }
 
     @Override
@@ -84,7 +95,7 @@ public class HandshakeRequest extends AbstractProtocolMessage {
         int b = is.readByte();
         this.requestType = RequestType.values()[b];
         this.sslMode = is.readBoolean();
-        this.challenge = is.readInt();
+        this.challenge = is.readLong();
 
     }
 

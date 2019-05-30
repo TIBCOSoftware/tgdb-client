@@ -1,7 +1,6 @@
-package com.tibco.tgdb.model;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -18,9 +17,12 @@ package com.tibco.tgdb.model;
  *  Created on: 3/18/14
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGAttributeDescriptor.java 2344 2018-06-11 23:21:45Z ssubrama $
+ *		SVN Id: $Id: TGAttributeDescriptor.java 3142 2019-04-26 00:15:06Z nimish $
  *
  */
+
+package com.tibco.tgdb.model;
+
 
 import com.tibco.tgdb.pdu.TGSerializable;
 
@@ -46,6 +48,12 @@ public interface TGAttributeDescriptor extends TGSystemObject {
      * @return boolean indicating the multiplicativeness of the desc
      */
     boolean isArray();
+
+    /**
+     * Is this field Encrypted?
+     * @return
+     */
+    boolean isEncrypted();
 
     /**
      * For a Number desc - return the precision. The default Precision is 20

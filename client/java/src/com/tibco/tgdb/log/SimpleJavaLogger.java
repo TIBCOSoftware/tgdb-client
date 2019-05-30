@@ -1,9 +1,6 @@
-package com.tibco.tgdb.log;
-
-import java.util.logging.*;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -17,9 +14,15 @@ import java.util.logging.*;
  * limitations under the License.
 
  * File name :SimpleJavaLogger
+ * Created on: 12/19/2014 
  * Created by: suresh
- * SVN Id: $Id: SimpleJavaLogger.java 723 2016-04-16 19:21:18Z vchung $
+ * SVN Id: $Id: SimpleJavaLogger.java 3127 2019-04-25 22:56:22Z nimish $
  */
+
+package com.tibco.tgdb.log;
+
+import java.util.logging.*;
+
 public class SimpleJavaLogger implements TGLogger {
     private static Logger logger = Logger.getLogger(SimpleJavaLogger.class.getPackage().getName());
     private static Level logLevel[] = null;

@@ -1,13 +1,6 @@
-package com.tibco.tgdb.channel;
-
-import com.tibco.tgdb.channel.impl.ChannelFactoryImpl;
-import com.tibco.tgdb.exception.TGException;
-
-import java.io.IOException;
-import java.util.Map;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -24,8 +17,17 @@ import java.util.Map;
  * Created on: 12/25/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGChannelFactory.java 2135 2018-03-07 23:42:34Z ssubrama $
+ * SVN Id: $Id: TGChannelFactory.java 3124 2019-04-25 22:21:54Z nimish $
  */
+
+package com.tibco.tgdb.channel;
+
+import com.tibco.tgdb.channel.impl.ChannelFactoryImpl;
+import com.tibco.tgdb.exception.TGException;
+
+import java.io.IOException;
+import java.util.Map;
+
 public abstract class TGChannelFactory {
 
     private static TGChannelFactory gFactory = new ChannelFactoryImpl();

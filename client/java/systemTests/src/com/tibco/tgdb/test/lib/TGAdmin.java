@@ -580,7 +580,7 @@ public class TGAdmin {
 			throw new TGAdminException("TGAdmin - " + ioe.getMessage());
 		}
 		TGAdmin.showOperationBanner = false;
-		String output = TGAdmin.invoke(tgHome, url, user, pwd, logFile, logLevel, cmdFile.getAbsolutePath(), -1, 20000);
+		String output = TGAdmin.invoke(tgHome, url, user, pwd, logFile, logLevel, cmdFile.getAbsolutePath(), -1, 180000);
 		try {
 			Thread.sleep(waitToCompletion); // give some sec for tgdb server to die
 		} catch (InterruptedException e) {;}

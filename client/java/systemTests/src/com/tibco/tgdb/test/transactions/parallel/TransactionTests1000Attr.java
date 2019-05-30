@@ -185,8 +185,8 @@ public class TransactionTests1000Attr {
 		
         for(int i=1;i<attrcount;i++)
 		 {
-
-		     // basic1.setAttribute("key", i);
+        	  //Sneha: Removing the comment as it is causing TGTransactionUniqueIndexKeyAttributeNullError
+        	  basic1.setAttribute("key", i);
 		      
 			  basic1.setAttribute("boolAttr"+i, data[1][1]);
 			  basic1.setAttribute("intAttr"+i,data[1][2]);

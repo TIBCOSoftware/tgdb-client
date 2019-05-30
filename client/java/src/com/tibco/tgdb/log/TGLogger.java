@@ -1,7 +1,7 @@
-package com.tibco.tgdb.log;
+
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -18,8 +18,11 @@ package com.tibco.tgdb.log;
  * Created on: 12/18/14
  * Created by: suresh
  *
- * SVN Id: $Id: TGLogger.java 623 2016-03-19 21:41:13Z ssubrama $
+ * SVN Id: $Id: TGLogger.java 3127 2019-04-25 22:56:22Z nimish $
  */
+
+
+package com.tibco.tgdb.log;
 
 /*
 A Simple logging interface

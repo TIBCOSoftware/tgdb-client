@@ -1,3 +1,23 @@
+/**
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
+ * in compliance with the License.
+ * A copy of the License is included in the distribution package with this file.
+ * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * File name : QueryGraph.${EXT}
+ * Created on: 10/05/2017
+ * Created by: vincent
+ * SVN Id: $Id: QueryGraph.java 3148 2019-04-26 00:35:38Z sbangar $
+ */
+
 package com.tibco.tgdb.test;
 
 import java.text.SimpleDateFormat;
@@ -118,7 +138,7 @@ public class QueryGraph {
             String queryString = null;
             String traverseString = null;
             String endString = null;
-            TGResultSet resultSet = null;
+            TGResultSet<TGEntity> resultSet = null;
             int dumpDepth = 5;
             int currDepth = 0;
             boolean dumpBreadth = false;

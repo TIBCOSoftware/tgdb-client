@@ -1,9 +1,6 @@
-package com.tibco.tgdb.model;
-
-import java.math.BigDecimal;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -17,15 +14,20 @@ import java.math.BigDecimal;
  * limitations under the License.
  *
  * File name :TGAttributeType
+ * Created on: 06/15/2014
  * Created by: suresh
-
- * SVN Id: $Id: TGAttributeType.java 2344 2018-06-11 23:21:45Z ssubrama $
+ * SVN Id: $Id: TGAttributeType.java 3142 2019-04-26 00:15:06Z nimish $
  */
 
 /**
  * Attribute Type enumerations.
  * Do change the ID, as the server expects the attribute desc as the same value.
  */
+
+package com.tibco.tgdb.model;
+
+import java.math.BigDecimal;
+
 public enum TGAttributeType {
 
     Invalid(0, null, null),
@@ -43,7 +45,7 @@ public enum TGAttributeType {
     Time(12, "Time", java.util.Calendar.class), //Time hh:mm:ss.nnn with TIMEZONE
     TimeStamp(13, "Timestamp", java.util.Calendar.class), //Compatible with the SQL Timestamp field.
     Clob(14, "Clob", char[].class),     //Character -UTF-8 encoded string or large length > 64K
-    Blob(15, "Blob", byte[].class)     //Binary object - a stream of octets (unsigned 8bit char) with length. A variation of such Blobs could
+    Blob(15, "Blob", byte[].class),     //Binary object - a stream of octets (unsigned 8bit char) with length. A variation of such Blobs could
     ;
 
     TGAttributeType(int typeid, String typename, Class klazz) {

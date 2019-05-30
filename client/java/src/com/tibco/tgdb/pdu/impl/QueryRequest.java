@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -16,7 +16,7 @@
  * Created on: 2/4/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: QueryRequest.java 1713 2017-10-05 02:24:18Z vchung $
+ * SVN Id: $Id: QueryRequest.java 3140 2019-04-25 23:59:24Z nimish $
  */
 
 
@@ -154,7 +154,7 @@ public class QueryRequest extends AbstractProtocolMessage {
         }
 
         // CREATE, EXECUTE.
-        if (command == 1 || command == 2) {
+        if (command == 1 || command == 2 || command == 3 || command == 4) {
         	if (queryExpr == null) {
         		//isNull is true
         		os.writeBoolean(true);
@@ -182,7 +182,7 @@ public class QueryRequest extends AbstractProtocolMessage {
         	}
         }
         // EXECUTEID, CLOSE
-        else if (command == 3 || command == 4){
+        else if (command == 5 || command == 6){
         	os.writeLong(this.queryHashId);
         }
     }

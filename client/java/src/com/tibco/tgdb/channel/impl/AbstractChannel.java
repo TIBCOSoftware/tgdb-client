@@ -1,7 +1,6 @@
-package com.tibco.tgdb.channel.impl;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc.
+ * All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -14,21 +13,25 @@ package com.tibco.tgdb.channel.impl;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * <p/>
- * File name :AbstractChannel
+ * File name: AbstractChannel.java
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AbstractChannel.java 2742 2018-11-15 22:17:42Z nimish $
+ * SVN Id: $Id: AbstractChannel.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
+
+package com.tibco.tgdb.channel.impl;
 
 import com.tibco.tgdb.TGProtocolVersion;
 import com.tibco.tgdb.channel.TGChannel;
 import com.tibco.tgdb.channel.TGChannelResponse;
 import com.tibco.tgdb.channel.TGChannelUrl;
+import com.tibco.tgdb.channel.TGTracer;
 import com.tibco.tgdb.exception.TGAuthenticationException;
 import com.tibco.tgdb.exception.TGChannelDisconnectedException;
 import com.tibco.tgdb.exception.TGConnectionTimeoutException;
 import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.exception.TGVersionMismatchException;
 import com.tibco.tgdb.log.TGLogManager;
 import com.tibco.tgdb.log.TGLogger;
 import com.tibco.tgdb.pdu.TGMessage;
@@ -42,7 +45,6 @@ import com.tibco.tgdb.utils.TGConstants;
 import com.tibco.tgdb.utils.TGProperties;
 
 import java.io.IOException;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,6 +84,11 @@ public abstract class AbstractChannel implements TGChannel {
 
 
     static TGLogger gLogger        = TGLogManager.getInstance().getLogger();
+    
+    //
+    // Do we want to create the Factory around tracer, or direct tracer is okay?
+    //
+	TGTracer tracer = null;
 
 
     final Lock sendLock = new ReentrantLock();
@@ -106,6 +113,7 @@ public abstract class AbstractChannel implements TGChannel {
     String              inboxAddr           = null;
     long                sessionId           = -1;
     long                authToken           = -1;
+    DataCryptoGrapher dataCryptographer   = null;
 
 
 
@@ -115,6 +123,24 @@ public abstract class AbstractChannel implements TGChannel {
         this.properties = props;
         reader = new ChannelReader(this);
         this.connectionIndex = 0;
+        
+        boolean bCommitTrace = properties.getPropertyAsBoolean(ConfigName.EnableConnectionTrace, false);
+        if (bCommitTrace)
+        {
+        	//
+        	// Remove4Queue
+        	//
+        	// Get through property
+        	
+        	String commitTraceDir = properties.getProperty(ConfigName.ConnectionTraceDir, ".");
+        	try {
+                tracer = new ChannelTracerImpl(properties.get(ConfigName.ChannelClientId.getName()), commitTraceDir);
+            }
+            catch (IOException ioe) {
+        	    bCommitTrace = false;
+            }
+        }
+
     }
 
     abstract void createSocket() throws TGException;
@@ -215,6 +241,8 @@ public abstract class AbstractChannel implements TGChannel {
                     return;
                 } catch (TGAuthenticationException | TGChannelDisconnectedException te) {
                     throw te;
+                } catch (TGVersionMismatchException vme) {
+                	throw vme;
                 } catch (TGException tge) {
                     if (null == properties.getProperty(ConfigName.ChannelFTHosts))
                     {
@@ -447,6 +475,19 @@ public abstract class AbstractChannel implements TGChannel {
         while(true) {
             try {
                 if (!isConnected()) throw new TGException("Connection is closed", "TGDB-CHANNEL-ERR");
+                
+                //
+                // Handle Tracing
+                //
+                //
+                // tracer.trace
+                //
+                
+                if (tracer != null) 
+                {
+                	tracer.trace(request);
+                }
+                
                 sendLock.lock();
                 responses.put(key, channelResponse);
                 send(request);
@@ -571,4 +612,6 @@ public abstract class AbstractChannel implements TGChannel {
     public long getSessionId() {
     	return sessionId;
     }
+
+    public DataCryptoGrapher getDataCryptoGrapher() { return dataCryptographer;}
 }

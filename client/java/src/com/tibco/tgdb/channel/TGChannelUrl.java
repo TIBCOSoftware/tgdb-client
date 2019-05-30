@@ -1,11 +1,6 @@
-package com.tibco.tgdb.channel;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -22,8 +17,15 @@ import java.util.Queue;
  * Created on: 12/25/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: TGChannelUrl.java 2203 2018-04-04 01:58:36Z ssubrama $
+ * SVN Id: $Id: TGChannelUrl.java 3124 2019-04-25 22:21:54Z nimish $
  */
+
+package com.tibco.tgdb.channel;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+
 public interface TGChannelUrl {
 
     public enum Protocol {

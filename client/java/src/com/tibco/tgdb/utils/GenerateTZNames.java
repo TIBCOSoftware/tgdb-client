@@ -1,14 +1,22 @@
 /**
- * Copyright (c) 2016 TIBCO Software Inc.
- * All rights reserved.
- * <p/>
- * File name : GenerateTZNames.${EXT}
- * Created on: 9/22/16
- * Created by: suresh
- * <p/>
- * SVN Id: $Id$
- */
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
+ * in compliance with the License.
+ * A copy of the License is included in the distribution package with this file.
+ * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
 
+ * File name : GenerateTZNames.java
+ * Created on: 09/22/2016
+ * Created by: suresh
+ * SVN Id: $Id: GenerateTZNames.java 3137 2019-04-25 23:52:32Z sbangar $
+ */
 
 package com.tibco.tgdb.utils;
 
@@ -25,7 +33,7 @@ public class GenerateTZNames {
             "#  File name: tznames.txt\n" +
             "#  Created on: September 15, 2016\n" +
             "#\n" +
-            "#  SVN Id: $Id:$\n" +
+            "#  SVN Id: $Id: GenerateTZNames.java 3137 2019-04-25 23:52:32Z sbangar $\n" +
             "#\n" +
             "#  Lists all the timezone names with timezone ids. The timezone ids starts from 128.\n"+
             "#  Do not delete any lines or modify the timezone ids. \n" +

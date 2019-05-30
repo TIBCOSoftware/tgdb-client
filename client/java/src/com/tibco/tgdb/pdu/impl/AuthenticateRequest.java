@@ -1,15 +1,5 @@
-package com.tibco.tgdb.pdu.impl;
-
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.pdu.TGInputStream;
-import com.tibco.tgdb.pdu.TGOutputStream;
-import com.tibco.tgdb.pdu.VerbId;
-import com.tibco.tgdb.utils.TGConstants;
-
-import java.io.IOException;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -26,8 +16,20 @@ import java.io.IOException;
  * Created on: 12/24/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: AuthenticateRequest.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: AuthenticateRequest.java 3132 2019-04-25 23:28:52Z nimish $
  */
+
+package com.tibco.tgdb.pdu.impl;
+
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.pdu.TGInputStream;
+import com.tibco.tgdb.pdu.TGOutputStream;
+import com.tibco.tgdb.pdu.VerbId;
+import com.tibco.tgdb.utils.TGConstants;
+
+import java.io.IOException;
+
+
 public class AuthenticateRequest extends AbstractProtocolMessage {
 
 

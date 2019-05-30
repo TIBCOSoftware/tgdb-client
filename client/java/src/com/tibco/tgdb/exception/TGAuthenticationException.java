@@ -1,7 +1,6 @@
-package com.tibco.tgdb.exception;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc.
+ * All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -14,11 +13,16 @@ package com.tibco.tgdb.exception;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name :TGAuthenticationException
+ * <p/>
+ * File name: TGAuthenticationException.java
+ * Created on: 2014-12-27
  * Created by: suresh
- *
- * SVN Id: $Id: TGAuthenticationException.java 622 2016-03-19 20:51:12Z ssubrama $
+ * <p/>
+ * SVN Id: $Id: TGAuthenticationException.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
+
+package com.tibco.tgdb.exception;
+
 public class TGAuthenticationException extends TGException {
 
     private int statusCode;

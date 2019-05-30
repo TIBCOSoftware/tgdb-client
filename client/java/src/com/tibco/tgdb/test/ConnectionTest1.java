@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -11,12 +11,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * <p/>
+ *
  * File name : ConnectionTest1.${EXT}
- * Created on: 1/13/15
- * Created by: suresh 
- * <p/>
- * SVN Id: $Id: ConnectionTest1.java 2344 2018-06-11 23:21:45Z ssubrama $
+ * Created on: 01/13/2015
+ * Created by: suresh
+ * SVN Id: $Id: ConnectionTest1.java 3148 2019-04-26 00:35:38Z sbangar $
  */
 
 

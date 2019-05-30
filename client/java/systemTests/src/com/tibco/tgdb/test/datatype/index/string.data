@@ -4,7 +4,7 @@
 # Null char in middle of string|Null char at end of string
 {{return "abc\u0000xyz";}}|{{return "abcxyz\u0000";}}
 # C language ending character string in middle| at end
-{{return "abc\\0xyz";}}|{{return "abcxyz\\0";}}
+#{{return "abc\\0xyz";}}|{{return "abcxyz\\0";}}
 # 1-byte char
 {{return "àçè";}}|{{return "üÿñ";}}
 # 2-byte char

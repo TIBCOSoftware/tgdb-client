@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * <p/>
- * File name : ChannelReader.${EXT}
+ * File name: ChannelReader.java
  * Created on: 1/6/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ChannelReader.java 2164 2018-03-20 00:11:11Z ssubrama $
+ * SVN Id: $Id: ChannelReader.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
 
 

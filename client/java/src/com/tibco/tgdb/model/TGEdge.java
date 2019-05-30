@@ -1,7 +1,7 @@
-package com.tibco.tgdb.model;
+
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -15,11 +15,14 @@ package com.tibco.tgdb.model;
  * limitations under the License.
  *
  *  File name :TGEdge.java
+ *  Created on: 03/18/2014
  *  Created by: suresh
  *
- *		SVN Id: $Id: TGEdge.java 2344 2018-06-11 23:21:45Z ssubrama $
+ *		SVN Id: $Id: TGEdge.java 3142 2019-04-26 00:15:06Z nimish $
  *
  */
+
+package com.tibco.tgdb.model;
 
 /**
  * An Egde in a graph that connects 2 vertices.

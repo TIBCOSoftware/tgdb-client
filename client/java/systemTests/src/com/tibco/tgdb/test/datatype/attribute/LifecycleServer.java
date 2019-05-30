@@ -76,7 +76,7 @@ public abstract class LifecycleServer {
 	@AfterMethod
 	void stopServer() throws Exception {
 		Thread.sleep(1000); // delay stop to avoid shm file corruption (1.1.1 release)
-		TGAdmin.stopServer(tgServer, tgServer.getNetListeners()[0].getName(), null, null, 60000);
+		TGAdmin.stopServer(tgServer, tgServer.getNetListeners()[0].getName(), null, null, 70000);
 	}
 
 }

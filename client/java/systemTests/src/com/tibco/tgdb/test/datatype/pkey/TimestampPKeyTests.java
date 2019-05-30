@@ -148,8 +148,7 @@ public class TimestampPKeyTests {
 	 */
 	
 	@Test(description = "Retrieve nodes and edge with string attribute",
-		  dependsOnMethods = { "testDefinePKey" },
-		  enabled = false)
+		  dependsOnMethods = { "testDefinePKey" })
 	public void testRetrievePKey() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		

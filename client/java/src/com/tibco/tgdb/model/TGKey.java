@@ -1,10 +1,6 @@
-package com.tibco.tgdb.model;
-
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.pdu.TGSerializable;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -21,8 +17,14 @@ import com.tibco.tgdb.pdu.TGSerializable;
  * Created on: 3/28/15
  * Created by: suresh
 
- * SVN Id: $Id: TGKey.java 622 2016-03-19 20:51:12Z ssubrama $
+ * SVN Id: $Id: TGKey.java 3142 2019-04-26 00:15:06Z nimish $
  */
+
+package com.tibco.tgdb.model;
+
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.pdu.TGSerializable;
+
 
 public interface TGKey extends TGSerializable {
 

@@ -1,18 +1,11 @@
-package com.tibco.tgdb.utils;
-
-import com.tibco.tgdb.exception.TGException;
-
-import java.util.Properties;
-import java.util.SortedMap;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
  * A copy of the License is included in the distribution package with this file.
  * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,10 +13,16 @@ import java.util.SortedMap;
  * limitations under the License.
 
  * File name : TGProperties.java
- * Created on: 2/5/15
+ * Created on: 02/05/2015
  * Created by: suresh
-  * SVN Id: $Id: TGProperties.java 2316 2018-04-26 23:49:37Z ssubrama $
+ * SVN Id: $Id: TGProperties.java 3137 2019-04-25 23:52:32Z sbangar $
  */
+
+package com.tibco.tgdb.utils;
+
+import com.tibco.tgdb.exception.TGException;
+import java.util.Properties;
+import java.util.SortedMap;
 
 public interface TGProperties<K,V> extends SortedMap<K,V> {
 

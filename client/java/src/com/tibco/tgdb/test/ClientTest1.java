@@ -1,3 +1,23 @@
+/**
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
+ * in compliance with the License.
+ * A copy of the License is included in the distribution package with this file.
+ * You also may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+
+ * File name : ClientTest1.${EXT}
+ * Created on: 03/27/2018
+ * Created by: vincent
+ * SVN Id: $Id: ClientTest1.java 3148 2019-04-26 00:35:38Z sbangar $
+ */
+
 package com.tibco.tgdb.test;
 
 import java.util.Arrays;
@@ -21,20 +41,28 @@ import com.tibco.tgdb.model.TGKey;
 import com.tibco.tgdb.model.TGNode;
 import com.tibco.tgdb.model.TGNodeType;
 import com.tibco.tgdb.query.TGResultSet;
+import com.tibco.tgdb.utils.EntityUtils;
 import com.tibco.tgdb.utils.SortedProperties;
 import com.tibco.tgdb.utils.TGProperties;
 import com.tibco.tgdb.query.TGQueryOption;
 
+/*
+ * This test uses the generic initdb.conf that comes with the product.
+ * However, please add the following line to initdb.conf before running the test.
+ * nameontestidx   = @attrs:name @unique:true @ontype:testnode
+ */
 public class ClientTest1 {
-	public String url = "tcp://scott@localhost:8222";
-    public String passwd = "scott";
-    public TGLogger.TGLevel logLevel = TGLogger.TGLevel.Debug;
-    public int depth = 5;
-    public int printDepth = 5;
-    public int resultCount = 100;
-    public int edgeLimit = 0;
+	private String url = "tcp://scott@localhost:8222";
+    private String passwd = "scott";
+    private TGLogger.TGLevel logLevel = TGLogger.TGLevel.Debug;
+    private int depth = 5;
+    private int printDepth = 5;
+    private int resultCount = 100;
+    private int edgeLimit = 0;
+    private boolean initDB = false;
 
-    String getStringValue(Iterator<String> argIter) {
+
+    private String getStringValue(Iterator<String> argIter) {
     	while (argIter.hasNext()) {
     		String s = argIter.next();
     		return s;
@@ -42,7 +70,7 @@ public class ClientTest1 {
     	return null;
     }
     
-    String getStringValue(Iterator<String> argIter, String defaultValue) {
+    private String getStringValue(Iterator<String> argIter, String defaultValue) {
     	String s = getStringValue(argIter);
     	if (s == null) {
     		return defaultValue;
@@ -51,7 +79,7 @@ public class ClientTest1 {
     	}
     }
 
-    int getIntValue(Iterator<String> argIter, int defaultValue) {
+    private int getIntValue(Iterator<String> argIter, int defaultValue) {
     	String s = getStringValue(argIter);
     	if (s == null) {
     		return defaultValue;
@@ -66,7 +94,7 @@ public class ClientTest1 {
     	}
     }
 
-    void getArgs(String[] args) {
+    private void getArgs(String[] args) {
     	List<String> argList = Arrays.asList(args);
     	Iterator<String> argIter = argList.iterator();
     	while (argIter.hasNext()) {
@@ -83,13 +111,15 @@ public class ClientTest1 {
     			} catch(IllegalArgumentException e) {
     				System.out.printf("Invalid log level value '%s'...ignored\n", ll);
     			}
+    		} else if (s.equalsIgnoreCase("-initdb") || s.equalsIgnoreCase("-i")) {
+    			initDB = true;
     		} else {
     			System.out.printf("Skip argument %s\n", s);
     		}
     	}
     }
 
-    TGNode createNode(TGGraphObjectFactory gof, TGNodeType nodeType) {
+    private TGNode createNode(TGGraphObjectFactory gof, TGNodeType nodeType) {
     	if (nodeType != null) {
     		return gof.createNode(nodeType);
     	} else {
@@ -97,7 +127,7 @@ public class ClientTest1 {
     	}
     }
     
-    void testGetByKey() throws Exception {
+    private void testGetByKey() throws Exception {
     	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
     	TGLogger logger = TGLogManager.getInstance().getLogger();
     	logger.setLevel(logLevel);
@@ -114,8 +144,8 @@ public class ClientTest1 {
 
        	boolean exceptionThrown = false;
        	try {
-       		//TGKey key = gof.createCompositeKey("No good desc");
-       		TGKey key = gof.createCompositeKey("testnode");
+       		TGKey key = gof.createCompositeKey("No good desc");
+       		//TGKey key = gof.createCompositeKey("testnode");
        	} catch (TGException e) {
        		exceptionThrown = true;
         	System.out.printf("Exception : %s\n", e.getMessage());
@@ -128,7 +158,7 @@ public class ClientTest1 {
         conn.disconnect();
     }
 
-    void testGetByKeys() throws Exception {
+    private void testGetNodeTypes() throws Exception {
     	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
     	TGLogger logger = TGLogManager.getInstance().getLogger();
     	logger.setLevel(logLevel);
@@ -154,7 +184,8 @@ public class ClientTest1 {
         conn.disconnect();
     }
 
-    void test() throws Exception {
+    //This method is replaced by setupData
+    private void test() throws Exception {
     	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
     	TGLogger logger = TGLogManager.getInstance().getLogger();
     	logger.setLevel(logLevel);
@@ -195,7 +226,10 @@ public class ClientTest1 {
         System.out.println("Connection test connection disconnected.");
     }
 
-    void setupData() throws Exception {
+    private void setupData() throws Exception {
+    	if (initDB == false) {
+    		return;
+    	}
     	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
     	TGLogger logger = TGLogManager.getInstance().getLogger();
     	logger.setLevel(logLevel);
@@ -214,9 +248,9 @@ public class ClientTest1 {
        	TGGraphMetadata gmd = conn.getGraphMetadata(false);
         testnodetype = gmd.getNodeType("testnode");
         if (testnodetype != null) {
-        	System.out.printf("'nulltestnode' is found with %d attributes\n", testnodetype.getAttributeDescriptors().size());
+        	System.out.printf("'testnode' is found with %d attributes\n", testnodetype.getAttributeDescriptors().size());
         } else {
-        	System.out.println("'nulltestnode' is not found from meta data fetch");
+        	System.out.println("'testnode' is not found from meta data fetch");
         }
 
       	System.out.println("Start transaction 1");
@@ -249,6 +283,26 @@ public class ClientTest1 {
       	TGEdge edge2 = gof.createEdge(node2, node1, edgeType);
         edge2.setAttribute("name", "partner");
         conn.insertEntity(edge2);
+      	TGEdge edge = gof.createEdge(node1, node1, edgeType);
+        edge.setAttribute("name", "toSelf1");
+        edge.setAttribute("age", 100);
+        conn.insertEntity(edge);
+      	edge = gof.createEdge(node1, node1, edgeType);
+        edge.setAttribute("name", "toSelf2");
+        edge.setAttribute("age", 200);
+        conn.insertEntity(edge);
+      	edge = gof.createEdge(node1, node1, edgeType);
+        edge.setAttribute("name", "toSelf3");
+        edge.setAttribute("age", 300);
+        conn.insertEntity(edge);
+      	edge = gof.createEdge(node1, node1, edgeType);
+        edge.setAttribute("name", "toSelf4");
+        edge.setAttribute("age", 400);
+        conn.insertEntity(edge);
+      	edge = gof.createEdge(node1, node1, edgeType);
+        edge.setAttribute("name", "toSelf5");
+        edge.setAttribute("age", 500);
+        conn.insertEntity(edge);
       	System.out.println("Commit transaction 1");
         conn.commit(); //----- write data to database ----------. Everything is create
       	System.out.println("Commit transaction 1 completed");
@@ -256,7 +310,7 @@ public class ClientTest1 {
         System.out.println("Connection test connection disconnected.");
     }
 
-    void testGetEdges() throws Exception {
+    private void testGetEdges() throws Exception {
     	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
     	TGLogger logger = TGLogManager.getInstance().getLogger();
     	logger.setLevel(logLevel);
@@ -292,6 +346,35 @@ public class ClientTest1 {
         conn.disconnect();
     }
 
+    private void testSelfTraversal() throws Exception {
+    	System.out.printf("Using url : %s, password : %s, log level : %s\n", url, passwd, logLevel.toString());
+    	TGLogger logger = TGLogManager.getInstance().getLogger();
+    	logger.setLevel(logLevel);
+
+        TGConnection conn = TGConnectionFactory.getInstance().createConnection(url, null, passwd, null);
+
+        conn.connect();
+
+        String query = "@nodetype = 'testnode' and name = 'john doe';";
+        String traversal = "@edgetype = 'basicedge' and @edge.name = 'toSelf3';";
+        String end = "@nodetype = 'testnode' and name = 'john doe';";
+
+       	try {
+       		TGQueryOption option = TGQueryOption.DEFAULT_QUERY_OPTION;
+       		TGResultSet result = conn.executeQuery(query,  null, traversal, end, TGQueryOption.DEFAULT_QUERY_OPTION);
+
+       		if (result != null) {
+       			while (result.hasNext()) {
+       				TGNode node = (TGNode) result.next();
+       				EntityUtils.printEntitiesBreadth(node, 3);
+       			}
+       		}
+       	} catch (TGException e) {
+        	System.out.printf("Exception : %s\n", e.getMessage());
+       	}
+        conn.disconnect();
+    }
+
     private void getEdges(TGNode node, TGEdgeType edgeType, TGEdge.Direction direction) {
        if (node == null) {
     	   System.out.println("node is null");
@@ -307,10 +390,11 @@ public class ClientTest1 {
     public static void main(String[] args) throws Exception {
     	ClientTest1 nt = new ClientTest1();
     	nt.getArgs(args);
-    	//nt.test();
-    	//nt.testGetTypes();
-    	//nt.testGetByKey();
+    	nt.setupData();
+    	nt.testGetNodeTypes();
+    	nt.testGetByKey();
     	nt.testGetEdges();
+    	//nt.testSelfTraversal();
     }
 }
 

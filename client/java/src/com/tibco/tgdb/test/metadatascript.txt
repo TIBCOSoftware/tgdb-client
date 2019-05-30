@@ -10,7 +10,7 @@ create attrdesc intAttr as int
 create attrdesc longAttr as long
 create attrdesc floatAttr as float
 create attrdesc doubleAttr as double 
-create attrdesc numberAttr as number
+create attrdesc numberAttr as number(50,20)
 create attrdesc stringAttr as string
 create attrdesc dateAttr as date
 create attrdesc timeAttr as time

@@ -1,7 +1,7 @@
-package com.tibco.tgdb.query;
+
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -17,8 +17,10 @@ package com.tibco.tgdb.query;
  * File name : TGFilter.java
  * Created on: 1/22/15
  * Created by: suresh
- * SVN Id: $Id: TGFilter.java 622 2016-03-19 20:51:12Z ssubrama $
+ * SVN Id: $Id: TGFilter.java 3129 2019-04-25 23:06:14Z nimish $
  */
+
+package com.tibco.tgdb.query;
 
 public interface TGFilter {
 

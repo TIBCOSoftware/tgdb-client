@@ -1,16 +1,6 @@
-package com.tibco.tgdb.model.impl;
-
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.model.*;
-import com.tibco.tgdb.query.TGFilter;
-import com.tibco.tgdb.query.TGQuery;
-import com.tibco.tgdb.query.TGResultSet;
-import com.tibco.tgdb.query.TGTraversalDescriptor;
-
-import java.util.Set;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -27,8 +17,20 @@ import java.util.Set;
  * Created on: 1/21/15
  * Created by: suresh
 
- * SVN Id: $Id: TGGraphManager.java 623 2016-03-19 21:41:13Z ssubrama $
+ * SVN Id: $Id: TGGraphManager.java 3144 2019-04-26 00:25:12Z nimish $
  */
+
+package com.tibco.tgdb.model.impl;
+
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.model.*;
+import com.tibco.tgdb.query.TGFilter;
+import com.tibco.tgdb.query.TGQuery;
+import com.tibco.tgdb.query.TGResultSet;
+import com.tibco.tgdb.query.TGTraversalDescriptor;
+
+import java.util.Set;
+
 
 /**
  * @todo For Future Development. Currently a Marker. For Object creation use GraphObjectFactory

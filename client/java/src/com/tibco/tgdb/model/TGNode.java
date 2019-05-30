@@ -1,10 +1,6 @@
-package com.tibco.tgdb.model;
-
-
-import java.util.Collection;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -19,10 +15,17 @@ import java.util.Collection;
  *
  *  File name :TGNode.java
  *  Created by: suresh
+ *  Created on: 03/18/2014
  *
- *		SVN Id: $Id: TGNode.java 2344 2018-06-11 23:21:45Z ssubrama $
+ *		SVN Id: $Id: TGNode.java 3142 2019-04-26 00:15:06Z nimish $
  *
  */
+
+package com.tibco.tgdb.model;
+
+
+import java.util.Collection;
+
 
 public interface TGNode extends TGEntity {
 

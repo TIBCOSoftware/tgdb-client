@@ -3,13 +3,6 @@
 {{return new java.math.BigDecimal("0.0000000001");}}|{{return new java.math.BigDecimal("0.00000000001");}}
 # Test 1 digit | Crash similar to TGDB-199
 {{return java.math.BigDecimal.ZERO;}}|{{return new java.math.BigDecimal("1234.56789");}}
-{{return new java.math.BigDecimal((double)Double.MAX_VALUE);}}|{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(402,0);}}
-# Next 3 => TGDB-199
-{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(21,0);}}|{{return new java.math.BigDecimal("98.76");}}
-{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(20,10);}}|{{return new java.math.BigDecimal("98.76");}}
-{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(40,0);}}|{{return new java.math.BigDecimal("98.76");}}
-# TGDB-196 - TGDB-197
-{{return new java.math.BigDecimal((double)Double.MIN_VALUE);}}|{{return new java.math.BigDecimal((double)Double.MIN_VALUE);}}
-#{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(20,10);}}|{{return new java.math.BigDecimal("98.76");}}
-# test null
-#{{return null;}}|{{return java.math.BigDecimal.ONE;}}
+#
+#{{return new java.math.BigDecimal((double)Double.MAX_VALUE);}}|{{return com.tibco.tgdb.test.datatype.attribute.NumberAttrTests.getRandomBigDecimal(402,0);}}
+#{{return new java.math.BigDecimal((double)Double.MIN_VALUE);}}|{{return new java.math.BigDecimal((double)Double.MIN_VALUE);}}

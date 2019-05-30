@@ -1,6 +1,6 @@
-
 /**
- * Copyright 2018 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc.
+ * All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
@@ -12,12 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  * <p/>
- * File name :SSLChannel
+ * File name: SSLChannel.java
  * Created on: 12/16/14
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: SSLChannel.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: SSLChannel.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
 
 package com.tibco.tgdb.channel.impl;
@@ -31,6 +32,7 @@ import com.tibco.tgdb.utils.ConfigName;
 import com.tibco.tgdb.utils.SortedProperties;
 import com.tibco.tgdb.utils.TGProperties;
 
+import javax.crypto.Cipher;
 import javax.net.ssl.*;
 import java.io.File;
 import java.io.FileInputStream;
@@ -286,7 +288,10 @@ public class SSLChannel extends TcpChannel {
         TGProperties<String,String> props = new SortedProperties<>(url.getProperties());
         props.put(ConfigName.TlsTrustedCertificates.getAlias(),
                 "/Users/suresh/tsi-root/ext/openssl/1.0.2g/bin/suresh-mbp.pem,/Users/suresh/tibco/ems/8.0/samples/certs/server_root.cert.pem");
-        SSLChannel sslChannel = new SSLChannel(url, props);
+       // SSLChannel sslChannel = new SSLChannel(url, props);
+
+        Cipher cipher = Cipher.getInstance("TLS_RSA_WITH_AES_128_CBC_SHA256");
+        System.out.println(cipher);
         /*
         for (int i=0; i<providers.length; i++) {
             Provider p = providers[i];

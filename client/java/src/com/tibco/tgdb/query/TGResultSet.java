@@ -1,13 +1,6 @@
-package com.tibco.tgdb.query;
-
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.model.TGEntity;
-
-import java.util.Iterator;
-import java.util.List;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -24,10 +17,20 @@ import java.util.List;
  * Created on: 1/22/15
  * Created by: suresh
 
- * SVN Id: $Id: TGResultSet.java 1262 2016-11-20 13:21:20Z vchung $
+ * SVN Id: $Id: TGResultSet.java 3129 2019-04-25 23:06:14Z nimish $
  */
 
-public interface TGResultSet extends Iterator<TGEntity>, AutoCloseable {
+package com.tibco.tgdb.query;
+
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.model.TGEntity;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+
+public interface TGResultSet<T> extends Iterator<T>, AutoCloseable {
 
     /**
      * Does the Resultset have any Exceptions
@@ -53,26 +56,19 @@ public interface TGResultSet extends Iterator<TGEntity>, AutoCloseable {
      * Return the first entity in the ResultSet
      * @return first entity in the result set
      */
-    TGEntity first();
+    T first();
 
     /**
      * Return the last Entity in the ResultSet
      * @return last entity in the result set
      */
-    TGEntity last();
+    T last();
 
     /**
      * Return the prev entity w.r.t to the current cursor position in the ResultSet
      * @return previous entity from the current result set position
      */
-    TGEntity prev();
-
-    /**
-     * Return the next entity w.r.t to the current cursor position in the ResultSet
-     * Purely from a completeness point.
-     * @return next entity from the current result set position
-    TGEntity next();
-     */
+    T prev();
 
     /**
      * Get the Current cursor position. A resultset upon creation is set to the position 0.
@@ -85,7 +81,7 @@ public interface TGResultSet extends Iterator<TGEntity>, AutoCloseable {
      * @param position get entity at this position
      * @return entity at specific position
      */
-    TGEntity getAt(int position);
+    T getAt(int position);
 
     /**
      * Skip a number of position
@@ -93,6 +89,10 @@ public interface TGResultSet extends Iterator<TGEntity>, AutoCloseable {
      * 
      */
     void skip(int position);
-
-
+    
+    /**
+     * Convert the result set into a collection
+     * @return collection of the result set data
+     */
+    Collection<T> toCollection();
 }

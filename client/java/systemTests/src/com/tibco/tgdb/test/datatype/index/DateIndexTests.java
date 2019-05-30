@@ -43,7 +43,6 @@ import com.tibco.tgdb.model.TGNodeType;
 /**
  * CRUD tests for Date data type index
  */
-@Ignore
 public class DateIndexTests extends LifecycleServer {
 
 	
@@ -58,7 +57,7 @@ public class DateIndexTests extends LifecycleServer {
 	 * @throws Exception
 	 */
 	@Test(description = "Insert nodes with date index")
-	public void testCreateDateData() throws Exception {
+	public void testCreateDateIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();
@@ -92,8 +91,8 @@ public class DateIndexTests extends LifecycleServer {
 	 */
 	
 	@Test(description = "Retrieve nodes with date index",
-		  dependsOnMethods = { "testCreateDateData" })
-	public void testReadDateData() throws Exception {
+		  dependsOnMethods = { "testCreateDateIndex" })
+	public void testReadDateIndex() throws Exception {
 		TGConnection conn = TGConnectionFactory.getInstance().createConnection(tgUrl, tgUser, tgPwd, null);
 		
 		conn.connect();

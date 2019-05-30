@@ -1,16 +1,6 @@
-package com.tibco.tgdb.pdu.impl;
-
-import com.tibco.tgdb.pdu.TGInputStream;
-import com.tibco.tgdb.utils.TGConstants;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UTFDataFormatException;
-import java.util.Map;
 
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -27,8 +17,20 @@ import java.util.Map;
  * Created on: 1/31/15
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: ProtocolDataInputStream.java 771 2016-05-05 11:40:52Z vchung $
+ * SVN Id: $Id: ProtocolDataInputStream.java 3140 2019-04-25 23:59:24Z nimish $
  */
+
+package com.tibco.tgdb.pdu.impl;
+
+import com.tibco.tgdb.pdu.TGInputStream;
+import com.tibco.tgdb.utils.TGConstants;
+
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UTFDataFormatException;
+import java.util.Map;
+
 public class ProtocolDataInputStream extends InputStream implements TGInputStream{
 
     byte[]          buffer  = null;
@@ -353,7 +355,7 @@ public class ProtocolDataInputStream extends InputStream implements TGInputStrea
     public byte[] readBytes() throws IOException {
         int len = readInt();
         if (len == 0) return TGConstants.EmptyByteArray;
-        if (len == -1) throw new IOException("Read data corrupt");
+        if (len < -1) throw new IOException("Read data corrupt");
         byte[] buf = new byte[len];
         read(buf);
         return buf;

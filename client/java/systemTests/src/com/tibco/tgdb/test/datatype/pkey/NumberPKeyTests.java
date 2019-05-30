@@ -133,7 +133,7 @@ public class NumberPKeyTests {
 		for (int i=0; i<data.length; i++) {
 			
 			TGNode node = gof.createNode(nodeAllAttrsType);
-			node.setAttribute("numberAttr", (BigDecimal)data[i][0]);
+			node.setAttribute("numberAttr", data[i][0]);
 			//System.out.println("CREATE ATTR:" + data[i][0]);
 			//node.setAttribute("numberAttr", i);
 			nodes.add(node);
@@ -165,7 +165,7 @@ public class NumberPKeyTests {
 			
 			Object[][] data = this.getNumberData();
 			for (int i=0; i<data.length; i++) {
-				tgKey.setAttribute("numberAttr",(BigDecimal)data[i][0]);
+				tgKey.setAttribute("numberAttr", data[i][0]);
 				TGEntity entity = conn.getEntity(tgKey,null);
 				//jira-TGDB-163
 				if (entity == null) {
@@ -173,7 +173,12 @@ public class NumberPKeyTests {
 				}
 				//System.out.println("READ ATTR:" + entity.getAttribute("numberAttr").getAsString());
 				// Assert on Node attribute
-				Assert.assertEquals(entity.getAttribute("numberAttr").getValue(), data[i][0]);
+				//Assert.assertEquals(entity.getAttribute("numberAttr").getValue(), data[i][0]);
+
+				if (data[i][0] != null)
+					Assert.assertEquals(((BigDecimal) entity.getAttribute("numberAttr").getValue()).compareTo((BigDecimal)data[i][0]), 0, "Actual and Expected BigDecimal are not the same");
+				else
+					Assert.assertEquals(entity.getAttribute("numberAttr").getValue(), data[i][0]);
 			}
 			conn.disconnect();
 		}

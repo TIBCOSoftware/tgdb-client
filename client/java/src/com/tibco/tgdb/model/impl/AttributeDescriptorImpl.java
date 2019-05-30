@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -16,7 +16,7 @@
  * Created on: 1/23/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: AttributeDescriptorImpl.java 2344 2018-06-11 23:21:45Z ssubrama $
+ * SVN Id: $Id: AttributeDescriptorImpl.java 3144 2019-04-26 00:25:12Z nimish $
  */
 
 
@@ -43,6 +43,7 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
 	private String name;
 	private TGAttributeType type;
 	private boolean isArray;
+	private boolean isEncrypted;
 	private int attributeId;
     private short scale;
     private short precision;
@@ -114,6 +115,11 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
     }
 
     @Override
+    public boolean isEncrypted() {
+        return isEncrypted;
+    }
+
+    @Override
     public short getPrecision() { return precision; }
 
     @Override
@@ -128,6 +134,7 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
             os.writeUTF(name);
             os.writeByte(type.typeId());
             os.writeBoolean(isArray);
+            os.writeBoolean(isEncrypted);
             if (type == TGAttributeType.Number) {
                 os.writeShort(precision);
                 os.writeShort(scale);
@@ -150,6 +157,7 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
         this.name = is.readUTF();
         this.type = TGAttributeType.fromTypeId(is.readByte());
         this.isArray = is.readBoolean();
+        this.isEncrypted = is.readBoolean();
         if (type == TGAttributeType.Number) {
             precision = is.readShort();
             scale = is.readShort();
@@ -172,5 +180,10 @@ public class AttributeDescriptorImpl implements TGAttributeDescriptor {
         if (type == TGAttributeType.Number) {
             this.scale = scale;
         }
+    }
+
+    public void setEncrypted(boolean bEncrypted)
+    {
+        this.isEncrypted = bEncrypted;
     }
 }

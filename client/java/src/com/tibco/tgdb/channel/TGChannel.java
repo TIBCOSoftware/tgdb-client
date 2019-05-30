@@ -1,7 +1,5 @@
-package com.tibco.tgdb.channel;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
@@ -15,9 +13,12 @@ package com.tibco.tgdb.channel;
  * limitations under the License.
  *
  * File name : TGChannel
+ * Created on: 12/26/2014 
  * Created by: Suresh
- * SVN Id : $Id: TGChannel.java 2155 2018-03-19 04:31:41Z ssubrama $
+ * SVN Id : $Id: TGChannel.java 3124 2019-04-25 22:21:54Z nimish $
  */
+
+package com.tibco.tgdb.channel;
 
 import com.tibco.tgdb.exception.TGException;
 import com.tibco.tgdb.pdu.TGMessage;

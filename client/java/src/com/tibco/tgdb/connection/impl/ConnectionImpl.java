@@ -1,5 +1,6 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc.
+ * All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -11,12 +12,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  * <p/>
- * File name : ConnectionImpl.${EXT}
+ * File name: ConnectionImpl.java
  * Created on: 1/10/15
  * Created by: suresh 
  * <p/>
- * SVN Id: $Id: ConnectionImpl.java 2691 2018-11-11 15:15:30Z vchung $
+ * SVN Id: $Id: ConnectionImpl.java 3158 2019-04-26 20:49:24Z kattaylo $
  */
 
 
@@ -26,6 +28,7 @@ import com.tibco.tgdb.channel.TGChannel;
 import com.tibco.tgdb.channel.TGChannelResponse;
 import com.tibco.tgdb.channel.impl.AbstractChannel;
 import com.tibco.tgdb.channel.impl.BlockingChannelResponse;
+import com.tibco.tgdb.channel.impl.DataCryptoGrapher;
 import com.tibco.tgdb.connection.TGConnection;
 import com.tibco.tgdb.connection.TGConnectionExceptionListener;
 import com.tibco.tgdb.exception.TGException;
@@ -35,6 +38,7 @@ import com.tibco.tgdb.log.TGLogger.TGLevel;
 import com.tibco.tgdb.model.*;
 import com.tibco.tgdb.model.impl.*;
 import com.tibco.tgdb.pdu.TGInputStream;
+import com.tibco.tgdb.pdu.TGMessage;
 import com.tibco.tgdb.pdu.TGMessageFactory;
 import com.tibco.tgdb.pdu.VerbId;
 import com.tibco.tgdb.pdu.impl.*;
@@ -42,7 +46,9 @@ import com.tibco.tgdb.query.TGQuery;
 import com.tibco.tgdb.query.TGQueryOption;
 import com.tibco.tgdb.query.TGResultSet;
 import com.tibco.tgdb.query.TGTraversalDescriptor;
+import com.tibco.tgdb.query.impl.EntityResultSet;
 import com.tibco.tgdb.query.impl.GremlinResult;
+import com.tibco.tgdb.query.impl.ObjectResultSet;
 import com.tibco.tgdb.query.impl.QueryImpl;
 import com.tibco.tgdb.query.impl.ResultSetImpl;
 import com.tibco.tgdb.utils.ConfigName;
@@ -57,8 +63,8 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
 
     static TGLogger gLogger        = TGLogManager.getInstance().getLogger();
 
-    AbstractChannel channel;
-    TGProperties<String, String> properties;
+    protected AbstractChannel channel;
+    protected TGProperties<String, String> properties;
     //first argument is meta data.
     GraphObjectFactoryImpl gof;
 
@@ -68,8 +74,10 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     enum command {
         CREATE(1), 
         EXECUTE(2), 
-        EXECUTEID(3), 
-        CLOSE(4);
+        EXECUTEGREMLIN(3), 
+        EXECUTEGREMLINSTR(4), 
+        EXECUTEID(5), 
+        CLOSE(6);
 
         private final int value;
         private command(int value) {
@@ -80,14 +88,14 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         }
     }
 
-    ConnectionPoolImpl connPool;
+    protected ConnectionPoolImpl connPool;
     LinkedHashMap<Long, TGEntity> changedList;
     LinkedHashMap<Long, TGEntity> addedList;
     LinkedHashMap<Long, TGEntity> removedList;
     LinkedHashMap<Integer, List<TGAttribute>> attrByTypeList;
 
     static AtomicInteger connectionIds = new AtomicInteger();
-    static AtomicLong requestIds = new AtomicLong(0);
+    protected static AtomicLong requestIds = new AtomicLong(0);
 
     public ConnectionImpl(ConnectionPoolImpl connPool, TGChannel channel, TGProperties<String, String> properties) {
         this.connPool = connPool;
@@ -533,7 +541,30 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
     }
 
     @Override
-    public TGResultSet executeQuery(String query, TGQueryOption queryOption) throws TGException {
+    public TGResultSet<Object> executeQuery(String query, TGQueryOption queryOption) throws TGException {
+        String lang = properties.getProperty(ConfigName.ConnectionDefaultQueryLanguage, "tgql");
+        int idx = query.indexOf("://");
+        if (idx != -1) {
+			String prefix = query.substring(0, idx);
+			if (prefix.equalsIgnoreCase("tgql")) {
+				return executeTgdbQuery(query.substring(idx + 3), queryOption);
+			} else if (prefix.equalsIgnoreCase("gremlin")) {
+				return executeGremlinQuery(query.substring(idx + 3), queryOption);
+			} else {
+        		return new ObjectResultSet(this, 0);
+			}
+        } else {
+        	if (lang.equalsIgnoreCase("tgql")) {
+        		return executeTgdbQuery(query, queryOption);
+        	} else if (lang.equalsIgnoreCase("gremlin")) {
+        		return executeGremlinQuery(query, queryOption);
+        	} else {
+        		return new ObjectResultSet(this, 0);
+        	}
+        }
+    }
+
+    TGResultSet<Object> executeTgdbQuery(String query, TGQueryOption queryOption) throws TGException {
     	initMetadata();
         connPool.adminlock();
 
@@ -546,7 +577,6 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
             QueryRequest request = (QueryRequest) TGMessageFactory.getInstance().createMessage(VerbId.QueryRequest, channel.getAuthToken(), channel.getSessionId());
         	configureQueryRequest(request, queryOption);
             request.setCommand(command.EXECUTE.getValue());
-//            request.setConnectionId(connId);
             request.setQuery(query);
             QueryResponse response = (QueryResponse) this.channel.sendRequest(request, channelResponse);
             gLogger.log(TGLogger.TGLevel.Debug, "Send execute query completed");
@@ -563,7 +593,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         	if (resultCount > 0) {
          		fetchedEntities = new HashMap<Long, TGEntity>();
                 entityStream.setReferenceMap(fetchedEntities);
-                resultSet = new ResultSetImpl(this, 0);
+                resultSet = new EntityResultSet(this, 0);
         	}
             int totalCount = response.getTotalCount();
         	for (int i=0; i<totalCount; i++) {
@@ -621,7 +651,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         }
     }
 
-    public Collection executeGremlinQuery(String query, Collection collection, TGQueryOption queryOption) throws TGException {
+	public Collection executeGremlinQuery(String query, Collection collection, TGQueryOption queryOption) throws TGException {
     	initMetadata();
         connPool.adminlock();
 
@@ -633,9 +663,8 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         try {
             QueryRequest request = (QueryRequest) TGMessageFactory.getInstance().createMessage(VerbId.QueryRequest, channel.getAuthToken(), channel.getSessionId());
         	configureQueryRequest(request, queryOption);
-            request.setCommand(command.EXECUTE.getValue());
-//            request.setConnectionId(connId);
-            request.setQuery("gbc : " + query);
+            request.setCommand(command.EXECUTEGREMLIN.getValue());
+            request.setQuery(query);
             QueryResponse response = (QueryResponse) this.channel.sendRequest(request, channelResponse);
             gLogger.log(TGLogger.TGLevel.Debug, "Send execute query completed");
 
@@ -656,7 +685,43 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
             connPool.adminUnlock();
         }
     }
+  
+	public TGResultSet<Object> executeGremlinQuery(String query, TGQueryOption queryOption) throws TGException {
+    	initMetadata();
+        connPool.adminlock();
 
+        TGChannelResponse channelResponse;
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
+
+        long requestId  = requestIds.getAndIncrement();
+        channelResponse = new BlockingChannelResponse(requestId, timeout);
+        try {
+            QueryRequest request = (QueryRequest) TGMessageFactory.getInstance().createMessage(VerbId.QueryRequest, channel.getAuthToken(), channel.getSessionId());
+        	configureQueryRequest(request, queryOption);
+            request.setCommand(command.EXECUTEGREMLINSTR.getValue());
+            request.setQuery(query);
+            QueryResponse response = (QueryResponse) this.channel.sendRequest(request, channelResponse);
+            gLogger.log(TGLogger.TGLevel.Debug, "Send execute query completed");
+
+            ResultSetImpl resultSet = new ObjectResultSet(this, 0);
+        	//Need to check status
+        	if (!response.hasResult()) {
+        		return resultSet;
+        	}
+        	//This is just a dummy value where > 0 means it has results
+            int resultCount = response.getResultCount();
+
+    		TGInputStream entityStream = response.getEntityStream();
+    		GremlinResult.fillCollection(entityStream, gof, resultSet);
+            return resultSet;
+        } catch (Exception ioe) {
+        	throw new TGException(ioe.getMessage());
+        }
+        finally {
+            connPool.adminUnlock();
+        }
+    }
+  
     @Override
 	public TGResultSet executeQuery(String query, String edgeFilter, String traversalCondition, String endCondition, TGQueryOption queryOption) throws TGException {
     	initMetadata();
@@ -671,7 +736,6 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
             QueryRequest request = (QueryRequest) TGMessageFactory.getInstance().createMessage(VerbId.QueryRequest, channel.getAuthToken(), channel.getSessionId());
         	configureQueryRequest(request, queryOption);
             request.setCommand(command.EXECUTE.getValue());
-//            request.setConnectionId(connId);
             request.setQuery(query);
             request.setEdgeFilter(edgeFilter);
             request.setTraversalCondition(traversalCondition);
@@ -1106,6 +1170,11 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
 
     public byte[] getLargeObjectAsBytes(long entityId) throws TGException
     {
+        return getLargeObjectAsBytes(entityId, false);
+    }
+
+    private byte[] getLargeObjectAsBytes(long entityId, boolean bDecrypt) throws TGException
+    {
         initMetadata();
         connPool.adminlock();
 
@@ -1117,6 +1186,7 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
         try {
             GetLargeObjectRequest request = (GetLargeObjectRequest) TGMessageFactory.getInstance().createMessage(VerbId.GetLargeObjectRequest);
             request.setEntityId(entityId);
+            request.setDecryptionEnable(bDecrypt);
             GetLargeObjectResponse response = (GetLargeObjectResponse) this.channel.sendRequest(request, channelResponse);
             gLogger.log(TGLogger.TGLevel.Debug, "Send Request for GetLargeObject");
             return response.getBuffer();
@@ -1125,4 +1195,52 @@ public class ConnectionImpl implements TGConnection, TGChangeListener {
             connPool.adminUnlock();
         }
     }
+
+    public byte[] decryptEntity(long entityId) throws TGException
+    {
+        byte[] buf = getLargeObjectAsBytes(entityId, true);
+        DataCryptoGrapher cryptoGrapher = this.channel.getDataCryptoGrapher();
+        return cryptoGrapher.decrypt(new ProtocolDataInputStream(buf)); //SS:TODO - Fix for Blob's and Clobs
+    }
+
+    public byte[] decryptBuffer(TGInputStream in) throws TGException
+    {
+        DataCryptoGrapher cryptoGrapher = this.channel.getDataCryptoGrapher();
+        return cryptoGrapher.decrypt(in);
+    }
+
+
+    public byte[] encryptEntity(byte[] plainText) throws TGException
+    {
+        DataCryptoGrapher cryptoGrapher = this.channel.getDataCryptoGrapher();
+        return cryptoGrapher.encrypt(plainText);
+    }
+
+
+
+    public TGProperties<String, String> getProperties() {
+        return this.properties;
+    }
+
+    public TGMessage sendTraceMessage(TGMessage request) throws TGException
+    {
+        initMetadata();
+        connPool.adminlock();
+
+        TGChannelResponse channelResponse;
+        long timeout = Long.parseLong(properties.getProperty(ConfigName.ConnectionOperationTimeoutSeconds, "-1"));
+
+        long requestId  = requestIds.getAndIncrement();
+        channelResponse = new BlockingChannelResponse(requestId, timeout);
+        try {
+
+            TGMessage msg =  this.channel.sendRequest(request, channelResponse);
+            return msg;
+        }
+        finally {
+            connPool.adminUnlock();
+        }
+    }
+
+
 }

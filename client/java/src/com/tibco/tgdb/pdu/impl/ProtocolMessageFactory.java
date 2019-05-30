@@ -1,18 +1,5 @@
-package com.tibco.tgdb.pdu.impl;
-
-import com.tibco.tgdb.exception.TGBadVerb;
-import com.tibco.tgdb.exception.TGException;
-import com.tibco.tgdb.pdu.TGMessage;
-import com.tibco.tgdb.pdu.TGMessageFactory;
-import com.tibco.tgdb.pdu.VerbId;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.HashMap;
-
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -29,8 +16,23 @@ import java.util.HashMap;
  * Created on: 1/31/15
  * Created by: suresh
  * <p/>
- * SVN Id: $Id: ProtocolMessageFactory.java 583 2016-03-15 02:02:39Z vchung $
+ * SVN Id: $Id: ProtocolMessageFactory.java 3140 2019-04-25 23:59:24Z nimish $
  */
+
+package com.tibco.tgdb.pdu.impl;
+
+import com.tibco.tgdb.exception.TGBadVerb;
+import com.tibco.tgdb.exception.TGException;
+import com.tibco.tgdb.pdu.TGMessage;
+import com.tibco.tgdb.pdu.TGMessageFactory;
+import com.tibco.tgdb.pdu.VerbId;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.HashMap;
+
+
 public class ProtocolMessageFactory extends TGMessageFactory {
 
     HashMap<VerbId, Class<? extends TGMessage>> msgtypeMap = new HashMap<VerbId, Class<? extends TGMessage>>();

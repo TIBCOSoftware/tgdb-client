@@ -1,6 +1,5 @@
-package com.tibco.tgdb.query.impl;
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
@@ -13,9 +12,13 @@ package com.tibco.tgdb.query.impl;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * File name : TGQueryOption.java
- * SVN Id: $Id$
+ * File name : GremlinResult.java
+ * Created on: 11/09/2018
+ * Created by: vincent
+ * SVN Id: $Id: GremlinResult.java 3149 2019-04-26 00:45:37Z sbangar $
  */
+
+package com.tibco.tgdb.query.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +36,7 @@ import com.tibco.tgdb.model.TGNode;
 import com.tibco.tgdb.model.impl.GraphObjectFactoryImpl;
 import com.tibco.tgdb.model.impl.attribute.AbstractAttribute;
 import com.tibco.tgdb.pdu.TGInputStream;
+import com.tibco.tgdb.query.TGResultSet;
 
 public class GremlinResult {
 
@@ -41,8 +45,9 @@ public class GremlinResult {
        	List(1),
        	Attr(2),
        	AttrValue(3),
-       	Entity(4),
-       	Map(5);
+       	AttrValueTransient(4),
+       	Entity(5),
+       	Map(6);
 
     	private int id;
     
@@ -81,12 +86,28 @@ public class GremlinResult {
     	}
     }
     
+    static public void fillCollection(TGInputStream entityStream, GraphObjectFactoryImpl gof, TGResultSet<Object> resultSet) {
+    	try {
+    		//These types will have an enum to represent them
+    		ElementType retType = ElementType.fromValue(entityStream.readByte());
+    		if (retType == ElementType.List) {
+    			constructList(entityStream, gof, ((ResultSetImpl<Object>) resultSet).getResultCollection());
+    		} else {
+    			gLogger.log(TGLogger.TGLevel.Error, "Invalid gremlin response collection type : %d", retType.getId());
+    		}
+    	} catch (IOException ioe) {
+            gLogger.log(TGLogger.TGLevel.Error, "Failed to read gremlin query response stream");
+    	} catch (TGException tge) {
+            gLogger.log(TGLogger.TGLevel.Error, "Failed to read gremlin query response stream");
+    	}
+    }
+    
     static public void constructList(TGInputStream entityStream, GraphObjectFactoryImpl gof, Collection col) throws IOException, TGException {
    		int size = entityStream.readInt();
    		int et = entityStream.readByte();
    		ElementType elemType = ElementType.fromValue(et);
    		TGNode dummyNode = null;
-   		if (elemType == ElementType.Attr || elemType == ElementType.AttrValue) {
+   		if (elemType == ElementType.Attr || elemType == ElementType.AttrValue || elemType == ElementType.AttrValueTransient) {
    			dummyNode = gof.createNode();
    		}
    		for (int i=0; i<size; i++) {
@@ -100,11 +121,15 @@ public class GremlinResult {
    					TGNode node = gof.createNode();
    					node.readExternal(entityStream);
    					col.add(node);
+   				} else if (kind == TGEntity.TGEntityKind.Edge) {
+   					TGEdge edge = (TGEdge) ((GraphObjectFactoryImpl)gof).createEntity(TGEntity.TGEntityKind.Edge);
+   					edge.readExternal(entityStream);
+   					col.add(edge);
    				}
    			} else if (elemType == ElementType.Attr) {
    				TGAttribute attr = AbstractAttribute.readExternal(dummyNode, entityStream);
    				col.add(attr);
-   			} else if (elemType == ElementType.AttrValue) {
+   			} else if (elemType == ElementType.AttrValue || elemType == ElementType.AttrValueTransient) {
    				TGAttribute attr = AbstractAttribute.readExternal(dummyNode, entityStream);
    				col.add(attr.getValue());
    			} else if (elemType == ElementType.List) {
@@ -128,7 +153,7 @@ public class GremlinResult {
 			int et = entityStream.readByte();
 			ElementType elemType = ElementType.fromValue(et);
 			TGNode dummyNode = null;
-			if (elemType == ElementType.Attr || elemType == ElementType.AttrValue) {
+			if (elemType == ElementType.Attr || elemType == ElementType.AttrValue || elemType == ElementType.AttrValueTransient) {
 				dummyNode = gof.createNode();
 			}
    			if (elemType == ElementType.Entity) {
@@ -150,7 +175,7 @@ public class GremlinResult {
    			} else if (elemType == ElementType.Attr) {
    				TGAttribute attr = AbstractAttribute.readExternal(dummyNode, entityStream);
    				map.put(key, attr);
-   			} else if (elemType == ElementType.AttrValue) {
+   			} else if (elemType == ElementType.AttrValue || elemType == ElementType.AttrValueTransient) {
    				TGAttribute attr = AbstractAttribute.readExternal(dummyNode, entityStream);
    				map.put(key, attr.getValue());
    			} else if (elemType == ElementType.List) {

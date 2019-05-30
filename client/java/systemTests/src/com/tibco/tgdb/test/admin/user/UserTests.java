@@ -67,7 +67,7 @@ public class UserTests {
 		File initFile = ClasspathResource.getResourceAsFile(this.getClass().getPackage().getName().replaceFirst("\\.[a-z]*$", "").replace('.', '/') + "/initdb.conf", tgWorkingDir + "/initdb.conf");
 		tgServer = new TGServer(tgHome);
 		try {
-			tgServer.init(initFile.getAbsolutePath(), true, 15000);
+			tgServer.init(initFile.getAbsolutePath(), true, 50000);
 		}
 		catch (TGInitException ie) {
 			System.out.println(ie.getOutput());
@@ -119,8 +119,9 @@ public class UserTests {
 				this.getClass().getPackage().getName().replace('.', '/') + "/CreateUsers.data", tgWorkingDir + "/CreateUsers.data");
 		
 		// Create users via Admin
+		//Sneha: Increasing the timeout to 150 sec from 10 second, as 10 seconds are not enough to insert 10,000 users.
 		String console = TGAdmin.invoke(tgServer, tgServer.getNetListeners()[0].getName(), tgWorkingDir + "/adminCreateUsers.log", null, 
-				cmdFile.getAbsolutePath(), -1, 10000);
+				cmdFile.getAbsolutePath(), -1, 150000);
 		//System.out.println(console);
 		
 		// Get expected number of user creations

@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 TIBCO Software Inc. All rights reserved.
+ * Copyright 2019 TIBCO Software Inc. All rights reserved.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except 
  * in compliance with the License.
@@ -13,9 +13,9 @@
  * limitations under the License.
 
  * File name : SortedProperties.java
- * Created on: 2/5/15
+ * Created on: 02/05/2015
  * Created by: suresh 
-  * SVN Id: $Id: SortedProperties.java 2316 2018-04-26 23:49:37Z ssubrama $
+ * SVN Id: $Id: SortedProperties.java 3137 2019-04-25 23:52:32Z sbangar $
  */
 
 
