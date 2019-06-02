@@ -29,23 +29,23 @@ import (
 type TGExceptionType int
 
 const (
-	TGSuccess = iota
-	TGErrorBadAuthentication
+	TGErrorBadVerb = iota
+	TGErrorInvalidMessageLength
 	TGErrorBadMagic
-	TGErrorBadVerb
-	TGErrorChannelDisconnected
+	TGErrorProtocolNotSupported
+	TGErrorBadAuthentication
+	TGErrorIOException
 	TGErrorConnectionTimeout
 	TGErrorGeneralException
-	TGErrorInvalidMessageLength
-	TGErrorIOException
-	TGErrorProtocolNotSupported
 	TGErrorRetryIOException
+	TGErrorChannelDisconnected
 	TGErrorSecurityException
 	TGErrorTransactionException
 	TGErrorTypeCoercionNotSupported
 	TGErrorTypeNotSupported
 	TGErrorVersionMismatchException
 	TGErrorInvalidErrorCode
+	TGSuccess
 )
 
 type TGError interface {
@@ -67,23 +67,23 @@ type TGDBError struct {
 
 // Code message map containing all code messages with the code as key
 var PreDefinedErrors = map[int]TGDBError{
-	TGSuccess:                       {ErrorCode: "TGSuccess", ErrorType: TGSuccess, ErrorMsg: "", ErrorDetails: ""},
-	TGErrorBadAuthentication:        {ErrorCode: "TGErrorBadAuthentication", ErrorType: TGErrorBadAuthentication, ErrorMsg: "", ErrorDetails: ""},
-	TGErrorBadMagic:                 {ErrorCode: "TGErrorBadMagic", ErrorType: TGErrorBadMagic, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorBadVerb:                  {ErrorCode: "TGErrorBadVerb", ErrorType: TGErrorBadVerb, ErrorMsg: "", ErrorDetails: ""},
-	TGErrorChannelDisconnected:      {ErrorCode: "TGErrorChannelDisconnected", ErrorType: TGErrorChannelDisconnected, ErrorMsg: "", ErrorDetails: ""},
+	TGErrorInvalidMessageLength:     {ErrorCode: "TGErrorInvalidMessageLength", ErrorType: TGErrorInvalidMessageLength, ErrorMsg: "", ErrorDetails: ""},
+	TGErrorBadMagic:                 {ErrorCode: "TGErrorBadMagic", ErrorType: TGErrorBadMagic, ErrorMsg: "", ErrorDetails: ""},
+	TGErrorProtocolNotSupported:     {ErrorCode: "TGErrorProtocolNotSupported", ErrorType: TGErrorProtocolNotSupported, ErrorMsg: "", ErrorDetails: ""},
+	TGErrorBadAuthentication:        {ErrorCode: "TGErrorBadAuthentication", ErrorType: TGErrorBadAuthentication, ErrorMsg: "", ErrorDetails: ""},
+	TGErrorIOException:              {ErrorCode: "TGErrorIOException", ErrorType: TGErrorIOException, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorConnectionTimeout:        {ErrorCode: "TGErrorConnectionTimeout", ErrorType: TGErrorConnectionTimeout, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorGeneralException:         {ErrorCode: "TGErrorGeneralException", ErrorType: TGErrorGeneralException, ErrorMsg: "", ErrorDetails: ""},
-	TGErrorInvalidMessageLength:     {ErrorCode: "TGErrorInvalidMessageLength", ErrorType: TGErrorInvalidMessageLength, ErrorMsg: "", ErrorDetails: ""},
-	TGErrorIOException:              {ErrorCode: "TGErrorIOException", ErrorType: TGErrorIOException, ErrorMsg: "", ErrorDetails: ""},
-	TGErrorProtocolNotSupported:     {ErrorCode: "TGErrorProtocolNotSupported", ErrorType: TGErrorProtocolNotSupported, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorRetryIOException:         {ErrorCode: "TGErrorRetryIOException", ErrorType: TGErrorRetryIOException, ErrorMsg: "", ErrorDetails: ""},
+	TGErrorChannelDisconnected:      {ErrorCode: "TGErrorChannelDisconnected", ErrorType: TGErrorChannelDisconnected, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorSecurityException:        {ErrorCode: "TGErrorSecurityException", ErrorType: TGErrorSecurityException, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorTransactionException:     {ErrorCode: "TGErrorTransactionException", ErrorType: TGErrorTransactionException, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorTypeCoercionNotSupported: {ErrorCode: "TGErrorTypeCoercionNotSupported", ErrorType: TGErrorTypeCoercionNotSupported, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorTypeNotSupported:         {ErrorCode: "TGErrorTypeNotSupported", ErrorType: TGErrorTypeNotSupported, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorVersionMismatchException: {ErrorCode: "TGErrorVersionMismatchException", ErrorType: TGErrorVersionMismatchException, ErrorMsg: "", ErrorDetails: ""},
 	TGErrorInvalidErrorCode:         {ErrorCode: "TGErrorInvalidErrorCode", ErrorType: TGErrorInvalidErrorCode, ErrorMsg: "", ErrorDetails: ""},
+	TGSuccess:                       {ErrorCode: "TGSuccess", ErrorType: TGSuccess, ErrorMsg: "", ErrorDetails: ""},
 }
 
 func DefaultTGDBError() *TGDBError {

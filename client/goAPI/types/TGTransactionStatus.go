@@ -43,30 +43,31 @@ const (
 	TGTransactionUniqueIndexKeyAttributeNullError TGTransactionStatus = lastStatus + 11
 )
 
-func (txnStatus TGTransactionStatus) FromStatus(status int) TGTransactionStatus {
-	if txnStatus&TGTransactionSuccess == TGTransactionSuccess {
+func FromStatus(status int) TGTransactionStatus {
+	switch TGTransactionStatus(status) {
+	case TGTransactionSuccess:
 		return TGTransactionSuccess
-	} else if txnStatus&TGTransactionAlreadyInProgress == TGTransactionAlreadyInProgress {
+	case TGTransactionAlreadyInProgress:
 		return TGTransactionAlreadyInProgress
-	} else if txnStatus&TGTransactionClientDisconnected == TGTransactionClientDisconnected {
+	case TGTransactionClientDisconnected:
 		return TGTransactionClientDisconnected
-	} else if txnStatus&TGTransactionMalFormed == TGTransactionMalFormed {
+	case TGTransactionMalFormed:
 		return TGTransactionMalFormed
-	} else if txnStatus&TGTransactionGeneralError == TGTransactionGeneralError {
+	case TGTransactionGeneralError:
 		return TGTransactionGeneralError
-	} else if txnStatus&TGTransactionVerificationError == TGTransactionVerificationError {
+	case TGTransactionVerificationError:
 		return TGTransactionVerificationError
-	} else if txnStatus&TGTransactionInBadState == TGTransactionInBadState {
+	case TGTransactionInBadState:
 		return TGTransactionInBadState
-	} else if txnStatus&TGTransactionUniqueConstraintViolation == TGTransactionUniqueConstraintViolation {
+	case TGTransactionUniqueConstraintViolation:
 		return TGTransactionUniqueConstraintViolation
-	} else if txnStatus&TGTransactionOptimisticLockFailed == TGTransactionOptimisticLockFailed {
+	case TGTransactionOptimisticLockFailed:
 		return TGTransactionOptimisticLockFailed
-	} else if txnStatus&TGTransactionResourceExceeded == TGTransactionResourceExceeded {
+	case TGTransactionResourceExceeded:
 		return TGTransactionResourceExceeded
-	} else if txnStatus&TGCurrentThreadNotInTransaction == TGCurrentThreadNotInTransaction {
+	case TGCurrentThreadNotInTransaction:
 		return TGCurrentThreadNotInTransaction
-	} else if txnStatus&TGTransactionUniqueIndexKeyAttributeNullError == TGTransactionUniqueIndexKeyAttributeNullError {
+	case TGTransactionUniqueIndexKeyAttributeNullError:
 		return TGTransactionUniqueIndexKeyAttributeNullError
 	}
 	return TGTransactionInvalid

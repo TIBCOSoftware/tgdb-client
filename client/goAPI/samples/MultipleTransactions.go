@@ -472,13 +472,13 @@ func MultiTransactionTest() {
 
 	gmd, err := conn.GetGraphMetadata(true)
 	if err != nil {
-		fmt.Println(">>>>>>> Returning from MultiTxn8 - error during conn.GetGraphMetadata <<<<<<<")
+		fmt.Println(">>>>>>> Returning from MultiTransactionTest - error during conn.GetGraphMetadata <<<<<<<")
 		return
 	}
 
 	basicNodeType, err := gmd.GetNodeType("basicnode")
 	if err != nil {
-		fmt.Println(">>>>>>> Returning from MultiTxn8 - error during conn.GetNodeType('basicnode') <<<<<<<")
+		fmt.Println(">>>>>>> Returning from MultiTransactionTest - error during conn.GetNodeType('basicnode') <<<<<<<")
 		return
 	}
 	if basicNodeType != nil {
@@ -490,10 +490,10 @@ func MultiTransactionTest() {
 
 	rateNodeType, err := gmd.GetNodeType("ratenode")
 	if err != nil {
-		fmt.Println(">>>>>>> Returning from MultiTxn8 - error during conn.GetNodeType('ratenode') <<<<<<<")
+		fmt.Println(">>>>>>> Returning from MultiTransactionTest - error during conn.GetNodeType('ratenode') <<<<<<<")
 		return
 	}
-	if basicNodeType != nil {
+	if rateNodeType != nil {
 		fmt.Printf(">>>>>>> 'rateNodeType' is found with %d attributes <<<<<<<\n", len(rateNodeType.GetAttributeDescriptors()))
 	} else {
 		fmt.Println(">>>>>>> 'rateNodeType' is not found from meta data fetch <<<<<<<")
@@ -502,10 +502,10 @@ func MultiTransactionTest() {
 
 	testNodeType, err := gmd.GetNodeType("testnode")
 	if err != nil {
-		fmt.Println(">>>>>>> Returning from MultiTxn8 - error during conn.GetNodeType('testnode') <<<<<<<")
+		fmt.Println(">>>>>>> Returning from MultiTransactionTest - error during conn.GetNodeType('testnode') <<<<<<<")
 		return
 	}
-	if basicNodeType != nil {
+	if testNodeType != nil {
 		fmt.Printf(">>>>>>> 'testNodeType' is found with %d attributes <<<<<<<\n", len(testNodeType.GetAttributeDescriptors()))
 	} else {
 		fmt.Println(">>>>>>> 'testNodeType' is not found from meta data fetch <<<<<<<")
@@ -518,14 +518,14 @@ func MultiTransactionTest() {
 	//MultiTxn1_1(conn, gof)
 
 	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn1 <<<<<<<")
+	//_ = MultiTxn1(conn, gof, basicNodeType)
 	john := MultiTxn1(conn, gof, basicNodeType)
-	//fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn1_2 <<<<<<<")
-	//MultiTxn1_2(conn, gof)
-	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn2 <<<<<<<")
+	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn1_2 <<<<<<<")
+	//MultiTxn1_2(conn, gof, basicNodeType)
+	//fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn2 <<<<<<<")
 	MultiTxn2(conn, gof, john)
 	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn3 <<<<<<<")
-	//kelly, brother := MultiTxn3(conn, gof, basicNodeType)
-	kelly, _ := MultiTxn3(conn, gof, basicNodeType)
+	kelly, brother := MultiTxn3(conn, gof, basicNodeType)
 	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn3_1 <<<<<<<")
 	MultiTxn3_1(conn, gof)
 	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn4 <<<<<<<")
@@ -542,9 +542,10 @@ func MultiTransactionTest() {
 	john = MultiTxn1(conn, gof, basicNodeType)
 	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn6_1 <<<<<<<")
 	MultiTxn6_1(conn, gof, john)
-	//fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn7 <<<<<<<")
-	//MultiTxn7(conn, gof, brother)
+	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to MultiTxn7 <<<<<<<")
+	MultiTxn7(conn, gof, brother)
 
+	fmt.Println(">>>>>>> Inside MultiTransactionTest: About to conn.Disconnect() <<<<<<<")
 	err = conn.Disconnect()
 	if err != nil {
 		fmt.Println("Returning from MultiTransactionTest - error during conn.Disconnect")

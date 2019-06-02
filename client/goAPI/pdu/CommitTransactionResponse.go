@@ -86,47 +86,46 @@ func NewCommitTransactionResponseMessage(authToken, sessionId int64) *CommitTran
 /////////////////////////////////////////////////////////////////
 
 func ProcessTransactionStatus(is types.TGInputStream, status int) *exception.TransactionException {
-	txnStatus := types.TGTransactionStatus(status)
-	errMsg := "Error not available"
+	txnStatus := types.FromStatus(status)
 	logger.Log(fmt.Sprintf("Entering CommitTransactionResponse:ProcessTransactionStatus read txnStatus as '%d'", txnStatus))
 	if txnStatus == types.TGTransactionSuccess {
 		logger.Log(fmt.Sprintf("Returning CommitTransactionResponse:ProcessTransactionStatus NO EXCEPTION for txnStatus:'%+v'", txnStatus))
 		return nil
 	}
-	//switch txnStatus {
-	//case types.TGTransactionSuccess:
-	//	logger.Log(fmt.Sprintf("Returning CommitTransactionResponse:ProcessTransactionStatus NO EXCEPTION for txnStatus:'%+v'", txnStatus))
-	//	return nil
-	//case types.TGTransactionAlreadyInProgress:
-	//	//fallthrough
-	//case types.TGTransactionClientDisconnected:
-	//	fallthrough
-	//case types.TGTransactionMalFormed:
-	//	fallthrough
-	//case types.TGTransactionGeneralError:
-	//	fallthrough
-	//case types.TGTransactionVerificationError:
-	//	fallthrough
-	//case types.TGTransactionInBadState:
-	//	fallthrough
-	//case types.TGTransactionUniqueConstraintViolation:
-	//	fallthrough
-	//case types.TGTransactionOptimisticLockFailed:
-	//	fallthrough
-	//case types.TGTransactionResourceExceeded:
-	//	fallthrough
-	//case types.TGCurrentThreadNotInTransaction:
-	//	fallthrough
-	//case types.TGTransactionUniqueIndexKeyAttributeNullError:
-	//	fallthrough
-	//default:
-		errMsg, _ = is.(*iostream.ProtocolDataInputStream).ReadUTF()
-		//if err == nil {
-		//	errMsg = "Error not available"
-		//}
+	switch txnStatus {
+	case types.TGTransactionSuccess:
+		logger.Log(fmt.Sprintf("Returning CommitTransactionResponse:ProcessTransactionStatus NO EXCEPTION for txnStatus:'%+v'", txnStatus))
+		return nil
+	case types.TGTransactionAlreadyInProgress:
+		fallthrough
+	case types.TGTransactionClientDisconnected:
+		fallthrough
+	case types.TGTransactionMalFormed:
+		fallthrough
+	case types.TGTransactionGeneralError:
+		fallthrough
+	case types.TGTransactionVerificationError:
+		fallthrough
+	case types.TGTransactionInBadState:
+		fallthrough
+	case types.TGTransactionUniqueConstraintViolation:
+		fallthrough
+	case types.TGTransactionOptimisticLockFailed:
+		fallthrough
+	case types.TGTransactionResourceExceeded:
+		fallthrough
+	case types.TGCurrentThreadNotInTransaction:
+		fallthrough
+	case types.TGTransactionUniqueIndexKeyAttributeNullError:
+		fallthrough
+	default:
+		errMsg, err := is.(*iostream.ProtocolDataInputStream).ReadUTF()
+		if err != nil || errMsg == "" {
+			errMsg = "Error not available"
+		}
 		logger.Error(fmt.Sprintf("Returning CommitTransactionResponse:ProcessTransactionStatus for txnStatus:'%+v' w/ error: '%+v'", txnStatus, errMsg))
 		return exception.BuildException(txnStatus, errMsg)
-	//}
+	}
 }
 
 func (msg *CommitTransactionResponse) GetAddedEntityCount() int {
@@ -440,7 +439,7 @@ func (msg *CommitTransactionResponse) ReadPayload(is types.TGInputStream) types.
 	}
 	logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload read status as '%+v'", status))
 
-	logger.Debug(fmt.Sprint("Inside CommitTransactionResponse:ReadPayload - about to ProcessTransactionStatus"))
+	logger.Debug(fmt.Sprintf("Inside CommitTransactionResponse:ReadPayload - about to ProcessTransactionStatus for status '%+v'", status))
 	txnException := ProcessTransactionStatus(is, status)
 	if txnException != nil {
 		logger.Error(fmt.Sprint("ERROR: Returning CommitTransactionResponse:ReadPayload w/ txnException"))

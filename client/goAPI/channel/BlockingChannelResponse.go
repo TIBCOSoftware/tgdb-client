@@ -71,27 +71,31 @@ func NewBlockingChannelResponse(reqId, rTimeout int64) *BlockingChannelResponse 
 
 // Await waits (loops) till the channel response receives reply message from the server
 func (obj *BlockingChannelResponse) Await(tester types.StatusTester) {
-	//logger.Log(fmt.Sprintf("Entering BlockingChannelResponse:Await w/ contents as '%+v'", obj.String()))
-	logger.Log(fmt.Sprint("Entering BlockingChannelResponse:Await"))
+	logger.Log(fmt.Sprintf("Entering BlockingChannelResponse:Await - %d", obj.status))
 	//obj.lock.Lock()
 	//defer obj.lock.Unlock()
+	//defer func() {
+	//	obj.cond.Signal()
+	//	obj.lock.Unlock()
+	//} ()
 
 	//go func() {
 	count := 0
 	for {
+		//obj.cond.Wait()
+		time.Sleep(time.Duration(obj.timeout) * time.Millisecond)
+		//obj.cond.Signal()
 		// Terminating Condition for this Infinite Loop is:
 		// 	(a) Break if the channel response object status is NOT WAITING - Status is set via SetReply()/Signal() execution
+		//logger.Log(fmt.Sprintf("Inside BlockingChannelResponse:Await Loop) - abou to Test obj.status - %d", obj.status))
 		if !tester.Test(obj.status) {
 			logger.Log(fmt.Sprintf("Breaking out from BlockingChannelResponse:Await w/ contents as '%+v'", obj.String()))
 			break
 		}
-		//obj.cond.Wait()
-		time.Sleep(time.Duration(obj.timeout) * time.Millisecond)
-		//obj.cond.Signal()
 		// TODO: Remove this block once testing is over
 		count++
 		if (count%10000) == 0 {
-			logger.Log(fmt.Sprintf("Inside BlockingChannelResponse:Await(%d) ... BlockingChannelResponse:status = Waiting", count))
+			logger.Log(fmt.Sprintf("Inside BlockingChannelResponse:Await(%d) ... BlockingChannelResponse - %d", count, obj.status))
 		}
 	}
 	//}()
@@ -149,7 +153,7 @@ func (obj *BlockingChannelResponse) SetReply(msg types.TGMessage) {
 	obj.reply = msg
 	obj.status = types.Ok
 	obj.cond.Broadcast()
-	//logger.Log(fmt.Sprint("Returning BlockingChannelResponse:SetReply ..."))
+	//logger.Log(fmt.Sprintf("Returning BlockingChannelResponse:SetReply %d", obj.status))
 }
 
 // SetRequestId sets Request id
@@ -174,7 +178,7 @@ func (obj *BlockingChannelResponse) Signal(cStatus types.ChannelResponseStatus) 
 func (obj *BlockingChannelResponse) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("BlockingChannelResponse:{")
-	buffer.WriteString(fmt.Sprintf("Status: %+v", obj.status))
+	buffer.WriteString(fmt.Sprintf("Status: %d", obj.status))
 	buffer.WriteString(fmt.Sprintf(", RequestId: %d", obj.requestId))
 	buffer.WriteString(fmt.Sprintf(", Timeout: %d", obj.timeout))
 	buffer.WriteString(fmt.Sprintf(", Cond: %+v", obj.cond))

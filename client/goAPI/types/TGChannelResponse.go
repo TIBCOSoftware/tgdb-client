@@ -38,19 +38,20 @@ const (
 func (responseStatus ChannelResponseStatus) String() string {
 	// Use a buffer for efficient string concatenation
 	var buffer bytes.Buffer
+	buffer.WriteString("")
 
 	if responseStatus&Waiting == Waiting {
-		buffer.WriteString("Channel Response is Waiting")
+		buffer.WriteString("Channel Response Status is Waiting")
 	} else if responseStatus&Ok == Ok {
-		buffer.WriteString("Channel Response is Ok")
+		buffer.WriteString("Channel Response Status is Ok")
 	} else if responseStatus&Pushed == Pushed {
-		buffer.WriteString("Channel Response is Pushed")
+		buffer.WriteString("Channel Response Status is Pushed")
 	} else if responseStatus&Resend == Resend {
-		buffer.WriteString("Channel Response is Resend")
+		buffer.WriteString("Channel Response Status is Resend")
 	} else if responseStatus&Disconnected == Disconnected {
-		buffer.WriteString("Channel Response is Disconnected")
+		buffer.WriteString("Channel Response Status is Disconnected")
 	} else if responseStatus&Closed == Closed {
-		buffer.WriteString("Channel Response is Closed")
+		buffer.WriteString("Channel Response Status is Closed")
 	}
 	return buffer.String()
 }

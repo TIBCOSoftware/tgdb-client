@@ -455,16 +455,17 @@ func (obj *SSLChannel) writeToWire(msg types.TGMessage) types.TGError {
 	obj.DisablePing()
 	msgBytes, bufLen, err := msg.ToBytes()
 	if err != nil {
-		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::writeToWire unable to convert message into byte format"))
-		errMsg := fmt.Sprintf("SSLChannel::writeToWire unable to convert message into byte format")
-		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, err.GetErrorMsg())
+		errMsg := fmt.Sprintf("SSLChannel::writeToWire - unable to convert message into byte format")
+		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, err.Error()))
+		//return exception.GetErrorByType(types.TGErrorIOException, "TGErrorProtocolNotSupported", errMsg, err.GetErrorMsg())
+		return err
 	}
 
 	// Clear timeout deadlines set at the time of creation of the socket
 	sErr := obj.socket.SetDeadline(time.Time{})
 	if sErr != nil {
-		logger.Error(fmt.Sprint("Returning SSLChannel::writeToWire unable to clear the deadline over SSL socket"))
-		errMsg := fmt.Sprintf("SSLChannel::writeToWire unable to clear the deadline over SSL socket")
+		errMsg := fmt.Sprintf("SSLChannel::writeToWire - unable to clear the deadline over SSL socket")
+		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, sErr.Error()))
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, sErr.Error())
 	}
 
@@ -472,8 +473,8 @@ func (obj *SSLChannel) writeToWire(msg types.TGMessage) types.TGError {
 	timeout := utils.NewTGEnvironment().GetChannelConnectTimeout()
 	sErr = obj.socket.SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 	if sErr != nil {
-		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::writeToWire unable to reset the deadline over SSL socket"))
-		errMsg := fmt.Sprintf("SSLChannel::writeToWire unable to reset the deadline over SSL socket")
+		errMsg := fmt.Sprintf("SSLChannel::writeToWire - unable to reset the deadline over SSL socket")
+		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, sErr.Error()))
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, sErr.Error())
 	}
 
@@ -481,9 +482,9 @@ func (obj *SSLChannel) writeToWire(msg types.TGMessage) types.TGError {
 	// Put the data packet on the socket for network transmission
 	_, sErr = obj.socket.Write(msgBytes[0:bufLen])
 	if sErr != nil {
-		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::writeToWire unable to send message bytes over SSL socket"))
-		errMsg := fmt.Sprintf("SSLChannel::writeToWire unable to send message bytes over SSL socket")
-		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", errMsg, sErr.Error())
+		errMsg := fmt.Sprintf("SSLChannel::writeToWire - unable to send message bytes over SSL socket")
+		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, sErr.Error()))
+		return exception.GetErrorByType(types.TGErrorIOException, "TGErrorProtocolNotSupported", errMsg, sErr.Error())
 	}
 	logger.Log(fmt.Sprintf("======> Returning SSLChannel:writeToWire successfully wrote message bytes on the socket as '%+v'", msgBytes[0:bufLen]))
 	return nil
@@ -742,19 +743,23 @@ func (obj *SSLChannel) CreateSocket() types.TGError {
 func (obj *SSLChannel) CloseSocket() types.TGError {
 	logger.Log(fmt.Sprintf("======> Entering SSLChannel:CloseSocket w/ socket: '%+v'", obj.socket))
 	obj.shutdownLock.Lock()
-	defer obj.shutdownLock.Unlock()
+	defer func() {
+		obj.SetIsClosed(true)
+		obj.shutdownLock.Unlock()
+		obj.socket = nil
+		obj.input = nil
+		obj.output = nil
+	} ()
 
 	if obj.socket != nil {
 		cErr := obj.socket.Close()
 		if cErr != nil {
-			logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::CloseSocket obj.socket.Close() failed"))
 			failureMessage := "Failed to close the socket to the server"
-			return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", failureMessage, cErr.Error())
+			logger.Error(fmt.Sprintf("ERROR: Returning SSLChannel::CloseSocket %s w/ '%+v'", failureMessage, cErr.Error()))
+			//return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", failureMessage, cErr.Error())
 		}
 	}
-	obj.SetIsClosed(true)
-	obj.socket = nil
-	logger.Log(fmt.Sprintf("======> Returning SSLChannel:CloseSocket"))
+	logger.Log(fmt.Sprintf("======> Returning SSLChannel:CloseSocket for socket: '%+v'", obj.socket))
 	return nil
 }
 
@@ -827,9 +832,9 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 	buff := make([]byte, dataBufferSize)
 	n, sErr := obj.socket.Read(buff)
 	if sErr != nil || n <= 0 {
-		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::ReadWireMsg obj.socket.Read failed"))
 		errMsg := "SSLChannel::ReadWireMsg obj.socket.Read failed"
-		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, sErr.Error())
+		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, sErr.Error()))
+		return nil, exception.GetErrorByType(types.TGErrorIOException, "", errMsg, sErr.Error())
 	}
 	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Read '%d' bytes from the wire in buff '%+v'", n, buff[:(2*n)]))
 	copy(in.Buf, buff[:n])
@@ -848,9 +853,10 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 
 	msg, err := pdu.CreateMessageFromBuffer(buffer, 0, n)
 	if err != nil {
-		logger.Error(fmt.Sprint("ERROR: Returning SSLChannel::ReadWireMsg pdu.CreateMessageFromBuffer failed"))
-		errMsg := "SSLChannel::ReadWireMsg unable to create a message from the input stream bytes"
-		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
+		errMsg := "SSLChannel::ReadWireMsg - unable to create a message from the input stream bytes"
+		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, err.Error()))
+		//return nil, exception.GetErrorByType(types.TGErrorIOException, "", errMsg, err.GetErrorMsg())
+		return nil, err
 	}
 	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Created Message from buffer as '%+v'", msg.String()))
 

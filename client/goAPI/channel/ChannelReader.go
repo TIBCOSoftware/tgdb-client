@@ -84,35 +84,40 @@ func (obj *ChannelReader) readAndProcessLoop() {
 		// 	(d) Continue - in case of ERROR - if the exceptionResult is ANYTHING OTHER THAN RetryOperation after setting the reply on channelResponse
 
 		if !obj.isRunning {
-			logger.Log(fmt.Sprintf("Breaking ChannelReader:readAndProcessLoop loop since reader is not running '%+v'", obj.isRunning))
+			logger.Log(fmt.Sprintf("WARNING: Breaking ChannelReader:readAndProcessLoop loop since reader is not running '%+v'", obj.isRunning))
 			break
 		}
 
 		if obj.channel.IsClosed() {
-			logger.Log(fmt.Sprintf("Breaking ChannelReader:readAndProcessLoop loop since channel is closed"))
+			logger.Log(fmt.Sprintf("WARNING: Breaking ChannelReader:readAndProcessLoop loop since channel is closed"))
 			break
 		}
 
 		// Execute Derived Channel's method
 		msg, err := obj.channel.ReadWireMsg()
 		if err != nil {
-			logger.Error(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop Error in obj.channel.ReadWireMsg() w/ '%+v'", err.Error()))
+			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop obj.channel.ReadWireMsg failed w/ '%+v'", err.Error()))
 			if !obj.isRunning {
-				logger.Log(fmt.Sprintf("INFO: Breaking ChannelReader:readAndProcessLoop reader is not running (2) '%+v'", obj.isRunning))
+				logger.Info(fmt.Sprintf("INFO: Breaking ChannelReader:readAndProcessLoop reader is not running (2) '%+v'", obj.isRunning))
 				break
 			}
 			exceptionResult := channelHandleException(obj.channel, err, true)
-			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop Error in reading message - exceptionResult '%+v'", exceptionResult))
+			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop obj.channel.ReadWireMsg failed - exceptionResult '%+v'", exceptionResult))
 			for _, resp := range obj.channel.GetResponses() {
+				logger.Debug(fmt.Sprint("Inside ChannelReader:readAndProcessLoop about to channelResponse.SetReply() w/ new EXCEPTION MSG"))
 				resp.SetReply(pdu.NewExceptionMessageWithType(int(exceptionResult.ExceptionType), exceptionResult.ExceptionMessage))
 			}
 			if exceptionResult.ExceptionType != RetryOperation {
-				// AbstractChannel.gLogger.logException("Returning channel Reader thread", e);
 				logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop since Reader thread returned w/o Retrying due to error - exceptionResult '%+v'", exceptionResult))
 				break
 			}
-			logger.Error(fmt.Sprintf("INFO: Breaking ChannelReader:readAndProcessLoop loop - Read Wire Message resulted in error: '%+v'", err))
+			//logger.Error(fmt.Sprintf("INFO: Breaking ChannelReader:readAndProcessLoop loop - Read Wire Message resulted in error: '%+v'", err))
 			//break
+		}
+
+		if obj.channel.IsClosed() {
+			logger.Log(fmt.Sprintf("WARNING: Breaking ChannelReader:readAndProcessLoop loop since channel is closed"))
+			break
 		}
 
 		if msg == nil {
@@ -137,27 +142,27 @@ func (obj *ChannelReader) readAndProcessLoop() {
 		logger.Log(fmt.Sprintf("Inside ChannelReader:readAndProcessLoop Processing Message of type '%+v'", msg.GetVerbId()))
 		err = channelProcessMessage(obj.channel, msg)
 		if err != nil {
-			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop Error in channelProcessMessage() w/ '%+v'", err.Error()))
+			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop channelProcessMessage() failed w/ '%+v'", err.Error()))
 			if !obj.isRunning {
-				logger.Log(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop reader is not running (3) '%+v'", obj.isRunning))
+				logger.Info(fmt.Sprintf("INFO: Inside ChannelReader:readAndProcessLoop reader is not running (3) '%+v'", obj.isRunning))
 				break
 			}
 			exceptionResult := channelHandleException(obj.channel, err, true)
-			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop Error in reading message - exceptionResult (2) '%+v'", exceptionResult))
+			logger.Error(fmt.Sprintf("ERROR: Inside ChannelReader:readAndProcessLoop channelProcessMessage() failed - exceptionResult (2) '%+v'", exceptionResult))
 			for _, resp := range obj.channel.GetResponses() {
+				logger.Debug(fmt.Sprint("Inside ChannelReader:readAndProcessLoop about to channelResponse.SetReply() w/ new EXCEPTION MSG (2)"))
 				resp.SetReply(pdu.NewExceptionMessageWithType(int(exceptionResult.ExceptionType), exceptionResult.ExceptionMessage))
 			}
 			if exceptionResult.ExceptionType != RetryOperation {
-				// AbstractChannel.gLogger.logException("Returning channel Reader thread", e);
 				logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop since Reader thread returned w/o Retrying due to error (2) - exceptionResult '%+v'", exceptionResult))
 				break
 			}
-			logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop - ProcessMessage resulted in error: '%+v'", err))
+			//logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop - ProcessMessage resulted in error: '%+v'", err))
 			//break
 		}
 
 		if obj.channel.IsClosed() {
-			logger.Log(fmt.Sprintf("Breaking ChannelReader:readAndProcessLoop loop since channel is closed"))
+			logger.Log(fmt.Sprintf("WARNING: Breaking ChannelReader:readAndProcessLoop loop since channel is closed"))
 			break
 		}
 	} // End of Infinite Loop
@@ -175,8 +180,8 @@ func (obj *ChannelReader) Start() {
 	if !obj.isRunning {
 		obj.isRunning = true
 		// Start reading and processing messages from the wire
-		obj.readAndProcessLoop()
-		//go obj.readAndProcessLoop()
+		//obj.readAndProcessLoop()
+		go obj.readAndProcessLoop()
 	}
 	//logger.Log(fmt.Sprint("Returning ChannelReader:Start ..."))
 }
