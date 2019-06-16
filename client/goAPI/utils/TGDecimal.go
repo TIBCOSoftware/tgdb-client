@@ -1,6 +1,8 @@
 /**
  * Copyright 2018-19 TIBCO Software Inc. All rights reserved.
  *
+ * Portions Copyright (c) 1994 - 2014, PostgreSQL Global Development Group. Version 9.3.3
+ *
  * Licensed under the Apache License, Version 2.0 (the "License"); You may not use this file except
  * in compliance with the License.
  * A copy of the License is included in the distribution package with this file.
@@ -193,8 +195,7 @@ func rightShift(d *internalDecimal, k uint) {
 	trim(d)
 }
 
-// NOTE: This lookup and algorithm is borrowed from some place on the Internet - don't remember exactly where from
-// All the credit and kudos to original author who has meticulously computed the limits and digits
+// TODO: Revisit later - for additional thorough testing and more optimization instead of this raw/crude approach
 //
 // For example, leftShiftLookup[4] = {2, "625"} means, if we are shifting by 4 (equivalent to multiplying by 2^4=16),
 // it will require addition 2 digits when the string prefix is "625" through "999", and

@@ -72,6 +72,16 @@ func NewIntegerAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *Attribute
 // Helper functions for IntegerAttribute
 /////////////////////////////////////////////////////////////////
 
+func round64(val float64) int {
+	if val < 0 { return int(val-0.5) }
+	return int(val+0.5)
+}
+
+func round32(val float32) int {
+	if val < 0 { return int(val-0.5) }
+	return int(val+0.5)
+}
+
 func (obj *IntegerAttribute) SetInteger(b int) {
 	if !obj.IsNull() && obj.attrValue == b {
 		return
@@ -139,6 +149,7 @@ func (obj *IntegerAttribute) SetValue(value interface{}) types.TGError {
 	}
 
 	if reflect.TypeOf(value).Kind() != reflect.Int &&
+		reflect.TypeOf(value).Kind() != reflect.Int16 &&
 		reflect.TypeOf(value).Kind() != reflect.Int32 &&
 		reflect.TypeOf(value).Kind() != reflect.Float32 &&
 		reflect.TypeOf(value).Kind() != reflect.Float64 &&
@@ -149,16 +160,25 @@ func (obj *IntegerAttribute) SetValue(value interface{}) types.TGError {
 	}
 
 	if reflect.TypeOf(value).Kind() == reflect.String {
-		v, err := StringToInteger(value.(string))
+		v, err := StringToInteger(reflect.ValueOf(value).String())
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning IntegerAttribute:SetValue - unable to extract attribute value in string format/type"))
 			errMsg := fmt.Sprintf("Failure to covert string to IntegerAttribute")
 			return exception.GetErrorByType(types.TGErrorTypeCoercionNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, err.Error())
 		}
 		obj.SetInteger(int(v))
-	} else if reflect.TypeOf(value).Kind() == reflect.Float32 ||
-		reflect.TypeOf(value).Kind() == reflect.Float64 {
-		obj.SetInteger(value.(int))
+	} else if reflect.TypeOf(value).Kind() == reflect.Float32 {
+		v := reflect.ValueOf(value).Float()
+		obj.SetInteger(round32(float32(v)))
+	} else if reflect.TypeOf(value).Kind() == reflect.Float64 {
+		v := reflect.ValueOf(value).Float()
+		obj.SetInteger(round64(v))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int32 {
+		v := reflect.ValueOf(value).Int()
+		obj.SetInteger(int(v))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int16 {
+		v := reflect.ValueOf(value).Int()
+		obj.SetInteger(int(v))
 	} else {
 		obj.SetInteger(value.(int))
 	}

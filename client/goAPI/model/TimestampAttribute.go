@@ -252,9 +252,9 @@ func (obj *TimestampAttribute) ReadValue(is types.TGInputStream) types.TGError {
 		return err
 	}
 	tzType = int(tz)
-	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read tzType: '%+v'", tzType))
+	logger.Debug(fmt.Sprintf("Inside TimestampAttribute::ReadValue - read tz: '%+v' and tzType: '%+v'", tz, tzType))
 
-	if tzType != -1 {
+	if tzType != -1 && tzType != 255 {
 		tzId, err := is.(*iostream.ProtocolDataInputStream).ReadShort()
 		if err != nil {
 			logger.Error(fmt.Sprint("ERROR: Returning TimestampAttribute:ReadValue w/ Error in reading tzId from message buffer"))

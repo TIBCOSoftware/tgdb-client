@@ -72,6 +72,16 @@ func NewLongAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDes
 // Helper functions for LongAttribute
 /////////////////////////////////////////////////////////////////
 
+func lRound64(val float64) int64 {
+	if val < 0 { return int64(val-0.5) }
+	return int64(val+0.5)
+}
+
+func lRound32(val float32) int64 {
+	if val < 0 { return int64(val-0.5) }
+	return int64(val+0.5)
+}
+
 func (obj *LongAttribute) SetLong(b int64) {
 	if !obj.IsNull() && obj.attrValue == b {
 		return
@@ -135,7 +145,11 @@ func (obj *LongAttribute) SetValue(value interface{}) types.TGError {
 	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
-	if reflect.TypeOf(value).Kind() != reflect.Int64 &&
+
+	if reflect.TypeOf(value).Kind() != reflect.Int &&
+		reflect.TypeOf(value).Kind() != reflect.Int16 &&
+		reflect.TypeOf(value).Kind() != reflect.Int32 &&
+		reflect.TypeOf(value).Kind() != reflect.Int64 &&
 		reflect.TypeOf(value).Kind() != reflect.Float32 &&
 		reflect.TypeOf(value).Kind() != reflect.Float64 &&
 		reflect.TypeOf(value).Kind() != reflect.String {
@@ -152,6 +166,21 @@ func (obj *LongAttribute) SetValue(value interface{}) types.TGError {
 			return exception.GetErrorByType(types.TGErrorTypeCoercionNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, err.Error())
 		}
 		obj.SetLong(v)
+	} else if reflect.TypeOf(value).Kind() == reflect.Float32 {
+		v := reflect.ValueOf(value).Float()
+		obj.SetLong(lRound32(float32(v)))
+	} else if reflect.TypeOf(value).Kind() == reflect.Float64 {
+		v := reflect.ValueOf(value).Float()
+		obj.SetLong(lRound64(float64(v)))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int {
+		v := reflect.ValueOf(value).Int()
+		obj.SetLong(int64(v))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int32 {
+		v := reflect.ValueOf(value).Int()
+		obj.SetLong(int64(v))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int16 {
+		v := reflect.ValueOf(value).Int()
+		obj.SetLong(int64(v))
 	} else {
 		obj.SetLong(value.(int64))
 	}

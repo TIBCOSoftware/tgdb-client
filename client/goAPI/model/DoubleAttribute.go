@@ -135,7 +135,11 @@ func (obj *DoubleAttribute) SetValue(value interface{}) types.TGError {
 	if !obj.IsNull() && obj.attrValue == value {
 		return nil
 	}
-	if reflect.TypeOf(value).Kind() != reflect.Float32 &&
+
+	if reflect.TypeOf(value).Kind() != reflect.Int &&
+		reflect.TypeOf(value).Kind() != reflect.Int16 &&
+		reflect.TypeOf(value).Kind() != reflect.Int32 &&
+		reflect.TypeOf(value).Kind() != reflect.Float32 &&
 		reflect.TypeOf(value).Kind() != reflect.Float64 &&
 		reflect.TypeOf(value).Kind() != reflect.String {
 		logger.Error(fmt.Sprint("ERROR: Returning DoubleAttribute:SetValue - attribute value is NOT in expected format/type"))
@@ -151,6 +155,18 @@ func (obj *DoubleAttribute) SetValue(value interface{}) types.TGError {
 			return exception.GetErrorByType(types.TGErrorTypeCoercionNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 		}
 		obj.SetDouble(v)
+	} else if reflect.TypeOf(value).Kind() == reflect.Float32 {
+		v := reflect.ValueOf(value).Float()
+		obj.SetDouble(v)
+	} else if reflect.TypeOf(value).Kind() == reflect.Int64 {
+		v := reflect.ValueOf(value).Float()
+		obj.SetDouble(float64(v))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int32 || reflect.TypeOf(value).Kind() != reflect.Int {
+		v := reflect.ValueOf(value).Float()
+		obj.SetDouble(float64(v))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int16 {
+		v := reflect.ValueOf(value).Int()
+		obj.SetDouble(float64(v))
 	} else {
 		obj.SetDouble(value.(float64))
 	}

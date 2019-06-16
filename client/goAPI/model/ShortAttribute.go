@@ -72,6 +72,16 @@ func NewShortAttributeWithDesc(ownerEntity types.TGEntity, attrDesc *AttributeDe
 // Helper functions for ShortAttribute
 /////////////////////////////////////////////////////////////////
 
+func sRound64(val float64) int16 {
+	if val < 0 { return int16(val-0.5) }
+	return int16(val+0.5)
+}
+
+func sRound32(val float32) int16 {
+	if val < 0 { return int16(val-0.5) }
+	return int16(val+0.5)
+}
+
 func (obj *ShortAttribute) SetShort(b int16) {
 	if !obj.IsNull() && obj.attrValue == b {
 		return
@@ -136,8 +146,11 @@ func (obj *ShortAttribute) SetValue(value interface{}) types.TGError {
 		return nil
 	}
 
-	if reflect.TypeOf(value).Kind() != reflect.Int16 &&
+	if reflect.TypeOf(value).Kind() != reflect.Int &&
+		reflect.TypeOf(value).Kind() != reflect.Int16 &&
+		reflect.TypeOf(value).Kind() != reflect.Int32 &&
 		reflect.TypeOf(value).Kind() != reflect.Float32 &&
+		reflect.TypeOf(value).Kind() != reflect.Float64 &&
 		reflect.TypeOf(value).Kind() != reflect.String {
 		logger.Error(fmt.Sprint("ERROR: Returning ShortAttribute:SetValue - attribute value is NOT in expected format/type"))
 		errMsg := fmt.Sprintf("Failure to cast the attribute value to ShortAttribute")
@@ -153,7 +166,17 @@ func (obj *ShortAttribute) SetValue(value interface{}) types.TGError {
 		}
 		obj.SetShort(int16(v))
 	} else if reflect.TypeOf(value).Kind() == reflect.Float32 {
-		obj.SetShort(value.(int16))
+		v := reflect.ValueOf(value).Float()
+		obj.SetShort(sRound32(float32(v)))
+	} else if reflect.TypeOf(value).Kind() == reflect.Float32 {
+		v := reflect.ValueOf(value).Float()
+		obj.SetShort(sRound64(float64(v)))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int32 {
+		v := reflect.ValueOf(value).Int()
+		obj.SetShort(int16(v))
+	} else if reflect.TypeOf(value).Kind() != reflect.Int {
+		v := reflect.ValueOf(value).Int()
+		obj.SetShort(int16(v))
 	} else {
 		obj.SetShort(value.(int16))
 	}
