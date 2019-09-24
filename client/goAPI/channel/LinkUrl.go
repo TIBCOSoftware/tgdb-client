@@ -189,7 +189,7 @@ func parseProtocol(sUrl string) (types.TGProtocol, string, types.TGError) {
 	// (c) tcp://scott@10.20.30.40:8123/...	                        <== protocol://User/IPv4/Port/...
 	// (d) ssl://scott@10.20.30.40/...	                            <== protocol://User/IPv4//...
 
-	idx := strings.IndexAny(sUrl, "://")
+	idx := strings.Index(sUrl, "://")
 	if idx > 0 {
 		strComponents := strings.Split(sUrl, "://")
 		protocolStr = strings.ToLower(strComponents[0])
