@@ -37,6 +37,7 @@ type ChannelReader struct {
 	isRunning bool
 	name      string
 	readerNum int64
+	listener  types.TGConnectionExceptionListener
 }
 
 func DefaultChannelReader() *ChannelReader {
@@ -109,6 +110,7 @@ func (obj *ChannelReader) readAndProcessLoop() {
 			}
 			if exceptionResult.ExceptionType != RetryOperation {
 				logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop since Reader thread returned w/o Retrying due to error - exceptionResult '%+v'", exceptionResult))
+				obj.listener.OnException(err)
 				break
 			}
 			//logger.Error(fmt.Sprintf("INFO: Breaking ChannelReader:readAndProcessLoop loop - Read Wire Message resulted in error: '%+v'", err))
@@ -155,6 +157,7 @@ func (obj *ChannelReader) readAndProcessLoop() {
 			}
 			if exceptionResult.ExceptionType != RetryOperation {
 				logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop since Reader thread returned w/o Retrying due to error (2) - exceptionResult '%+v'", exceptionResult))
+				obj.listener.OnException(err)
 				break
 			}
 			//logger.Error(fmt.Sprintf("ERROR: Breaking ChannelReader:readAndProcessLoop loop - ProcessMessage resulted in error: '%+v'", err))
@@ -196,6 +199,10 @@ func (obj *ChannelReader) Stop() {
 		obj.isRunning = false
 	}
 	//logger.Log(fmt.Sprint("Returning ChannelReader:Stop ..."))
+}
+
+func (obj *ChannelReader) SetExceptionListener(listener types.TGConnectionExceptionListener) {
+	obj.listener = listener
 }
 
 func (obj *ChannelReader) String() string {

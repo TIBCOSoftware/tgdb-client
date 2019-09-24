@@ -242,6 +242,10 @@ func (obj *AbstractChannel) setNoOfConnections(num int32) {
 	obj.numOfConnections = num
 }
 
+func (obj *AbstractChannel) SetExceptionListener(listener types.TGConnectionExceptionListener) {
+	obj.reader.SetExceptionListener(listener)
+}
+
 /////////////////////////////////////////////////////////////////
 // Helper (Quite Involved) functions for AbstractChannel
 /////////////////////////////////////////////////////////////////
