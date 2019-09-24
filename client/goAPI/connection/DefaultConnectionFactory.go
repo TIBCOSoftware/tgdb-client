@@ -328,7 +328,11 @@ func (obj *TGConnectionFactory) CreateConnectionPoolWithType(url, user, pwd stri
 		}
 	}
 
-	channelUrl := channel.ParseChannelUrl(url)
+	channelUrl, err := channel.ParseChannelUrl(url)
+	if nil != err {
+		return nil, err
+	}
+
 	channelProps := channelUrl.GetProperties()
 	// Add channel properties to the consolidated property set
 	if channelProps != nil {
