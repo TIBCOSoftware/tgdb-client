@@ -210,6 +210,7 @@ func (m *Logger) simpleLog(logMsg string) {
 			m.Error(logMsg)
 		case types.WarningLog:
 			m.Warning(logMsg)
+		case types.InfoLog:
 			m.Info(logMsg)
 		case types.DebugLog:
 			m.Debug(logMsg)
