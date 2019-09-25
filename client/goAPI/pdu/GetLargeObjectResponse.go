@@ -94,20 +94,20 @@ func (msg *GetLargeObjectResponseMessage) FromBytes(buffer []byte) (types.TGMess
 
 	is := iostream.NewProtocolDataInputStream(buffer)
 
-	// First member attribute / element of message header is BufLength
-	bufLen, err := is.ReadInt()
-	if err != nil {
-		logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
-		return nil, err
-	}
-	logger.Debug(fmt.Sprintf("Inside GetLargeObjectResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
-	if bufLen != len(buffer) {
-		errMsg := fmt.Sprint("Buffer length mismatch")
-		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
-	}
+	/*	// First member attribute / element of message header is BufLength
+		bufLen, err := is.ReadInt()
+		if err != nil {
+			logger.Error(fmt.Sprint("ERROR: Returning GetLargeObjectResponseMessage:FromBytes w/ Error in reading buffer length from message buffer"))
+			return nil, err
+		}
+		logger.Debug(fmt.Sprintf("Inside GetLargeObjectResponseMessage:FromBytes read bufLen as '%+v'", bufLen))
+		if bufLen != len(buffer) {
+			errMsg := fmt.Sprint("Buffer length mismatch")
+			return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
+		}*/
 
 	logger.Debug(fmt.Sprint("Inside GetLargeObjectResponseMessage:FromBytes - about to APMReadHeader"))
-	err = APMReadHeader(msg, is)
+	err := APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
