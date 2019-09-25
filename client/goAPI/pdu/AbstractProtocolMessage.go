@@ -363,7 +363,7 @@ func APMReadHeader(msg types.TGMessage, is types.TGInputStream) types.TGError {
 	msg.SetDataOffset(dataOffset)
 	//msg.SetMessageByteBufLength(binary.Size(reflect.ValueOf(msg)))
 	msg.SetMessageByteBufLength(int(binary.Size(reflect.ValueOf(msg))))
-	logger.Error(fmt.Sprint("Returning AbstractProtocolMessage:APMReadHeader"))
+	logger.Info(fmt.Sprint("Returning AbstractProtocolMessage:APMReadHeader"))
 	return nil
 }
 
