@@ -73,7 +73,7 @@ func DefaultLinkUrl() *LinkUrl {
 		ftUrls := strings.Split(defaultFtUrls, ",")
 		for _, ftUrl := range ftUrls {
 			if ftUrl != "" {
-				newLinkUrl, _ := NewLinkUrl(ftUrl)
+				newLinkUrl := NewLinkUrl(ftUrl)
 				newChannelUrl.ftUrls = append(newChannelUrl.ftUrls, newLinkUrl)
 			}
 		}
@@ -81,12 +81,12 @@ func DefaultLinkUrl() *LinkUrl {
 	return &newChannelUrl
 }
 
-func NewLinkUrl(sUrl string) (*LinkUrl, types.TGError) {
+func NewLinkUrl(sUrl string) *LinkUrl {
 	newChannelUrl := DefaultLinkUrl()
 	sUrl = strings.TrimSpace(sUrl)
 	proto, host, port, ip6Flag, user, ftUrls, props, err := parseUrlComponents(sUrl)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 	newChannelUrl.urlStr = sUrl
 	newChannelUrl.isIPv6 = ip6Flag
@@ -99,7 +99,7 @@ func NewLinkUrl(sUrl string) (*LinkUrl, types.TGError) {
 	}
 	newChannelUrl.urlUser = user
 	newChannelUrl.urlProps.AddProperty(utils.GetConfigFromKey(utils.ChannelUserID).GetName(), user)
-	return newChannelUrl, nil
+	return newChannelUrl
 }
 
 func NewLinkUrlWithComponents(proto types.TGProtocol, host string, port int) *LinkUrl {
@@ -114,10 +114,10 @@ func NewLinkUrlWithComponents(proto types.TGProtocol, host string, port int) *Li
 // Helper functions for TGChannelUrl
 /////////////////////////////////////////////////////////////////
 
-func ParseChannelUrl(cUrl string) (*LinkUrl, types.TGError) {
+func ParseChannelUrl(cUrl string) *LinkUrl {
 	//logger.Log(fmt.Sprintf("Entering LinkUrl:ParseChannelUrl w/ URL string as '%s'", cUrl))
 	if cUrl == "" {
-		return DefaultLinkUrl(), nil
+		return DefaultLinkUrl()
 	}
 
 	//logger.Log(fmt.Sprintf("Returning LinkUrl:ParseChannelUrl w/ URL string as '%s'", cUrl))
@@ -189,7 +189,7 @@ func parseProtocol(sUrl string) (types.TGProtocol, string, types.TGError) {
 	// (c) tcp://scott@10.20.30.40:8123/...	                        <== protocol://User/IPv4/Port/...
 	// (d) ssl://scott@10.20.30.40/...	                            <== protocol://User/IPv4//...
 
-	idx := strings.Index(sUrl, "://")
+	idx := strings.IndexAny(sUrl, "://")
 	if idx > 0 {
 		strComponents := strings.Split(sUrl, "://")
 		protocolStr = strings.ToLower(strComponents[0])
@@ -224,7 +224,7 @@ func parseUserAndHostAndPort(sUrl string) (string, string, int, bool, string, ty
 	var hostStr, hostPortStr, userHostPortStr string
 
 	if len(sUrl) == 0 {
-		errMsg := "Unable to parse user/host/port from the channel URL string, URL is empty"
+		errMsg := "Unable to parse user/host/port from the channel URL string"
 		return user, host, port, ip6Flag, "", exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 	}
 
@@ -260,7 +260,7 @@ func parseUserAndHostAndPort(sUrl string) (string, string, int, bool, string, ty
 		hostPortStr = userHostPortComps[1]
 		if len(hostPortStr) == 0 {
 			// This is the case for 'scott@/...'
-			errMsg := "Invalid or missing host name and/or port in the channel URL string, Host/Port string is empty"
+			errMsg := "Invalid or missing host name and/or port in the channel URL string"
 			return user, host, port, ip6Flag, "", exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 		}
 	} else {
@@ -279,7 +279,7 @@ func parseUserAndHostAndPort(sUrl string) (string, string, int, bool, string, ty
 		} else {
 			port1, err := strconv.Atoi(portstr)
 			if err != nil {
-				errMsg := "Unable to parse user/host/port from the channel URL string, URL = " + sUrl
+				errMsg := "Unable to parse user/host/port from the channel URL string"
 				return user, host, port, ip6Flag, "", exception.GetErrorByType(types.TGErrorProtocolNotSupported, types.INTERNAL_SERVER_ERROR, errMsg, "")
 			}
 			port = port1
@@ -362,7 +362,7 @@ func parseProperties(sUrl string) (types.TGProperties, []types.TGChannelUrl, typ
 				for _, fUrl := range fts {
 					if fUrl != "" {
 						//logger.Debug(fmt.Sprintf("ParseProperties trying to create new LinkURL for FtUrl '%+v'", fUrl))
-						newLinkUrl, _ := NewLinkUrl(fUrl)
+						newLinkUrl := NewLinkUrl(fUrl)
 						//logger.Debug(fmt.Sprintf("ParseProperties created new LinkURL '%+v' for FtUrl '%+v'", newLinkUrl, fUrl))
 						ftUrls = append(ftUrls, newLinkUrl)
 					}

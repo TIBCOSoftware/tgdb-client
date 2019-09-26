@@ -363,7 +363,7 @@ func APMReadHeader(msg types.TGMessage, is types.TGInputStream) types.TGError {
 	msg.SetDataOffset(dataOffset)
 	//msg.SetMessageByteBufLength(binary.Size(reflect.ValueOf(msg)))
 	msg.SetMessageByteBufLength(int(binary.Size(reflect.ValueOf(msg))))
-	logger.Info(fmt.Sprint("Returning AbstractProtocolMessage:APMReadHeader"))
+	logger.Error(fmt.Sprint("Returning AbstractProtocolMessage:APMReadHeader"))
 	return nil
 }
 
@@ -398,18 +398,17 @@ func VerbIdFromBytes(buffer []byte) (*CommandVerbs, types.TGError) {
 
 	is := iostream.NewProtocolDataInputStream(buffer)
 
-	/*
-		// First member attribute / element of message header is BufLength
-		bufLen, err := is.ReadInt()
-		if err != nil {
-			logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:VerbIdFromBytes w/ Error in reading buffer length from message buffer"))
-			return nil, err
-		}
-		logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted bufLen: '%d'", bufLen))
-		if bufLen != len(buffer) {
-			errMsg := fmt.Sprint("Buffer length mismatch")
-			return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
-		}*/
+	// First member attribute / element of message header is BufLength
+	bufLen, err := is.ReadInt()
+	if err != nil {
+		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:VerbIdFromBytes w/ Error in reading buffer length from message buffer"))
+		return nil, err
+	}
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:VerbIdFromBytes - extracted bufLen: '%d'", bufLen))
+	if bufLen != len(buffer) {
+		errMsg := fmt.Sprint("Buffer length mismatch")
+		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
+	}
 
 	// Second member attribute / element of message header is MagicId
 	magic, err := is.ReadInt()
@@ -459,8 +458,20 @@ func (msg *AbstractProtocolMessage) FromBytes(buffer []byte) (types.TGMessage, t
 
 	is := iostream.NewProtocolDataInputStream(buffer)
 
+	// First member attribute / element of message header is BufLength
+	bufLen, err := is.ReadInt()
+	if err != nil {
+		logger.Error(fmt.Sprint("ERROR: Returning AbstractProtocolMessage:FromBytes w/ Error in reading buffer length from message buffer"))
+		return nil, err
+	}
+	logger.Debug(fmt.Sprintf("Inside AbstractProtocolMessage:FromBytes read bufLen as '%d'", bufLen))
+	if bufLen != len(buffer) {
+		errMsg := fmt.Sprint("Buffer length mismatch")
+		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
+	}
+
 	logger.Debug(fmt.Sprint("Inside AbstractProtocolMessage:FromBytes about to read Header data elements"))
-	err := APMReadHeader(msg, is)
+	err = APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, err.GetErrorDetails())

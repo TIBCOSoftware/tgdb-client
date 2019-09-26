@@ -188,39 +188,36 @@ func NewLogger(level int, logPrefix string, logWriter io.Writer, logFlags int) *
 // Helper functions from Interface ==> Logger
 /////////////////////////////////////////////////////////////////
 
-func (m *Logger) formatMessage(level string, callDepth int, logMsg string) string {
+func (m *Logger) formatMessage(callDepth int, logMsg string) string {
 	// Format log message according to configured msgFormat
 	formattedMsg := logMsg
 	if m.log.Flags()&(log.Lshortfile|log.Llongfile) == 0 {
 		// NOTE: IF the following call to GetFileAndLine needs to move to other location, please adjust call depth
 		fileName, lineNo := m.GetFileAndLine(callDepth)
 		gRoutineId := syscall.Getgid()
-		formattedMsg = fmt.Sprintf("[%s] %s:%d [%d] %s", level, fileName, lineNo, gRoutineId, logMsg)
+		formattedMsg = fmt.Sprintf("%s:%d [%d] %s", fileName, lineNo, gRoutineId, logMsg)
 	}
 	return formattedMsg
 }
 
 func (m *Logger) simpleLog(logMsg string) {
 	m.depth += 2
-	/*
-		switch m.level {
-		case types.FatalLog:
-			m.Fatal(logMsg)
-		case types.ErrorLog:
-			m.Error(logMsg)
-		case types.WarningLog:
-			m.Warning(logMsg)
-		case types.InfoLog:
-			m.Info(logMsg)
-		case types.DebugLog:
-			m.Debug(logMsg)
-		case types.TraceLog:
-	*/
-	m.Trace(logMsg)
-	/*
-		default:
-			m.Debug(logMsg)
-	*/
+	switch m.level {
+	case types.FatalLog:
+		m.Fatal(logMsg)
+	case types.ErrorLog:
+		m.Error(logMsg)
+	case types.WarningLog:
+		m.Warning(logMsg)
+	case types.InfoLog:
+		m.Info(logMsg)
+	case types.DebugLog:
+		m.Debug(logMsg)
+	case types.TraceLog:
+		m.Trace(logMsg)
+	default:
+		m.Debug(logMsg)
+	}
 	m.depth -= 2
 }
 
@@ -241,7 +238,7 @@ func (m *Logger) Trace(logMsg string) {
 	callDepth := m.depth+1
 	if m.level <= types.TraceLog {
 		// Format log message according to configured msgFormat
-		formattedLogMsg := m.formatMessage("Trace", callDepth, logMsg)
+		formattedLogMsg := m.formatMessage(callDepth, logMsg)
 		// Ignore Error Handling
 		_ = m.log.Output(callDepth, formattedLogMsg)
 	}
@@ -252,7 +249,7 @@ func (m *Logger) Debug(logMsg string) {
 	callDepth := m.depth+1
 	if m.level <= types.DebugLog {
 		// Format log message according to configured msgFormat
-		formattedLogMsg := m.formatMessage("Debug", callDepth, logMsg)
+		formattedLogMsg := m.formatMessage(callDepth, logMsg)
 		// Ignore Error Handling
 		_ = m.log.Output(callDepth, formattedLogMsg)
 	}
@@ -263,7 +260,7 @@ func (m *Logger) Info(logMsg string) {
 	callDepth := m.depth+1
 	if m.level <= types.InfoLog {
 		// Format log message according to configured msgFormat
-		formattedLogMsg := m.formatMessage("Info", callDepth, logMsg)
+		formattedLogMsg := m.formatMessage(callDepth, logMsg)
 		// Ignore Error Handling
 		_ = m.log.Output(callDepth, formattedLogMsg)
 	}
@@ -274,7 +271,7 @@ func (m *Logger) Warning(logMsg string) {
 	callDepth := m.depth+1
 	if m.level <= types.WarningLog {
 		// Format log message according to configured msgFormat
-		formattedLogMsg := m.formatMessage("Warning", callDepth, logMsg)
+		formattedLogMsg := m.formatMessage(callDepth, logMsg)
 		// Ignore Error Handling
 		_ = m.log.Output(callDepth, formattedLogMsg)
 	}
@@ -285,7 +282,7 @@ func (m *Logger) Error(logMsg string) {
 	callDepth := m.depth+1
 	if m.level <= types.ErrorLog {
 		// Format log message according to configured msgFormat
-		formattedLogMsg := m.formatMessage("Error", callDepth, logMsg)
+		formattedLogMsg := m.formatMessage(callDepth, logMsg)
 		// Ignore Error Handling
 		_ = m.log.Output(callDepth, formattedLogMsg)
 	}
@@ -296,7 +293,7 @@ func (m *Logger) Fatal(logMsg string) {
 	callDepth := m.depth+1
 	if m.level <= types.FatalLog {
 		// Format log message according to configured msgFormat
-		formattedLogMsg := m.formatMessage("Fatal", callDepth, logMsg)
+		formattedLogMsg := m.formatMessage(callDepth, logMsg)
 		// Ignore Error Handling
 		_ = m.log.Output(callDepth, formattedLogMsg)
 	}
