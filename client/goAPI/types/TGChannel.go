@@ -226,6 +226,8 @@ type TGChannel interface {
 	// Stop stops the channel forcefully or gracefully
 	Stop(bForcefully bool)
 
+	SetExceptionListener(listener TGConnectionExceptionListener)
+
 	// Additional in GO - Abstract declared in Java - to implement function inheritance
 	// CreateSocket creates a network socket to transfer the messages in the byte format
 	CreateSocket() TGError
