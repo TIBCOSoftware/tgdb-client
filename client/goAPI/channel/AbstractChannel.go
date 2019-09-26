@@ -48,26 +48,26 @@ type ExceptionHandleResult struct {
 	ExceptionMessage string
 }
 
-func (proType ExceptionChannelType) ChannelException(msg string) *ExceptionHandleResult {
+func (proType ExceptionChannelType) ChannelException() *ExceptionHandleResult {
 	// Use a buffer for efficient string concatenation
 	var exceptionResult ExceptionHandleResult
 
 	if proType&RethrowException == RethrowException {
 		exceptionResult = ExceptionHandleResult{
 			ExceptionType:    types.TGErrorGeneralException,
-			ExceptionMessage: "TGDB-CHANNEL-FAIL:Failed to reconnect : " + msg,
+			ExceptionMessage: "TGDB-CHANNEL-FAIL:Failed to reconnect",
 		}
 	}
 	if proType&RetryOperation == RetryOperation {
 		exceptionResult = ExceptionHandleResult{
 			ExceptionType:    types.TGErrorRetryIOException,
-			ExceptionMessage: "TGDB-CHANNEL-RETRY:Channel Reconnected, Retry Operation : " + msg,
+			ExceptionMessage: "TGDB-CHANNEL-RETRY:Channel Reconnected, Retry Operation",
 		}
 	}
 	if proType&Disconnected == Disconnected {
 		exceptionResult = ExceptionHandleResult{
 			ExceptionType:    types.TGErrorChannelDisconnected,
-			ExceptionMessage: "TGDB-CHANNEL-FAIL:Failed to reconnect : " + msg,
+			ExceptionMessage: "TGDB-CHANNEL-FAIL:Failed to reconnect",
 		}
 	}
 	return &exceptionResult
@@ -242,10 +242,6 @@ func (obj *AbstractChannel) setNoOfConnections(num int32) {
 	obj.numOfConnections = num
 }
 
-func (obj *AbstractChannel) SetExceptionListener(listener types.TGConnectionExceptionListener) {
-	obj.reader.SetExceptionListener(listener)
-}
-
 /////////////////////////////////////////////////////////////////
 // Helper (Quite Involved) functions for AbstractChannel
 /////////////////////////////////////////////////////////////////
@@ -308,7 +304,7 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 
 	if ex.GetErrorType() != types.TGErrorIOException {
 		logger.Debug(fmt.Sprint("Returning AbstractChannel:channelHandleException w/ RethrowException"))
-		return RethrowException.ChannelException(ex.GetErrorMsg())
+		return RethrowException.ChannelException()
 	}
 
 	connectionOpTimeout := obj.GetProperties().GetPropertyAsInt(utils.GetConfigFromKey(utils.ConnectionOperationTimeoutSeconds))
@@ -326,27 +322,23 @@ func channelHandleException(obj types.TGChannel, ex types.TGError, bReconnect bo
 		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to check isChannelConnected()"))
 
 		if isChannelConnected(obj) {
-			msg := fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop w/ RetryOperation as channel is connected")
-			logger.Log(msg)
-			return RetryOperation.ChannelException(msg)
+			logger.Log(fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop w/ RetryOperation as channel is connected"))
+			return RetryOperation.ChannelException()
 		}
 		logger.Debug(fmt.Sprint("Inside AbstractChannel:channelHandleException Infinite Loop about to check IsClosed()"))
 		if obj.IsClosed() {
-			msg := fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop w/ DisconnectedException as channel is closed")
-			logger.Log(msg)
-			return Disconnected.ChannelException(msg)
+			logger.Log(fmt.Sprint("Returning AbstractChannel:channelHandleException Infinite Loop w/ DisconnectedException as channel is closed"))
+			return Disconnected.ChannelException()
 		}
 	} // End of Infinite Loop
 
 	logger.Debug(fmt.Sprintf("Inside AbstractChannel:channelHandleException about to obj.channelReconnect()"))
 	if channelReconnect(obj) {
-		msg := fmt.Sprint("Returning AbstractChannel:channelHandleException w/ RetryOperation as failure in channelReconnect()")
-		logger.Log(msg)
-		return RetryOperation.ChannelException(msg)
+		logger.Log(fmt.Sprint("Returning AbstractChannel:channelHandleException w/ RetryOperation as failure in channelReconnect()"))
+		return RetryOperation.ChannelException()
 	}
-	msg := fmt.Sprintf("Returning AbstractChannel:channelHandleException w/ DisconnectedException for input exception: '%+v' and Reconnect Flag: '%+v'", ex, bReconnect)
-	logger.Log(msg)
-	return Disconnected.ChannelException(msg)
+	logger.Log(fmt.Sprintf("Returning AbstractChannel:channelHandleException w/ DisconnectedException for input exception: '%+v' and Reconnect Flag: '%+v'", ex, bReconnect))
+	return Disconnected.ChannelException()
 }
 
 // channelProcessMessage processes a message received on the channel. This is called from the ChannelReader.

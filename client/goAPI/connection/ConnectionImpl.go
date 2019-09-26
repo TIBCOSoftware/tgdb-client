@@ -1398,7 +1398,6 @@ func (obj *TGDBConnection) Rollback() types.TGError {
 // SetExceptionListener sets exception listener
 func (obj *TGDBConnection) SetExceptionListener(listener types.TGConnectionExceptionListener) {
 	obj.connPoolImpl.SetExceptionListener(listener) //delegate it to the Pool.
-	obj.channel.SetExceptionListener(listener)
 }
 
 // UpdateEntity marks an ENTITY for update operation. Upon commit, the entity will be updated in the database

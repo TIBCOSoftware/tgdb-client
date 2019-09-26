@@ -32,7 +32,6 @@ import (
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
-	"io"
 	"io/ioutil"
 	"strings"
 	"sync"
@@ -813,6 +812,13 @@ func (obj *SSLChannel) OnConnect() types.TGError {
 // ReadWireMsg reads the message from the wire in the form of byte stream
 func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 	logger.Log(fmt.Sprintf("======> Entering SSLChannel:ReadWireMsg w/ SSLChannel as '%+v'", obj.String()))
+	obj.input.BufLen = dataBufferSize
+	in := obj.input
+	if in == nil {
+		logger.Warning(fmt.Sprint("WARNING: Returning SSLChannel:ReadWireMsg since obj.input is NIL"))
+		// TODO: Revisit later - Should we not return an error?
+		return nil, nil
+	}
 
 	obj.DisablePing()
 	if obj.GetIsClosed() {
@@ -822,30 +828,30 @@ func (obj *SSLChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 	}
 	obj.lastActiveTime = time.Now()
 
-	contentLength, err := readContentLength(obj.socket)
-	if nil != err {
-		return nil, err
+	// Read the data on the socket
+	buff := make([]byte, dataBufferSize)
+	n, sErr := obj.socket.Read(buff)
+	if sErr != nil || n <= 0 {
+		errMsg := "SSLChannel::ReadWireMsg obj.socket.Read failed"
+		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, sErr.Error()))
+		return nil, exception.GetErrorByType(types.TGErrorIOException, "", errMsg, sErr.Error())
 	}
+	logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Read '%d' bytes from the wire in buff '%+v'", n, buff[:(2*n)]))
+	copy(in.Buf, buff[:n])
+	in.BufLen = n
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg Input Stream Buffer('%d') is '%+v'", in.BufLen, in.Buf[:(2*n)]))
 
-	buffer := make([]byte, 0, contentLength)
-	tmp := make([]byte, 256)
-	accumulatedSize := 0
-	for {
-		n, err := obj.socket.Read(tmp)
-		if err != nil {
-			if err != io.EOF {
-				fmt.Println("read error:", err)
-			}
-			break
-		}
-		accumulatedSize += n
-		buffer = append(buffer, tmp[:n]...)
-		if accumulatedSize == contentLength {
-			break
-		}
-	}
+	// Needed to avoid dirty data in the buffer when we handle the message
+	buffer := make([]byte, n)
+	//logger.Debug(fmt.Sprint("======> Inside SSLChannel:ReadWireMsg in.ReadFullyAtPos read msgBytes as '%+v'", msgBytes))
+	copy(buffer, buff[:n])
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg copied into buffer as '%+v'", buffer))
 
-	msg, err := pdu.CreateMessageFromBuffer(buffer)
+	//intToBytes(size, msgBytes, 0)
+	//bytesRead, _ := utils.FormatHex(msgBytes)
+	//logger.Debug(fmt.Sprintf("======> Inside SSLChannel:ReadWireMsg bytes read: '%s'", bytesRead))
+
+	msg, err := pdu.CreateMessageFromBuffer(buffer, 0, n)
 	if err != nil {
 		errMsg := "SSLChannel::ReadWireMsg - unable to create a message from the input stream bytes"
 		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, err.Error()))
