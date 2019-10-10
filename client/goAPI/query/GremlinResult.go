@@ -72,8 +72,18 @@ func (elementType ElementType) String() string {
 // Helper functions for Gremlin Result
 /////////////////////////////////////////////////////////////////
 
-func FillCollection(entityStream types.TGInputStream, gof types.TGGraphObjectFactory, col []interface{}) types.TGError {
-	//logger.Log(fmt.Sprint("Entering GremlinResult:FillCollection"))
+func FillResultSet(entityStream types.TGInputStream, gof types.TGGraphObjectFactory, resultSet *ResultSet) types.TGError {
+	collection := make([]interface{}, 0)
+	err := FillCollection(entityStream, gof, &collection)
+	logger.Warning(fmt.Sprint("Returning GremlinResult:FillResultSet : '%+v'", collection))
+	for _, entity := range collection {
+		resultSet.AddEntityToResultSet(entity.(types.TGEntity))
+	}
+
+	return err
+}
+
+func FillCollection(entityStream types.TGInputStream, gof types.TGGraphObjectFactory, col *[]interface{}) types.TGError {
 	eleType, err := entityStream.(*iostream.ProtocolDataInputStream).ReadByte()
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning GremlinResult:FillCollection - unable to read eleType in the response stream w/ error: '%s'", err.Error()))
@@ -92,7 +102,7 @@ func FillCollection(entityStream types.TGInputStream, gof types.TGGraphObjectFac
 	return nil
 }
 
-func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFactory, col []interface{}) types.TGError {
+func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFactory, col *[]interface{}) types.TGError {
 	logger.Log(fmt.Sprint("Entering GremlinResult:ConstructList"))
 	size, err := entityStream.(*iostream.ProtocolDataInputStream).ReadInt()
 	if err != nil {
@@ -144,7 +154,7 @@ func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFact
 					errMsg := "GremlinResult:ConstructList - unable to node.ReadExternal in the entity stream"
 					return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 				}
-				col = append(col, node)
+				*col = append(*col, node)
 			case types.EntityKindEdge:
 				edge, nErr := gof.CreateEntity(types.EntityKindEdge)
 				if nErr != nil {
@@ -158,7 +168,7 @@ func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFact
 					errMsg := "GremlinResult:ConstructList - unable to edge.ReadExternal in the entity stream"
 					return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
 				}
-				col = append(col, edge)
+				*col = append(*col, edge)
 			case types.EntityKindGraph:
 				fallthrough
 			case types.EntityKindInvalid:
@@ -169,12 +179,12 @@ func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFact
 			}
 		} else if ElementType(eleType) == ElementTypeList {
 			colElem := make([]interface{}, 0)
-			_ = ConstructList(entityStream, gof, colElem)
-			col = append(col, colElem)
+			_ = ConstructList(entityStream, gof, &colElem)
+			*col = append(*col, colElem)
 		} else if ElementType(eleType) == ElementTypeMap {
 			mapElem := make(map[string]interface{}, 0)
 			_ = ConstructMap(entityStream, gof, mapElem)
-			col = append(col, mapElem)
+			*col = append(*col, mapElem)
 		} else if ElementType(eleType) == ElementTypeAttr || ElementType(eleType) == ElementTypeAttrValue || ElementType(eleType) == ElementTypeAttrValueTransient {
 			attr, err := model.ReadExternalForEntity(dummyNode, entityStream)
 			if err != nil {
@@ -182,9 +192,9 @@ func ConstructList(entityStream types.TGInputStream, gof types.TGGraphObjectFact
 				return err
 			}
 			if ElementType(eleType) == ElementTypeAttr {
-				col = append(col, attr)
+				*col = append(*col, attr)
 			} else {
-				col = append(col, attr.GetValue())
+				*col = append(*col, attr.GetValue())
 			}
 		} else {
 			logger.Error(fmt.Sprintf("ERROR: Returning GremlinResult:ConstructList - Invalid element type '%+v' from Gremlin response stream", eleType))
@@ -293,7 +303,7 @@ func ConstructMap(entityStream types.TGInputStream, gof types.TGGraphObjectFacto
 			}
 		} else if ElementType(eleType) == ElementTypeList {
 			colElem := make([]interface{}, 0)
-			_ = ConstructList(entityStream, gof, colElem)
+			_ = ConstructList(entityStream, gof, &colElem)
 			colMap[key] = colElem
 		} else if ElementType(eleType) == ElementTypeMap {
 			mapElem := make(map[string]interface{}, 0)

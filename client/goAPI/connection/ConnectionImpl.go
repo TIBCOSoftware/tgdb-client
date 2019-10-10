@@ -932,7 +932,7 @@ func (obj *TGDBConnection) ExecuteGremlinQuery(expr string, collection []interfa
 
 	respStream := response.GetEntityStream()
 	logger.Debug(fmt.Sprintf("Returning TGDBConnection:ExecuteGremlinQuery w/ '%+v'", response))
-	err = query.FillCollection(respStream, obj.graphObjFactory, collection)
+	err = query.FillCollection(respStream, obj.graphObjFactory, &collection)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinQuery - unable to query.FillCollection w/ error: '%s'", err.Error()))
 		return nil, err
@@ -984,7 +984,7 @@ func (obj *TGDBConnection) ExecuteGremlinStrQuery(strQuery string, options types
 	//resultCount := response.GetResultCount()
 	resultSet := query.NewResultSet(obj, 0)
 	respStream := response.GetEntityStream()
-	err = query.FillCollection(respStream, obj.graphObjFactory, resultSet.GetResults())
+	err = query.FillResultSet(respStream, obj.graphObjFactory, resultSet)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TGDBConnection:ExecuteGremlinQuery - unable to query.FillCollection w/ error: '%s'", err.Error()))
 		return nil, err
