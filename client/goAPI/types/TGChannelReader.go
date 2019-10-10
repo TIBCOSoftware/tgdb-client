@@ -28,6 +28,8 @@ type TGChannelReader interface {
 	Start()
 	// Stop stops the channel reader
 	Stop()
+	//
+	SetExceptionListener(listener TGConnectionExceptionListener)
 	// Additional Method to help debugging
 	String() string
 }

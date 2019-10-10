@@ -203,18 +203,10 @@ func CreateMessageWithToken(verbId int, authToken, sessionId int64) (types.TGMes
 	}
 }
 
-func CreateMessageFromBuffer(buffer []byte, offset int, length int) (types.TGMessage, types.TGError) {
-	buf := make([]byte, 0)
-	logger.Debug(fmt.Sprintf("Entering MessageFactory::CreateMessageFromBuffer received buffer(BufLen: %d, Offset: %d, Len: %d)", len(buffer), offset, length))
+func CreateMessageFromBuffer(buffer []byte) (types.TGMessage, types.TGError) {
+	logger.Debug(fmt.Sprintf("Entering MessageFactory::CreateMessageFromBuffer received buffer(BufLen: %d)", len(buffer)))
 
-	if len(buffer) == length {
-		buf = buffer
-	} else {
-		buf = append(buffer[offset:length])
-	}
-	//logger.Debug(fmt.Sprintf("Inside MessageFactory::CreateMessageFromBuffer buf is '%+v'", buf))
-
-	commandVerb, err := VerbIdFromBytes(buf)
+	commandVerb, err := VerbIdFromBytes(buffer)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning MessageFactory::CreateMessageFromBuffer w/ error in extracting verbId from message buffer: %s", err.Error()))
 		return nil, err

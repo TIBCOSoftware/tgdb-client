@@ -29,6 +29,7 @@ import (
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/pdu"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/types"
 	"github.com/TIBCOSoftware/tgdb-client/client/goAPI/utils"
+	"io"
 	"net"
 	"strings"
 	"sync"
@@ -45,7 +46,6 @@ type TCPChannel struct {
 	isSocketClosed bool         // indicate if the connection is already closed
 	msgCh          chan types.TGMessage
 	socket         *net.TCPConn
-	input          *iostream.ProtocolDataInputStream
 	output         *iostream.ProtocolDataOutputStream
 }
 
@@ -55,8 +55,6 @@ func DefaultTCPChannel() *TCPChannel {
 		msgCh:           make(chan types.TGMessage),
 		isSocketClosed:  false,
 	}
-	buff := make([]byte, 0)
-	newChannel.input = iostream.NewProtocolDataInputStream(buff)
 	newChannel.output = iostream.NewProtocolDataOutputStream(0)
 	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
 	newChannel.reader = NewChannelReader(&newChannel)
@@ -69,8 +67,6 @@ func NewTCPChannel(linkUrl *LinkUrl, props *utils.SortedProperties) *TCPChannel 
 		msgCh:           make(chan types.TGMessage),
 		isSocketClosed:  false,
 	}
-	buff := make([]byte, 0)
-	newChannel.input = iostream.NewProtocolDataInputStream(buff)
 	newChannel.output = iostream.NewProtocolDataOutputStream(0)
 	newChannel.exceptionCond = sync.NewCond(&newChannel.exceptionLock) // Condition for lock
 	newChannel.reader = NewChannelReader(&newChannel)
@@ -215,9 +211,6 @@ func (obj *TCPChannel) setSocket(newSocket *net.TCPConn) types.TGError {
 		return exception.GetErrorByType(types.TGErrorGeneralException, "TGErrorProtocolNotSupported", failureMessage, err.Error())
 	}
 
-	buff := make([]byte, dataBufferSize)
-	obj.input = iostream.NewProtocolDataInputStream(buff)
-	obj.input.BufLen = 0
 	obj.output = iostream.NewProtocolDataOutputStream(dataBufferSize)
 	//clientId = properties.get(ConfigName.ChannelClientId.getName());
 	//if (clientId == null) {
@@ -252,23 +245,6 @@ func (obj *TCPChannel) setBuffers(newSocket *net.TCPConn) types.TGError {
 		}
 	}
 	return nil
-}
-
-func (obj *TCPChannel) tryRead() (types.TGMessage, types.TGError) {
-	//logger.Log(fmt.Sprintf("======> Entering TCPChannel:tryRead"))
-	n, err := obj.input.Available()
-	if err != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::tryRead obj.input.Available() failed w/ '%+v'", err.Error()))
-		errMsg := "TCPChannel::tryRead there is no data available to be read"
-		return nil, exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, err.Error())
-	}
-	if n <= 0 {
-		logger.Warning(fmt.Sprint("WARNING: Returning TCPChannel::tryRead as there are no bytes to read from the wire"))
-		return nil, nil
-	}
-
-	logger.Log(fmt.Sprintf("======> Inside TCPChannel:tryRead about to request message '%d' bytes from the wire", n))
-	return obj.ReadWireMsg()
 }
 
 func (obj *TCPChannel) validateHandshakeResponseVersion(sVersion int64, cVersion *utils.TGClientVersion) types.TGError {
@@ -612,7 +588,6 @@ func (obj *TCPChannel) CloseSocket() types.TGError {
 		obj.SetIsClosed(true)
 		obj.shutdownLock.Unlock()
 		obj.socket = nil
-		obj.input = nil
 		obj.output = nil
 	} ()
 
@@ -630,24 +605,8 @@ func (obj *TCPChannel) CloseSocket() types.TGError {
 
 // OnConnect executes all the channel specific activities
 func (obj *TCPChannel) OnConnect() types.TGError {
-	logger.Log(fmt.Sprintf("======> Entering TCPChannel:OnConnect about to tryRead w/ socket: '%+v'", obj.socket))
-	msg, err := obj.tryRead()
-	if err != nil {
-		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::OnConnect obj.tryRead() failed w/ '%+v'", err.Error()))
-		errMsg := "TCPChannel::OnConnect there is no data available to be read"
-		return exception.GetErrorByType(types.TGErrorGeneralException, "", errMsg, "")
-	}
-	if msg != nil {
-		logger.Debug(fmt.Sprintf("======> Inside TCPChannel:OnConnect tryRead() read Message as '%+v'", msg.String()))
-	}
-
-	if msg != nil && msg.GetVerbId() == pdu.VerbSessionForcefullyTerminated {
-		logger.Warning(fmt.Sprint("WARNING: Returning TCPChannel:OnConnect since Message is of Forceful Termination Type"))
-		return exception.NewTGChannelDisconnectedWithMsg(msg.(*pdu.SessionForcefullyTerminatedMessage).GetKillString())
-	}
-
 	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:OnConnect about to performHandshake"))
-	err = obj.performHandshake(false)
+	err := obj.performHandshake(false)
 	if err != nil {
 		logger.Error(fmt.Sprintf("ERROR: Returning TCPChannel::OnConnect obj.performHandshake() failed w/ '%+v'", err.Error()))
 		errMsg := "TCPChannel::OnConnect error in performing handshake with server"
@@ -669,13 +628,6 @@ func (obj *TCPChannel) OnConnect() types.TGError {
 // ReadWireMsg reads the message from the wire in the form of byte stream
 func (obj *TCPChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 	logger.Log(fmt.Sprintf("======> Entering TCPChannel:ReadWireMsg  w/ socket: '%+v'", obj.socket))
-	obj.input.BufLen = dataBufferSize
-	in := obj.input
-	if in == nil {
-		logger.Warning(fmt.Sprint("WARNING: Returning TCPChannel:ReadWireMsg since obj.input is NIL"))
-		// TODO: Revisit later - Should we not return an error?
-		return nil, nil
-	}
 
 	obj.DisablePing()
 	if obj.GetIsClosed() {
@@ -685,30 +637,30 @@ func (obj *TCPChannel) ReadWireMsg() (types.TGMessage, types.TGError) {
 	}
 	obj.lastActiveTime = time.Now()
 
-	// Read the data on the socket
-	buff := make([]byte, dataBufferSize)
-	n, sErr := obj.socket.Read(buff)
-	if sErr != nil || n <= 0 {
-		errMsg := "TCPChannel::ReadWireMsg obj.socket.Read failed"
-		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, sErr.Error()))
-		return nil, exception.GetErrorByType(types.TGErrorIOException, "", errMsg, sErr.Error())
+	contentLength, err := readContentLength(obj.socket)
+	if nil != err {
+		return nil, err
 	}
-	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Read '%d' bytes from the wire in buff '%+v'", n, buff[:(2*n)]))
-	copy(in.Buf, buff[:n])
-	in.BufLen = n
-	logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg Input Stream Buffer('%d') is '%+v'", in.BufLen, in.Buf[:(2*n)]))
 
-	// Needed to avoid dirty data in the buffer when we handle the message
-	buffer := make([]byte, n)
-	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg in.ReadFullyAtPos read msgBytes as '%+v'", msgBytes))
-	copy(buffer, buff[:n])
-	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg copied into buffer as '%+v'", buffer))
+	buffer := make([]byte, 0, contentLength)
+	tmp := make([]byte, 256)
+	accumulatedSize := 0
+	for {
+		n, err := obj.socket.Read(tmp)
+		if err != nil {
+			if err != io.EOF {
+				fmt.Println("read error:", err)
+			}
+			break
+		}
+		accumulatedSize += n
+		buffer = append(buffer, tmp[:n]...)
+		if accumulatedSize == contentLength {
+			break
+		}
+	}
 
-	//intToBytes(size, msgBytes, 0)
-	//bytesRead, _ := utils.FormatHex(msgBytes)
-	//logger.Debug(fmt.Sprintf("======> Inside TCPChannel:ReadWireMsg bytes read: '%s'", bytesRead))
-
-	msg, err := pdu.CreateMessageFromBuffer(buffer, 0, n)
+	msg, err := pdu.CreateMessageFromBuffer(buffer)
 	if err != nil {
 		errMsg := "TCPChannel::ReadWireMsg - unable to create a message from the input stream bytes"
 		logger.Error(fmt.Sprintf("ERROR: Returning %s w/ '%+v'", errMsg, err.Error()))
@@ -776,4 +728,31 @@ func (obj *TCPChannel) String() string {
 	strArray := []string{buffer.String(), obj.channelToString()+"}"}
 	msgStr := strings.Join(strArray, ", ")
 	return msgStr
+}
+
+func readContentLength(socket net.Conn) (int, types.TGError) {
+
+	buf := make([]byte, 4) // big buffer
+	tmp := make([]byte, 1) // using small tmo buffer for demonstrating
+	pos := 0
+	for {
+		n, err := socket.Read(tmp)
+
+		if err != nil {
+			errMsg := "TCPChannel::readContentLength socket.Read failed"
+			return -1, exception.GetErrorByType(types.TGErrorIOException, "", errMsg, err.Error())
+		}
+		copy(buf[pos:], tmp[:n])
+		if 3 == pos {
+			break
+		}
+		pos += n
+	}
+
+	a := int(buf[0]) << 24
+	b := int(buf[1]) << 16 & 0x00ff0000
+	c := int(buf[2]) << 8 & 0x0000ff00
+	d := int(buf[3]) & 0xff
+
+	return a + b + c + d - 4, nil
 }

@@ -116,21 +116,21 @@ func (msg *AuthenticateRequestMessage) FromBytes(buffer []byte) (types.TGMessage
 	}
 
 	is := iostream.NewProtocolDataInputStream(buffer)
-
-	// First member attribute / element of message header is BufLength
-	bufLen, err := is.ReadInt()
-	logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:FromBytes w/ Error in reading buffer length from message buffer"))
-	if err != nil {
-		return nil, err
-	}
-	logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
-	if bufLen != len(buffer) {
-		errMsg := fmt.Sprint("Buffer length mismatch")
-		return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
-	}
-
+	/*
+		// First member attribute / element of message header is BufLength
+		bufLen, err := is.ReadInt()
+		logger.Error(fmt.Sprint("ERROR: Returning AuthenticateRequestMessage:FromBytes w/ Error in reading buffer length from message buffer"))
+		if err != nil {
+			return nil, err
+		}
+		logger.Debug(fmt.Sprintf("Inside AuthenticateRequestMessage:FromBytes read bufLen as '%+v'", bufLen))
+		if bufLen != len(buffer) {
+			errMsg := fmt.Sprint("Buffer length mismatch")
+			return nil, exception.GetErrorByType(types.TGErrorInvalidMessageLength, types.INTERNAL_SERVER_ERROR, errMsg, "")
+		}
+	*/
 	logger.Debug(fmt.Sprint("Inside AuthenticateRequestMessage:FromBytes - about to APMReadHeader"))
-	err = APMReadHeader(msg, is)
+	err := APMReadHeader(msg, is)
 	if err != nil {
 		errMsg := fmt.Sprintf("Unable to recreate message from '%+v' in byte format", buffer)
 		return nil, exception.GetErrorByType(types.TGErrorIOException, types.INTERNAL_SERVER_ERROR, errMsg, "")
