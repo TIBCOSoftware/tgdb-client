@@ -1,3 +1,0 @@
-show users
-disconnect
-exit
