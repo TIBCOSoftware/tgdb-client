@@ -1,18 +1,15 @@
-==================================================================
  TIBCO(R) Graph Database
  Copyright (c) 2016-2021 TIBCO Software Inc. All rights reserved.
------------------------------------------------------------------- 
- GQT(Graph Query Traversal) Database
-==================================================================
+ 
+# GQT(Graph Query Traversal) Database
 
 This file demonstrates how to import gqt data into TIBCO Graph 
 database.
 
-==================================================================
 Instructions
 ------------------------------------------------------------------
 
-Preliminary:
+**Preliminary:**
 
 Make sure you have the database/gqt directory copied to 
 <tgdb_home>/examples/ 
@@ -60,7 +57,7 @@ MacOSX/linux:
 ./tgdb -s -c tgdb.conf
 
 
-3) Launch an Admin console and connect to the server
+4) Launch an Admin console and connect to the server
 
 Navigate to <tgdb_home>/bin in a new command prompt window and execute following
 
@@ -71,7 +68,7 @@ MacOSX/linux:
 ./tgdb-admin
 
 Execute a 'show types' command and make sure entries are present
-
+```
 admin@localhost:8223>show types
  Name                  T SysId      #Entries
  Default Nodetype      N 110        0
@@ -97,4 +94,4 @@ admin@localhost:8223>show types
  stores                E 1049       421593
  uses                  E 1048       981610
 22 types returned.
-
+```
