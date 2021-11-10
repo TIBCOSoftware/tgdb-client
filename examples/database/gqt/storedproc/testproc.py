@@ -51,6 +51,10 @@ def getAirports(g: TGGraphContext, country : str, city : str) -> "[V]":
 def retD(g: TGGraphContext) -> "d":
     return 8.24
 
+@tgstoredproc(alias="retC")
+def retC(g: TGGraphContext) -> "c":
+    return "#"
+
 # return single Node value
 @tgstoredproc(alias="retN")
 def retN(g: TGGraphContext) -> "V":
