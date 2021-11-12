@@ -32,7 +32,7 @@ For Example,
       [import] section. 
 	  Make sure that this section is not commented out.
 	  
-	* Open <tgdb_home>/tgdb.conf and locate the databases section. 
+	* Open <tgdb_home>/bin/tgdb.conf and locate the databases section. 
 	  Add gqtdb conf file path in this section.
 	  For example,
 	  gqtdb = ../examples/gqt/gqtdb.conf
