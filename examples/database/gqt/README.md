@@ -57,7 +57,7 @@ For Example,
 	./tgdb -s -c tgdb.conf
 
 
-4. Launch an Admin console and connect to the server
+4. Launch an Admin console and connect to the TGDB server
 
 	Navigate to <tgdb_home>/bin in a new command prompt window and execute following
 
@@ -67,6 +67,8 @@ For Example,
 	MacOSX/linux:
 	./tgdb-admin
 
+	Make sure to use the Login database name as gqtdb
+	
 	Execute a 'show types' command and make sure entries are present
 	```
 	admin@localhost:8223>show types
